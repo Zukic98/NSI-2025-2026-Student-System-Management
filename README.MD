@@ -1,0 +1,55 @@
+﻿# UNSA Student Management System (UNSA SMS)
+
+## Overview
+UNSA SMS is a modular .NET 8 application for managing university data including identity, courses, students, support, notifications, and analytics.  
+It follows a *clean modular architecture* with separate modules for each major domain.
+
+The system is designed so each module is *autonomous, has its own database context, and communicates with other modules via **interfaces and events*.  
+The Common module provides shared utilities, DTOs, and interfaces.
+
+---
+
+## Modules
+
+- *Identity* – User registration, JWT generation and verification.  
+- *University* – University/faculty management (courses, faculties).  
+- *Faculty* – Student management, attendance, exams, grades.  
+- *Support* – Faculty support systems (document requests, enrollment).  
+- *Notifications* – Send notifications via email, SMS, etc.  
+- *Analytics* – Periodic statistics and data queries.  
+- *Common* – Shared utilities, DTOs, interfaces, enums.  
+- *Application* – Main entry point that wires all modules together.
+
+---
+
+## Project Structure
+UNSA_SMS/
+│
+├─ Application/ # Main entry point (Web API)
+├─ Modules/
+│ ├─ Identity/ # Identity module (API, Core, Infrastructure)
+│ ├─ University/ # University management module
+│ ├─ Faculty/ # Student management module
+│ ├─ Support/ # Faculty support module
+│ ├─ Notifications/ # Notifications module
+│ └─ Analytics/ # Analytics and reporting module
+├─ Common/ # Shared utilities, DTOs, interfaces, enums
+└─ Directory.Packages.props # Centralized NuGet versions
+
+---
+
+## Running the Application
+
+1. *Open the solution*
+   - Open UNSA_SMS.sln in *Visual Studio 2022+* or *VS Code*.
+
+2. *Restore packages*
+  
+    - dotnet restore
+3.  *Build the solution* 
+    - dotnet build
+4. *Run the Application project*   
+    - cd Application
+    - dotnet run   
+5. *Open Swagger UI*
+   https://localhost:7229/index.html
