@@ -1,107 +1,136 @@
 namespace UNSA_SMS.ArchitectureTests;
 
 using NetArchTest.Rules;
+using System.Security.Principal;
 using Xunit;
 
 public class ArchitectureTests
 {
-    private static System.Reflection.Assembly GetAssembly<T>() => typeof(T).Assembly;
+    private static System.Reflection.Assembly GetAssembly(System.Type type) => type.Assembly;
 
-    [Fact]
-    public void Identity_Core_ShouldNotDependOn_Identity_Application()
+    [Theory]
+    [InlineData(typeof(Identity.Core.Class1), typeof(Identity.Application.Class1))]
+    [InlineData(typeof(Faculty.Core.Class1), typeof(Faculty.Application.Class1))]
+    [InlineData(typeof(Analytics.Core.Class1), typeof(Analytics.Application.Class1))]
+    [InlineData(typeof(Notifications.Core.Class1), typeof(Notifications.Application.Class1))]
+    [InlineData(typeof(Support.Core.Class1), typeof(Support.Application.Class1))]
+    [InlineData(typeof(University.Core.Class1), typeof(University.Application.Class1))]
+    public void Core_ShouldNotDependOn_Application(System.Type coreType, System.Type appType)
     {
-        var coreAssembly = GetAssembly<Identity.Core.Class1>();
-        var appAssemblyName = GetAssembly<Identity.Application.Class1>().GetName().Name;
+        var coreAssembly = GetAssembly(coreType);
+        var appAssemblyName = GetAssembly(appType).GetName().Name;
 
         var result = Types.InAssembly(coreAssembly)
             .Should()
             .NotHaveDependencyOn(appAssemblyName)
             .GetResult();
 
-        Assert.True(result.IsSuccessful, "Identity.Core should not depend on Identity.Application");
+        Assert.True(result.IsSuccessful, $"{coreAssembly.GetName().Name} should not depend on {appAssemblyName}");
     }
 
-    [Fact]
-    public void Identity_Application_ShouldNotDependOn_Identity_Infrastructure()
+    [Theory]
+    [InlineData(typeof(Identity.Application.Class1), typeof(Identity.Infrastructure.Class1))]
+    [InlineData(typeof(Faculty.Application.Class1), typeof(Faculty.Infrastructure.Class1))]
+    [InlineData(typeof(Analytics.Application.Class1), typeof(Analytics.Infrastructure.Class1))]
+    [InlineData(typeof(Notifications.Application.Class1), typeof(Notifications.Infrastructure.Class1))]
+    [InlineData(typeof(Support.Application.Class1), typeof(Support.Infrastructure.Class1))]
+    [InlineData(typeof(University.Application.Class1), typeof(University.Infrastructure.Class1))]
+    public void Application_ShouldNotDependOn_Infrastructure(System.Type appType, System.Type infraType)
     {
-        var appAssembly = GetAssembly<Identity.Application.Class1>();
-        var infraAssemblyName = GetAssembly<Identity.Infrastructure.Class1>().GetName().Name;
+        var appAssembly = GetAssembly(appType);
+        var infraAssemblyName = GetAssembly(infraType).GetName().Name;
 
         var result = Types.InAssembly(appAssembly)
             .Should()
             .NotHaveDependencyOn(infraAssemblyName)
             .GetResult();
 
-        Assert.True(result.IsSuccessful, "Identity.Application should not depend on Identity.Infrastructure");
+        Assert.True(result.IsSuccessful, $"{appAssembly.GetName().Name} should not depend on {infraAssemblyName}");
     }
 
-    [Fact]
-    public void University_Core_ShouldNotDependOn_University_Application()
+    [Theory]
+    [InlineData(typeof(Analytics.Application.Class1), "Analytics.Application.DTOs")]
+    [InlineData(typeof(Faculty.Application.Class1), "Faculty.Application.DTOs")]
+    [InlineData(typeof(Identity.Application.Class1), "Identity.Application.DTOs")]
+    [InlineData(typeof(Notifications.Application.Class1), "Notifications.Application.DTOs")]
+    [InlineData(typeof(Support.Application.Class1), "Support.Application.DTOs")]
+    [InlineData(typeof(University.Application.Class1), "University.Application.DTOs")]
+    public void DtoClasses_ShouldHaveNameEndingWith_DTO(System.Type appType, string dtoNamespace)
     {
-        var coreAssembly = GetAssembly<University.Core.Class1>();
-        var appAssemblyName = GetAssembly<University.Application.Class1>().GetName().Name;
+        var appAssembly = GetAssembly(appType);
 
-        var result = Types.InAssembly(coreAssembly)
+        var result = Types.InAssembly(appAssembly)
+            .That()
+            .ResideInNamespace(dtoNamespace)
             .Should()
-            .NotHaveDependencyOn(appAssemblyName)
+            .HaveNameEndingWith("DTO")
             .GetResult();
 
-        Assert.True(result.IsSuccessful, "University.Core should not depend on University.Application");
+        Assert.True(result.IsSuccessful, $"All DTO classes in {dtoNamespace} should end with 'DTO'");
     }
 
-    [Fact]
-    public void Analytics_Core_ShouldNotDependOn_Analytics_Application()
+    [Theory]
+    [InlineData(typeof(Analytics.Application.Class1), "Analytics.Application.Services")]
+    [InlineData(typeof(Faculty.Application.Class1), "Faculty.Application.Services")]
+    [InlineData(typeof(Identity.Application.Class1), "Identity.Application.Services")]
+    [InlineData(typeof(Notifications.Application.Class1), "Notifications.Application.Services")]
+    [InlineData(typeof(Support.Application.Class1), "Support.Application.Services")]
+    [InlineData(typeof(University.Application.Class1), "University.Application.Services")]
+    public void Services_ShouldHaveNameEndingWith_Service(System.Type appType, string serviceNamespace)
     {
-        var coreAssembly = GetAssembly<Analytics.Core.Class1>();
-        var appAssemblyName = GetAssembly<Analytics.Application.Class1>().GetName().Name;
+        var appAssembly = GetAssembly(appType);
 
-        var result = Types.InAssembly(coreAssembly)
+        var result = Types.InAssembly(appAssembly)
+            .That()
+            .ResideInNamespace(serviceNamespace)
             .Should()
-            .NotHaveDependencyOn(appAssemblyName)
+            .HaveNameEndingWith("Service")
             .GetResult();
 
-        Assert.True(result.IsSuccessful, "Analytics.Core should not depend on Analytics.Application");
+        Assert.True(result.IsSuccessful, $"All services in {serviceNamespace} should end with 'Service'");
     }
 
-    [Fact]
-    public void Faculty_Core_ShouldNotDependOn_Faculty_Application()
+    [Theory]
+    [InlineData(typeof(Analytics.Core.Class1), "Analytics.Core.Interfaces")]
+    [InlineData(typeof(Faculty.Core.Class1), "Faculty.Core.Interfaces")]
+    [InlineData(typeof(Identity.Core.Class1), "Identity.Core.Interfaces")]
+    [InlineData(typeof(Notifications.Core.Class1), "Notifications.Core.Interfaces")]
+    [InlineData(typeof(Support.Core.Class1), "Support.Core.Interfaces")]
+    [InlineData(typeof(University.Core.Class1), "University.Core.Interfaces")]
+    public void Interfaces_ShouldHaveNameStartingWith_I(System.Type appType, string interfaceNamespace)
     {
-        var coreAssembly = GetAssembly<Faculty.Core.Class1>();
-        var appAssemblyName = GetAssembly<Faculty.Application.Class1>().GetName().Name;
+        var assembly = GetAssembly(appType);
 
-        var result = Types.InAssembly(coreAssembly)
+        var result = Types.InAssembly(assembly)
+            .That()
+            .ResideInNamespace(interfaceNamespace)
+            .And()
+            .AreInterfaces()
             .Should()
-            .NotHaveDependencyOn(appAssemblyName)
+            .HaveNameStartingWith("I")
             .GetResult();
 
-        Assert.True(result.IsSuccessful, "Faculty.Core should not depend on Faculty.Application");
+        Assert.True(result.IsSuccessful, $"All interfaces in {interfaceNamespace} should start with 'I'");
     }
 
-    [Fact]
-    public void Notifications_Core_ShouldNotDependOn_Notifications_Application()
+    [Theory]
+    [InlineData(typeof(Analytics.Application.Class1), "Analytics.Application.Services")]
+    [InlineData(typeof(Faculty.Application.Class1), "Faculty.Application.Services")]
+    [InlineData(typeof(Identity.Application.Class1), "Identity.Application.Services")]
+    [InlineData(typeof(Notifications.Application.Class1), "Notifications.Application.Services")]
+    [InlineData(typeof(Support.Application.Class1), "Support.Application.Services")]
+    [InlineData(typeof(University.Application.Class1), "University.Application.Services")]
+    public void Services_ShouldBeClasses(System.Type appType, string serviceNamespace)
     {
-        var coreAssembly = GetAssembly<Notifications.Core.Class1>();
-        var appAssemblyName = GetAssembly<Notifications.Application.Class1>().GetName().Name;
+        var assembly = GetAssembly(appType);
 
-        var result = Types.InAssembly(coreAssembly)
+        var result = Types.InAssembly(assembly)
+            .That()
+            .ResideInNamespace(serviceNamespace)
             .Should()
-            .NotHaveDependencyOn(appAssemblyName)
+            .BeClasses()
             .GetResult();
 
-        Assert.True(result.IsSuccessful, "Notifications.Core should not depend on Notifications.Application");
-    }
-
-    [Fact]
-    public void Support_Core_ShouldNotDependOn_Support_Application()
-    {
-        var coreAssembly = GetAssembly<Support.Core.Class1>();
-        var appAssemblyName = GetAssembly<Support.Application.Class1>().GetName().Name;
-
-        var result = Types.InAssembly(coreAssembly)
-            .Should()
-            .NotHaveDependencyOn(appAssemblyName)
-            .GetResult();
-
-        Assert.True(result.IsSuccessful, "Support.Core should not depend on Support.Application");
+        Assert.True(result.IsSuccessful, $"All types in {serviceNamespace} should be classes");
     }
 }
