@@ -53,3 +53,14 @@ UNSA_SMS/
     - dotnet run   
 5. *Open Swagger UI*
    https://localhost:7229/index.html
+
+
+## Frontend 
+The frontend is a React 19 application. To install it you will need to install Node 20.
+To start the frontend:
+1. navigate to `Frontend` module
+2. Execute `run npm install` to install dependencies
+3. Execute `run npm dev` to run the app in dev mode
+
+Before commiting new changes to frontend please run `npm run build` to make sure there are no build
+breaking changes.
