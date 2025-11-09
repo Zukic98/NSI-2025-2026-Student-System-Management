@@ -9,7 +9,8 @@ public class ArchitectureTests
 
     private static System.Reflection.Assembly GetAssembly(string module, string layer)
     {
-        return Type.GetType($"{module}.{layer}.Class1, {module}.{layer}")?.Assembly;
+        var assemblyName = $"{module}.{layer}";
+        return System.Reflection.Assembly.Load(assemblyName);
     }
 
     [Fact]
