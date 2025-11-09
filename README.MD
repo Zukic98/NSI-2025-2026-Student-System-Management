@@ -40,6 +40,13 @@ UNSA_SMS/
 
 ## Running the Application
 
+Before running the application it is necessary to provide environment variables in order to 
+connect to database. Database can be started via `docker-compose` (check Deployment folder).
+
+To connect to the database locally you should set an environment variable such as:
+
+`export ConnectionStrings__Database="Host=localhost;Port=5432;Database=unsa;Username=unsa;Password=unsa"`
+
 1. *Open the solution*
    - Open UNSA_SMS.sln in *Visual Studio 2022+* or *VS Code*.
 
