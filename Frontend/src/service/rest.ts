@@ -74,7 +74,8 @@ export class RestClient {
                 body: JSON.stringify(body),
                 headers: {
                     'Authorization': `${ this.#authInfo.accessToken }`,
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 }
             }
         ).then(async response => {
