@@ -11,8 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// builder.Services.AddFacultyInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
-// builder.Services.AddFacultyApplication();
+builder.Services.AddFacultyInfrastructure(builder.Configuration.GetConnectionString("Database")!);
+builder.Services.AddFacultyApplication();
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

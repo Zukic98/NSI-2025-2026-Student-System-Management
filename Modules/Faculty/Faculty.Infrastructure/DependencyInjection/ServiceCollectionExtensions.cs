@@ -3,6 +3,7 @@ using Faculty.Core.Interfaces;
 using Faculty.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace Faculty.Infrastructure.DependencyInjection
 {
@@ -13,7 +14,7 @@ namespace Faculty.Infrastructure.DependencyInjection
             // Register DbContext
             services.AddDbContext<FacultyDbContext>(options =>
             {
-                options.UseSqlite(connectionString);
+                options.UseNpgsql(connectionString);
             });
             
             // Register repositories
