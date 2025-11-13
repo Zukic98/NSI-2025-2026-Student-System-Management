@@ -6,7 +6,7 @@ using Identity.Core.Repositories;
 [assembly: InternalsVisibleTo("Identity.Infrastructure")]
 namespace Identity.Application.Services;
 
-internal class UserService(IUserRepository userRepository) : IUserService
+public class UserService(IUserRepository userRepository) : IUserService
 {
     public async Task<User> CreateUser(string email)
     {

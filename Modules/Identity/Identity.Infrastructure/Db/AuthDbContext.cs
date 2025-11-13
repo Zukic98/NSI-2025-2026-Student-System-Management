@@ -86,13 +86,7 @@ namespace Identity.Infrastructure.Db
                 entity.Property(e => e.UserAgent)
                     .HasMaxLength(500);
 
-                // Relationships
-                /*
-                entity.HasOne(e => e.User)
-                    .WithMany(u => u.RefreshTokens)
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                */
+                
             });
         }
     }
