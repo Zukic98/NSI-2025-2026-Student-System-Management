@@ -18,9 +18,13 @@ namespace Faculty.Application.Services
         
         public async Task<Faculty.Core.Entities.Faculty> CreateFacultyAsync(Faculty.Core.Entities.Faculty faculty, CancellationToken cancellationToken = default)
         {
-            // Validation for uniqueness will be handled by the caller (e.g., controller)
-            // or can be moved here if the service is responsible for all validation.
-            // For now, assuming basic validation is done before calling this.
+            // Check for unique name
+            if (!await _repository.IsNameUniqueAsync(faculty.Name, null, cancellationToken))
+                throw new ConflictException($"Faculty name '{faculty.Name}' already exists.");
+
+            // Check for unique abbreviation if provided
+            if (!string.IsNullOrWhiteSpace(faculty.Abbreviation) && !await _repository.IsAbbreviationUniqueAsync(faculty.Abbreviation, null, cancellationToken))
+                throw new ConflictException($"Faculty abbreviation '{faculty.Abbreviation}' already exists.");
             
             var created = await _repository.AddAsync(faculty, cancellationToken);
             return created;
@@ -51,10 +55,15 @@ namespace Faculty.Application.Services
         
         public async Task<Faculty.Core.Entities.Faculty> UpdateFacultyAsync(Faculty.Core.Entities.Faculty faculty, CancellationToken cancellationToken = default)
         {
-            // Validation for uniqueness will be handled by the caller (e.g., controller)
-            // or can be moved here if the service is responsible for all validation.
-            // For now, assuming basic validation is done before calling this.
-            
+            // Check for unique name (excluding current faculty)
+            if (!await _repository.IsNameUniqueAsync(faculty.Name, faculty.Id, cancellationToken))
+                throw new ConflictException($"Faculty name '{faculty.Name}' already exists.");
+
+            // Check for unique abbreviation if provided (excluding current faculty)
+            if (!string.IsNullOrWhiteSpace(faculty.Abbreviation) && 
+                !await _repository.IsAbbreviationUniqueAsync(faculty.Abbreviation, faculty.Id, cancellationToken))
+                throw new ConflictException($"Faculty abbreviation '{faculty.Abbreviation}' already exists.");
+
             await _repository.UpdateAsync(faculty, cancellationToken);
             return faculty;
         }
@@ -69,7 +78,9 @@ namespace Faculty.Application.Services
             if (await _repository.IsInUseAsync(id, cancellationToken))
                 throw new ConflictException("Faculty is in use and cannot be deleted");
             
-            await _repository.DeleteAsync(id, cancellationToken);
+            // Soft delete: mark as Inactive
+            existing.Status = FacultyStatus.Inactive;
+            await _repository.UpdateAsync(existing, cancellationToken);
         }
     }
 }
