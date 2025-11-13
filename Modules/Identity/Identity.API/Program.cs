@@ -1,3 +1,4 @@
+using Identity.API.Filters;
 using Identity.Application.Services;
 using Identity.Core.Interfaces;
 using Identity.Core.Repositories;
@@ -19,7 +20,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger/OpenAPI with JWT support
