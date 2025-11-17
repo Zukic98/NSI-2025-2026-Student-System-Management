@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Faculty.Core\Faculty.Core.csproj" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
   </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Faculty.Core\Faculty.Core.csproj" />
+	</ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
