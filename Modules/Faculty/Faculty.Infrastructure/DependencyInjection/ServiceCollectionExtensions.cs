@@ -1,5 +1,4 @@
-﻿using Faculty.Application.EventHandlers;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +15,6 @@ namespace Faculty.Infrastructure
             services.AddDbContext<FacultyDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("FacultyConnection")));
 
-            // Scan Faculty.Application for handlers
             services.AddMediatR(typeof(CourseCreatedEventHandler).Assembly);
 
             return services;

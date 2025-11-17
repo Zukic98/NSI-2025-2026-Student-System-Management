@@ -15,7 +15,7 @@ namespace Faculty.Infrastructure.Db
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FacultyCourse>()
-                .ToTable("faculty_Course");
+                .ToTable("FacultyCourses");
 
             base.OnModelCreating(modelBuilder);
         }
