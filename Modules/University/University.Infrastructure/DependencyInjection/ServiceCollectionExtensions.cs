@@ -20,7 +20,6 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<UniversityDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("UniversityConnection")));
 
-        // MediatR – skeniraj University.Application assembly
         services.AddMediatR(typeof(CourseCreatedEvent).Assembly);
 
 

@@ -72,7 +72,13 @@ public class CourseService
         await _mediator.Publish(new CourseUpdatedEvent
         {
             CourseId = course.Id,
-            FacultyId = course.FacultyId
+            FacultyId = course.FacultyId,
+            Name = course.Name,
+            Code = course.Code,
+            Ects = course.Ects,
+            AcademicYear = course.AcademicYear,
+            Semester = course.Semester,
+            ProfessorId = course.ProfessorId
         });
 
         return course;

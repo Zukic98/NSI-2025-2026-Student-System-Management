@@ -5,6 +5,7 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\University\University.Application\University.Application.csproj" />
 		<ProjectReference Include="..\Faculty.Core\Faculty.Core.csproj" />
 	</ItemGroup>
 
