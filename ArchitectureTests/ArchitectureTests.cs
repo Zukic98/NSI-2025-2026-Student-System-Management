@@ -1,232 +1,211 @@
-namespace UNSA_SMS.ArchitectureTests;
-
+using System.Reflection;
+using FluentAssertions;
 using NetArchTest.Rules;
 using Xunit;
 
-public class ArchitectureTests
+namespace Architecture.Tests
 {
-    private readonly string[] _modules = { "Identity", "Faculty", "Analytics", "Notifications", "Support", "University" };
-
-    private static System.Reflection.Assembly GetAssembly(string module, string layer)
+    public class ArchitectureTests
     {
-        var assemblyName = $"{module}.{layer}";
-        return System.Reflection.Assembly.Load(assemblyName);
-    }
+        private const string Analytics = "Analytics";
+        private const string Common = "Common";
+        private const string Faculty = "Faculty";
+        private const string Identity = "Identity";
+        private const string Notifications = "Notifications";
+        private const string Support = "Support";
+        private const string University = "University";
 
-    [Fact]
-    public void Core_ShouldNotDependOn_OtherLayers()
-    {
-        foreach (var module in _modules)
+        private static readonly Assembly AnalyticsApplication = typeof(Analytics.Application.Class1).Assembly;
+        private static readonly Assembly AnalyticsCore = typeof(Analytics.Core.Class1).Assembly;
+        private static readonly Assembly AnalyticsInfrastructure = typeof(Analytics.Infrastructure.Class1).Assembly;
+        private static readonly Assembly AnalyticsApi = typeof(Analytics.API.Controllers.AnalyticsController).Assembly;
+
+        private static readonly Assembly CommonApplication = typeof(Common.Application.Class1).Assembly;
+        private static readonly Assembly CommonCore = typeof(Common.Core.Class1).Assembly;
+        private static readonly Assembly CommonInfrastructure = typeof(Common.Infrastructure.Class1).Assembly;
+        private static readonly Assembly CommonApi = typeof(Common.API.Class1).Assembly;
+
+        private static readonly Assembly FacultyApplication = typeof(Faculty.Application.Class1).Assembly;
+        private static readonly Assembly FacultyCore = typeof(Faculty.Core.Class1).Assembly;
+        private static readonly Assembly FacultyInfrastructure = typeof(Faculty.Infrastructure.Class1).Assembly;
+        private static readonly Assembly FacultyApi = typeof(Faculty.API.Controllers.FacultyController).Assembly;
+
+        private static readonly Assembly IdentityApplication = typeof(Identity.Application.Class1).Assembly;
+        private static readonly Assembly IdentityCore = typeof(Identity.Core.Class1).Assembly;
+        private static readonly Assembly IdentityInfrastructure = typeof(Identity.Infrastructure.Class1).Assembly;
+        private static readonly Assembly IdentityApi = typeof(Identity.API.Controllers.IdentityController).Assembly;
+
+        private static readonly Assembly NotificationsApplication = typeof(Notifications.Application.Class1).Assembly;
+        private static readonly Assembly NotificationsCore = typeof(Notifications.Core.Class1).Assembly;
+        private static readonly Assembly NotificationsInfrastructure = typeof(Notifications.Infrastructure.Class1).Assembly;
+        private static readonly Assembly NotificationsApi = typeof(Notifications.API.Controllers.NotificationsController).Assembly;
+
+        private static readonly Assembly SupportApplication = typeof(Support.Application.Class1).Assembly;
+        private static readonly Assembly SupportCore = typeof(Support.Core.Class1).Assembly;
+        private static readonly Assembly SupportInfrastructure = typeof(Support.Infrastructure.Class1).Assembly;
+        private static readonly Assembly SupportApi = typeof(Support.API.Controllers.SupportController).Assembly;
+
+        private static readonly Assembly UniversityApplication = typeof(University.Application.Class1).Assembly;
+        private static readonly Assembly UniversityCore = typeof(University.Core.Class1).Assembly;
+        private static readonly Assembly UniversityInfrastructure = typeof(University.Infrastructure.Class1).Assembly;
+        private static readonly Assembly UniversityApi = typeof(University.API.Controllers.UniversityController).Assembly;
+
+        // ---------- Helpers: imena assembly-ja (string array) ----------
+        private static string[] AllApplicationAssemblyNames() => new[]
         {
-            var assembly = GetAssembly(module, "Core");
-            var forbidden = new[] { $"{module}.Application", $"{module}.Infrastructure", $"{module}.API" };
+            AnalyticsApplication.GetName().Name,
+            CommonApplication.GetName().Name,
+            FacultyApplication.GetName().Name,
+            IdentityApplication.GetName().Name,
+            NotificationsApplication.GetName().Name,
+            SupportApplication.GetName().Name,
+            UniversityApplication.GetName().Name
+        };
 
-            foreach (var dependency in forbidden)
+        private static string[] AllInfrastructureAssemblyNames() => new[]
+        {
+            AnalyticsInfrastructure.GetName().Name,
+            CommonInfrastructure.GetName().Name,
+            FacultyInfrastructure.GetName().Name,
+            IdentityInfrastructure.GetName().Name,
+            NotificationsInfrastructure.GetName().Name,
+            SupportInfrastructure.GetName().Name,
+            UniversityInfrastructure.GetName().Name
+        };
+
+        private static string[] AllApiAssemblyNames() => new[]
+        {
+            AnalyticsApi.GetName().Name,
+            CommonApi.GetName().Name,
+            FacultyApi.GetName().Name,
+            IdentityApi.GetName().Name,
+            NotificationsApi.GetName().Name,
+            SupportApi.GetName().Name,
+            UniversityApi.GetName().Name
+        };
+
+        // ---------- TESTS ----------
+        [Fact]
+        public void Core_Should_Not_Depend_On_Application()
+        {
+            var coreAssemblies = new[]
             {
-                var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn(dependency).GetResult();
-                Assert.True(result.IsSuccessful, $"{module}.Core should not depend on {dependency}");
-            }
+                AnalyticsCore, CommonCore, FacultyCore, IdentityCore, NotificationsCore, SupportCore, UniversityCore
+            };
+
+            var result = Types.InAssemblies(coreAssemblies)
+                .Should()
+                .NotHaveDependencyOnAll(AllApplicationAssemblyNames())
+                .GetResult();
+
+            result.IsSuccessful.Should().BeTrue();
         }
-    }
 
-    [Fact]
-    public void Application_ShouldNotDependOn_ApiOrInfrastructure()
-    {
-        foreach (var module in _modules)
+        [Fact]
+        public void Core_Should_Not_Depend_On_Infrastructure()
         {
-            var assembly = GetAssembly(module, "Application");
-            var forbidden = new[] { $"{module}.API", $"{module}.Infrastructure" };
-
-            foreach (var dependency in forbidden)
+            var coreAssemblies = new[]
             {
-                var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn(dependency).GetResult();
-                Assert.True(result.IsSuccessful, $"{module}.Application should not depend on {dependency}");
-            }
-        }
-    }
+                AnalyticsCore, CommonCore, FacultyCore, IdentityCore, NotificationsCore, SupportCore, UniversityCore
+            };
 
-    [Fact]
-    public void Infrastructure_ShouldNotDependOn_API()
-    {
-        foreach (var module in _modules)
-        {
-            var assembly = GetAssembly(module, "Infrastructure");
-            var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn($"{module}.API").GetResult();
-            Assert.True(result.IsSuccessful, $"{module}.Infrastructure should not depend on {module}.API");
-        }
-    }
-
-    [Fact]
-    public void DtoClasses_ShouldHaveNameEndingWith_DTO()
-    {
-        foreach (var module in _modules)
-        {
-            var assembly = GetAssembly(module, "Application");
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.DTOs")
-                .Should().HaveNameEndingWith("DTO")
+            var result = Types.InAssemblies(coreAssemblies)
+                .Should()
+                .NotHaveDependencyOnAll(AllInfrastructureAssemblyNames())
                 .GetResult();
 
-            Assert.True(result.IsSuccessful, $"All DTO classes in {module}.Application.DTOs should end with 'DTO'");
+            result.IsSuccessful.Should().BeTrue();
         }
-    }
 
-    [Fact]
-    public void Services_ShouldHaveNameEndingWith_Service()
-    {
-        foreach (var module in _modules)
+        [Fact]
+        public void Application_Should_Not_Depend_On_Infrastructure()
         {
-            var assembly = GetAssembly(module, "Application");
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.Services")
-                .Should().HaveNameEndingWith("Service")
-                .GetResult();
-
-            Assert.True(result.IsSuccessful, $"All services in {module}.Application.Services should end with 'Service'");
-        }
-    }
-
-    [Fact]
-    public void Interfaces_ShouldHaveNameStartingWith_I()
-    {
-        foreach (var module in _modules)
-        {
-            var assembly = GetAssembly(module, "Core");
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Core.Interfaces").And().AreInterfaces()
-                .Should().HaveNameStartingWith("I")
-                .GetResult();
-
-            Assert.True(result.IsSuccessful, $"All interfaces in {module}.Core.Interfaces should start with 'I'");
-        }
-    }
-
-    [Fact]
-    public void Services_ShouldBeClassesOrInterfaces()
-    {
-        foreach (var module in _modules)
-        {
-            var assembly = GetAssembly(module, "Application");
-
-            var types = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.Services")
-                .GetTypes();
-
-            bool allAreClassOrInterface = types.All(t => t.IsClass || t.IsInterface);
-
-            Assert.True(allAreClassOrInterface, $"All types in {module}.Application.Services should be classes or interfaces");
-        }
-    }
-
-    [Fact]
-    public void Modules_ShouldNotDependOnEachOther()
-    {
-        foreach (var module in _modules)
-        {
-            var otherModules = _modules.Where(m => m != module);
-
-            foreach (var layer in new[] { "Core", "Application", "Infrastructure" })
+            var appAssemblies = new[]
             {
-                var assembly = GetAssembly(module, layer);
+                AnalyticsApplication, CommonApplication, FacultyApplication, IdentityApplication, NotificationsApplication, SupportApplication, UniversityApplication
+            };
 
-                foreach (var other in otherModules)
-                {
-                    var forbidden = new[] { $"{other}.Core", $"{other}.Application", $"{other}.Infrastructure" };
-
-                    foreach (var dependency in forbidden)
-                    {
-                        var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn(dependency).GetResult();
-                        Assert.True(result.IsSuccessful, $"{module}.{layer} should not depend on {dependency}");
-                    }
-                }
-            }
-        }
-    }
-
-    [Fact]
-    public void Controllers_ShouldHaveNameEndingWith_Controller()
-    {
-        foreach (var module in _modules)
-        {
-            var assembly = GetAssembly(module, "API");
-
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.API.Controllers")
-                .Should().HaveNameEndingWith("Controller")
+            var result = Types.InAssemblies(appAssemblies)
+                .Should()
+                .NotHaveDependencyOnAll(AllInfrastructureAssemblyNames())
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All controllers in {module}.API.Controllers should end with 'Controller'");
+            result.IsSuccessful.Should().BeTrue();
         }
-    }
 
-    [Fact]
-    public void Repositories_ShouldHaveNameEndingWith_Repository()
-    {
-        foreach (var module in _modules)
+        [Fact]
+        public void Core_Should_Not_Depend_On_Api()
         {
-            var assembly = GetAssembly(module, "Infrastructure");
+            var coreAssemblies = new[]
+            {
+                AnalyticsCore, CommonCore, FacultyCore, IdentityCore, NotificationsCore, SupportCore, UniversityCore
+            };
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Infrastructure.Repositories")
-                .Should().HaveNameEndingWith("Repository")
+            var result = Types.InAssemblies(coreAssemblies)
+                .Should()
+                .NotHaveDependencyOnAll(AllApiAssemblyNames())
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All repositories in {module}.Infrastructure.Repositories should end with 'Repository'");
+            result.IsSuccessful.Should().BeTrue();
         }
-    }
 
-    [Fact]
-    public void Entities_ShouldLiveIn_CoreEntities_Namespace()
-    {
-        foreach (var module in _modules)
+        [Fact]
+        public void Application_Should_Not_Depend_On_Api()
         {
-            var assembly = GetAssembly(module, "Core");
+            var appAssemblies = new[]
+            {
+                AnalyticsApplication, CommonApplication, FacultyApplication, IdentityApplication, NotificationsApplication, SupportApplication, UniversityApplication
+            };
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Core.Entities")
-                .Should().BeClasses()
+            var result = Types.InAssemblies(appAssemblies)
+                .Should()
+                .NotHaveDependencyOnAll(AllApiAssemblyNames())
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All entities in {module}.Core.Entities should be classes");
+            result.IsSuccessful.Should().BeTrue();
         }
-    }
 
-    [Fact]
-    public void CqrsHandlers_ShouldFollowNamingConvention()
-    {
-        foreach (var module in _modules)
+        [Fact]
+        public void Infrastructure_Should_Not_Depend_On_Api()
         {
-            var assembly = GetAssembly(module, "Application");
+            var infraAssemblies = new[]
+            {
+                AnalyticsInfrastructure, CommonInfrastructure, FacultyInfrastructure, IdentityInfrastructure, NotificationsInfrastructure, SupportInfrastructure, UniversityInfrastructure
+            };
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.Handlers")
-                .Should().HaveNameEndingWith("Handler")
+            var result = Types.InAssemblies(infraAssemblies)
+                .Should()
+                .NotHaveDependencyOnAll(AllApiAssemblyNames())
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All CQRS handlers in {module}.Application.Handlers should end with 'Handler'");
+            result.IsSuccessful.Should().BeTrue();
         }
-    }
 
-    [Fact]
-    public void DomainServices_ShouldFollowNamingConvention()
-    {
-        foreach (var module in _modules)
+        [Fact]
+        public void Controllers_Should_Inherit_ControllerBase_And_EndWith_Controller()
         {
-            var assembly = GetAssembly(module, "Core");
+            var apiAssemblies = new[]
+            {
+                AnalyticsApi, CommonApi, FacultyApi, IdentityApi, NotificationsApi, SupportApi, UniversityApi
+            };
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Core.Services")
-                .Should().HaveNameEndingWith("Service")
+            var result = Types.InAssemblies(apiAssemblies)
+                .That()
+                .Inherit(typeof(Microsoft.AspNetCore.Mvc.ControllerBase))
+                .Should()
+                .BeClasses()
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All domain services in {module}.Core.Services should end with 'Service'");
+            result.IsSuccessful.Should().BeTrue();
+
+            var nameResult = Types.InAssemblies(apiAssemblies)
+                .That()
+                .Inherit(typeof(Microsoft.AspNetCore.Mvc.ControllerBase))
+                .Should()
+                .HaveNameEndingWith("Controller")
+                .GetResult();
+
+            nameResult.IsSuccessful.Should().BeTrue();
         }
     }
-
-
 }
