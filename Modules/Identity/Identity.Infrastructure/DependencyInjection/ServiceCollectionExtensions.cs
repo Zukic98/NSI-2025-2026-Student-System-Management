@@ -1,9 +1,12 @@
 using Identity.Application.Services;
+using Identity.Application.Interfaces;
 using Identity.Core.Entities;
 using Identity.Core.Repositories;
+using Identity.Core.DomainServices;
 using Identity.Infrastructure.Db;
 using Identity.Infrastructure.Entities;
 using Identity.Infrastructure.Repositories;
+using Identity.Infrastructure.TOTP;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +32,10 @@ namespace Identity.Infrastructure.DependencyInjection
             // Register services
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
+
+            services.AddScoped<ITotpProvider, TotpProvider>();
+            services.AddScoped<TwoFactorDomainService>();
+            services.AddScoped<ITwoFactorAuthService, TwoFactorAuthService>();
 
             return services;
         }

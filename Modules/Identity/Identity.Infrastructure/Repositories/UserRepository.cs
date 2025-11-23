@@ -5,21 +5,33 @@ using Identity.Infrastructure.Entities;
 
 namespace Identity.Infrastructure.Repositories;
 
-public class UserRepository(AuthDbContext context) : IUserRepository
+public class UserRepository : IUserRepository
 {
-    // TODO: think about creating BaseRepository abstract class as there will be a lot of repetetive code
-    // A guide can be found here: https://learn.microsoft.com/en-us/aspnet/mvc/overview/older-versions/getting-started-with-ef-5-using-mvc-4/implementing-the-repository-and-unit-of-work-patterns-in-an-asp-net-mvc-application
+    private readonly AuthDbContext _context;
+
+    public UserRepository(AuthDbContext context)
+    {
+        _context = context;
+    }
+
     public async Task<User> CreateUser(string email)
     {
-        ApplicationUser newUser = new ApplicationUser { UserName = email };
-        await context.Users.AddAsync(newUser);
-
-        // TODO: implement mappers
+        var newUser = new ApplicationUser { UserName = email };
+        await _context.Users.AddAsync(newUser);
+        
+        // TODO: implement mappers (za sada direktno mapiramo na domen User)
         return new User(newUser.Id, newUser.UserName);
+    }
+
+    public async Task<User> GetByIdAsync(string id)
+    {
+        var appUser = await _context.Users.FindAsync(id);
+        if (appUser is null) throw new InvalidOperationException($"User with id '{id}' not found.");
+        return new User(appUser.Id, appUser.UserName);
     }
 
     public Task Save()
     {
-        return context.SaveChangesAsync();
+        return _context.SaveChangesAsync();
     }
 }
