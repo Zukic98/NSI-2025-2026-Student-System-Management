@@ -2,12 +2,13 @@ using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Identity.Application.DTO;
+using System;
 
 [ApiController]
 [Route("api/auth")]
-public class  : ControllerBase
+public class TwoFactorAuthController : ControllerBase
 {
-    private readonly ITwoFactorTwoFactorAuthControllerAuthService _svc;
+    private readonly ITwoFactorAuthService _svc;
 
     public TwoFactorAuthController(ITwoFactorAuthService svc)
     {
@@ -17,7 +18,8 @@ public class  : ControllerBase
     [HttpPost("enable-2fa")]
     public async Task<IActionResult> Enable()
     {
-        string userId = "11111111-1111-1111-1111-111111111111";
+        string userId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+        Console.WriteLine("LOADING CONTROLLER — CORRECT FILE");
         var res = await _svc.EnableTwoFactorAsync(userId);
         return Ok(res);
     }

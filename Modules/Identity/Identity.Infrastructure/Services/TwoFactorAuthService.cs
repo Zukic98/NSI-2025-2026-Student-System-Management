@@ -30,7 +30,6 @@ namespace Identity.Infrastructure.Services
 
         public async Task<TwoFASetupResult> EnableTwoFactorAsync(string userId)
         {
-            Console.WriteLine(">>> USER ID RECEIVED = " + userId);
             var guid = Guid.Parse(userId);
 
             // DOMAIN user

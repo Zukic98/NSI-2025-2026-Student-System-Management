@@ -1,27 +1,35 @@
 using System.Security.Cryptography;
 using System.Text;
-using Identity.Core.Services;
 using Identity.Application.Interfaces;
 
 namespace Identity.Infrastructure.Services
 {
     public class SecretEncryptionService : ISecretEncryptionService
     {
-        // TEMP KEY – kasnije se izvuče iz configa (Azure KeyVault, env var…)
-        private static readonly byte[] Key =
-            Encoding.UTF8.GetBytes("THIS_IS_TEMP_KEY_32BYTES!!");
+        // DEV KEY – samo za lokalni razvoj, kasnije iz configa / KeyVault-a
+        private static readonly byte[] Key;
+
+        static SecretEncryptionService()
+        {
+            const string keyString = "12345678901234567890123456789012"; // 32 chars = 256-bit
+
+            if (keyString.Length != 32)
+                throw new InvalidOperationException("Encryption key must be 32 characters long.");
+
+            Key = Encoding.UTF8.GetBytes(keyString);
+        }
 
         public string Encrypt(string plaintext)
         {
             using var aes = Aes.Create();
             aes.Key = Key;
-            aes.GenerateIV();
+            aes.GenerateIV(); // random IV za svaki poziv
 
             using var encryptor = aes.CreateEncryptor();
             var plainBytes = Encoding.UTF8.GetBytes(plaintext);
             var encrypted = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
 
-            // IV + cipher → base64
+            // [IV][CIPHER] → base64
             var combined = aes.IV.Concat(encrypted).ToArray();
             return Convert.ToBase64String(combined);
         }
@@ -30,8 +38,8 @@ namespace Identity.Infrastructure.Services
         {
             var bytes = Convert.FromBase64String(ciphertext);
 
-            var iv = bytes.Take(16).ToArray();
-            var cipher = bytes.Skip(16).ToArray();
+            var iv = bytes.Take(16).ToArray();        // prvih 16 bajtova je IV
+            var cipher = bytes.Skip(16).ToArray();    // ostatak je cipher
 
             using var aes = Aes.Create();
             aes.Key = Key;
