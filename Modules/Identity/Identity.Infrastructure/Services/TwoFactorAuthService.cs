@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Identity.Application.DTO;
 using Identity.Application.Interfaces;
@@ -29,28 +30,20 @@ namespace Identity.Infrastructure.Services
             _encryption = encryption;
         }
 
-        // STEP 1: Generate secret + QR + save encrypted secret
         public async Task<TwoFASetupResult> EnableTwoFactorAsync(string userId)
         {
             var guid = Guid.Parse(userId);
 
-            // DOMAIN USER
             var domainUser = await _userRepository.GetByIdAsync(guid);
             if (domainUser == null)
                 throw new InvalidOperationException("Domain user not found.");
 
-            // IDENTITY USER
-            var identityUser = await _userManager.FindByIdAsync(userId);
-            if (identityUser == null)
-                throw new InvalidOperationException("Identity user not found.");
+            var identityUser = await EnsureIdentityUserExistsAsync(userId, domainUser);
 
-            // Generate raw secret + QR (this uses Eldarov TOTP provider)
             var (secret, qrCode) = _twoFactorDomain.GenerateSetupFor(domainUser.Username);
 
-            // Encrypt raw secret
             var encrypted = _encryption.Encrypt(secret);
 
-            // Save to AspNetUsers
             identityUser.TwoFactorSecretEncrypted = encrypted;
             identityUser.TwoFactorEnabled = false; // not confirmed yet
             await _userManager.UpdateAsync(identityUser);
@@ -60,7 +53,7 @@ namespace Identity.Infrastructure.Services
         }
         public async Task<TwoFAVerificationResult> VerifySetupAsync(string userId, string code)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetOrCreateIdentityUserAsync(userId);
             if (user == null)
                 return new(false, "User does not exist.");
 
@@ -82,7 +75,7 @@ namespace Identity.Infrastructure.Services
 
         public async Task<TwoFAVerificationResult> VerifyLoginAsync(string userId, string code)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await GetOrCreateIdentityUserAsync(userId);
             if (user == null)
                 return new(false, "User does not exist.");
 
@@ -97,6 +90,47 @@ namespace Identity.Infrastructure.Services
                 return new(false, "Invalid code. Please try again.");
 
             return new(true, "Login successful.");
+        }
+
+        // TODO: remove this and create ApplicationUser on POST /api/users 
+        private async Task<ApplicationUser> EnsureIdentityUserExistsAsync(string userId, Identity.Core.Entities.User domainUser)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId);
+            if (identityUser != null)
+                return identityUser;
+
+            identityUser = new ApplicationUser
+            {
+                Id = userId,
+                UserName = domainUser.Username,
+                PasswordHash = domainUser.PasswordHash,
+                TwoFactorEnabled = false,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                ConcurrencyStamp = Guid.NewGuid().ToString()
+            };
+
+            var createResult = await _userManager.CreateAsync(identityUser);
+            if (!createResult.Succeeded)
+            {
+                var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to provision identity user: {errors}");
+            }
+
+            return identityUser;
+        }
+
+        private async Task<ApplicationUser?> GetOrCreateIdentityUserAsync(string userId)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId);
+            if (identityUser != null)
+                return identityUser;
+
+            var guid = Guid.Parse(userId);
+            var domainUser = await _userRepository.GetByIdAsync(guid);
+            if (domainUser == null)
+                return null;
+
+            return await EnsureIdentityUserExistsAsync(userId, domainUser);
         }
     }
 }
