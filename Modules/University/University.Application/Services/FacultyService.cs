@@ -1,6 +1,7 @@
 using University.Application.DTOs;
 using University.Application.Interfaces.Services;
 using University.Core.Entities;
+using University.Core.Exceptions;
 
 namespace University.Application.Services
 {
@@ -44,6 +45,16 @@ namespace University.Application.Services
 
         public Task<FacultyDto> CreateFacultyAsync(CreateFacultyDto facultyDto)
         {
+            if (_faculties.Any(f => f.Name == facultyDto.Name))
+            {
+                throw new ValidationException($"Faculty with name '{facultyDto.Name}' already exists.");
+            }
+
+            if (!string.IsNullOrEmpty(facultyDto.Code) && _faculties.Any(f => f.Code == facultyDto.Code))
+            {
+                throw new ValidationException($"Faculty with code '{facultyDto.Code}' already exists.");
+            }
+
             var faculty = new Faculty
             {
                 Id = _nextId++,
@@ -68,6 +79,16 @@ namespace University.Application.Services
             if (existingFaculty == null)
             {
                 return Task.FromResult<FacultyDto?>(null);
+            }
+
+            if (_faculties.Any(f => f.Name == facultyDto.Name && f.Id != id))
+            {
+                throw new ValidationException($"Faculty with name '{facultyDto.Name}' already exists.");
+            }
+
+            if (!string.IsNullOrEmpty(facultyDto.Code) && _faculties.Any(f => f.Code == facultyDto.Code && f.Id != id))
+            {
+                throw new ValidationException($"Faculty with code '{facultyDto.Code}' already exists.");
             }
 
             existingFaculty.Name = facultyDto.Name;

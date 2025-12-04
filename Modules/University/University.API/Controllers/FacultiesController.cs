@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using University.Application.DTOs;
 using University.Application.Interfaces.Services;
 
 namespace University.API.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "Superadmin")]
     [Route("api/university/faculties")]
     public class FacultiesController : ControllerBase
     {

@@ -1,15 +1,70 @@
 @API_HostAddress = http://localhost:5106/api/university/faculties
+# Superadmin token - valid for testing (role: Superadmin)
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwicm9sZSI6IlN1cGVyYWRtaW4iLCJuYmYiOjE3MzMyNTYwMDAsImV4cCI6MjA0ODYxNjAwMCwiaWF0IjoxNzMzMjU2MDAwLCJpc3MiOiJTdHVkZW50U3lzdGVtTWFuYWdlbWVudCIsImF1ZCI6IlN0dWRlbnRTeXN0ZW1NYW5hZ2VtZW50VXNlcnMifQ.rTVZpRfFea0Am_XibDf9d4sl0el11msh-bzA7hex5E4
+# Student token - for testing forbidden access (role: Student)
+@nonAdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEwIiwibmFtZSI6IkphbmUgU21pdGgiLCJyb2xlIjoiU3R1ZGVudCIsIm5iZiI6MTczMzI1NjAwMCwiZXhwIjoyMDQ4NjE2MDAwLCJpYXQiOjE3MzMyNTYwMDAsImlzcyI6IlN0dWRlbnRTeXN0ZW1NYW5hZ2VtZW50IiwiYXVkIjoiU3R1ZGVudFN5c3RlbU1hbmFnZW1lbnRVc2VycyJ9.g60wr7I9YI8EsgSiLAp7De_WPFnPkM8MINcDYWYqZ3Y
+
+### -------------------------------------------------------
+### 1. UNAUTHORIZED ACCESS (Should return 401)
+### -------------------------------------------------------
+
+### Get all faculties (No Token)
+GET {{API_HostAddress}}
+Accept: application/json
+
+### -------------------------------------------------------
+### 2. FORBIDDEN ACCESS (Should return 403)
+### -------------------------------------------------------
+
+### Get all faculties (Non-Superadmin Role)
+GET {{API_HostAddress}}
+Authorization: Bearer {{nonAdminToken}}
+Accept: application/json
+
+### Create faculty (Non-Superadmin Role)
+POST {{API_HostAddress}}
+Authorization: Bearer {{nonAdminToken}}
+Content-Type: application/json
+
+{
+  "name": "Unauthorized Faculty",
+  "address": "Test Address",
+  "code": "UAF"
+}
+
+### Update faculty (Non-Superadmin Role)
+PUT {{API_HostAddress}}/1
+Authorization: Bearer {{nonAdminToken}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "Unauthorized Update",
+  "address": "Test Address",
+  "code": "ETF"
+}
+
+### Delete faculty (Non-Superadmin Role)
+DELETE {{API_HostAddress}}/1
+Authorization: Bearer {{nonAdminToken}}
+
+### -------------------------------------------------------
+### 2. NORMAL OPERATIONS (Happy Path)
+### -------------------------------------------------------
 
 ### Get all faculties
 GET {{API_HostAddress}}
+Authorization: Bearer {{adminToken}}
 Accept: application/json
 
 ### Get faculty by id
 GET {{API_HostAddress}}/1
+Authorization: Bearer {{adminToken}}
 Accept: application/json
 
-### Create faculty
+### Create new faculty (Success)
 POST {{API_HostAddress}}
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
@@ -18,16 +73,97 @@ Content-Type: application/json
   "code": "PMF"
 }
 
-### Update faculty
+### Update faculty (Success)
 PUT {{API_HostAddress}}/1
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
+  "id": 1,
   "name": "Faculty of Electrical Engineering Updated",
   "address": "Zmaja od Bosne 33-35",
   "code": "ETF"
 }
 
-### Delete faculty
-DELETE {{API_HostAddress}}/1
+### Delete faculty (Success)
+DELETE {{API_HostAddress}}/2
+Authorization: Bearer {{adminToken}}
 
+### -------------------------------------------------------
+### 3. VALIDATION ERRORS (Should return 400)
+### -------------------------------------------------------
+
+### Create faculty - Duplicate Name
+# "Faculty of Electrical Engineering" already exists in mock data
+POST {{API_HostAddress}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "Faculty of Electrical Engineering",
+  "address": "Some Address",
+  "code": "NEW"
+}
+
+### Create faculty - Duplicate Code
+# "ETF" already exists in mock data
+POST {{API_HostAddress}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "New Unique Name",
+  "address": "Some Address",
+  "code": "ETF"
+}
+
+### Update faculty - Duplicate Name
+# Try to rename ID 2 to "Faculty of Electrical Engineering" (which is ID 1)
+PUT {{API_HostAddress}}/2
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": 2,
+  "name": "Faculty of Electrical Engineering",
+  "address": "Some Address",
+  "code": "MAF"
+}
+
+### Update faculty - Duplicate Code
+# Try to change ID 2 code to "ETF" (which belongs to ID 1)
+PUT {{API_HostAddress}}/2
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": 2,
+  "name": "Faculty of Mechanical Engineering",
+  "address": "Some Address",
+  "code": "ETF"
+}
+
+### -------------------------------------------------------
+### 4. ERROR HANDLING (Should return 404)
+### -------------------------------------------------------
+
+### Get non-existent faculty
+GET {{API_HostAddress}}/999
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Update non-existent faculty
+PUT {{API_HostAddress}}/999
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "id": 999,
+  "name": "Non Existent",
+  "address": "Nowhere",
+  "code": "N/A"
+}
+
+### Delete non-existent faculty
+DELETE {{API_HostAddress}}/999
+Authorization: Bearer {{adminToken}}
