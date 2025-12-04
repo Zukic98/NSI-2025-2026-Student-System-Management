@@ -335,6 +335,50 @@ export default function DocumentCenter() {
           </CTable>
         </CCardBody>
       </CCard>
+
+      <CCard className="shadow-sm mt-4">
+        <CCardHeader>
+          <h4>Previous Requests</h4>
+        </CCardHeader>
+
+        <CCardBody>
+          <CTable striped hover responsive>
+            <CTableHead>
+              <CTableRow>
+                <CTableHeaderCell scope="col">ID</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Request Type</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Status</CTableHeaderCell>
+                <CTableHeaderCell scope="col">Created</CTableHeaderCell>
+              </CTableRow>
+            </CTableHead>
+
+            <CTableBody>
+              <CTableRow>
+                <CTableHeaderCell scope="row">1</CTableHeaderCell>
+                <CTableDataCell>Enrollment Certificate</CTableDataCell>
+                <CTableDataCell>
+                  <CBadge color="warning" className="status-badge">
+                    Pending
+                  </CBadge>
+                </CTableDataCell>
+                <CTableDataCell>2025-01-12</CTableDataCell>
+              </CTableRow>
+
+              <CTableRow>
+                <CTableHeaderCell scope="row">2</CTableHeaderCell>
+                <CTableDataCell>Transcript</CTableDataCell>
+                <CTableDataCell>
+                  <CBadge color="success" className="status-badge">
+                    Approved
+                  </CBadge>
+                </CTableDataCell>
+                <CTableDataCell>2025-01-08</CTableDataCell>
+              </CTableRow>
+            </CTableBody>
+          </CTable>
+        </CCardBody>
+      </CCard>
+
     </div>
   );
 }
