@@ -40,7 +40,11 @@ namespace Faculty.API.Controllers
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
-            => await _service.DeleteAsync(id) ? Ok() : NotFound();
+        {
+            bool ok = await _service.DeleteAsync(id);
+            return ok ? Ok(new { success = true }) : NotFound();
+        }
+
     }
 }
 
