@@ -1,7 +1,30 @@
 @API_HostAddress = http://localhost:5106/api/university/faculties
 # Superadmin token - valid for testing (role: Superadmin)
+# Payload which was used to generate the Superadmin token: 
+# {
+#   "sub": "1234567890",
+#   "name": "John Doe",
+#   "role": "Superadmin",
+#   "nbf": 1733256000,
+#   "exp": 2048616000,
+#   "iat": 1733256000,
+#   "iss": "StudentSystemManagement",
+#   "aud": "StudentSystemManagementUsers"
+# }
 @adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwicm9sZSI6IlN1cGVyYWRtaW4iLCJuYmYiOjE3MzMyNTYwMDAsImV4cCI6MjA0ODYxNjAwMCwiaWF0IjoxNzMzMjU2MDAwLCJpc3MiOiJTdHVkZW50U3lzdGVtTWFuYWdlbWVudCIsImF1ZCI6IlN0dWRlbnRTeXN0ZW1NYW5hZ2VtZW50VXNlcnMifQ.rTVZpRfFea0Am_XibDf9d4sl0el11msh-bzA7hex5E4
+
 # Student token - for testing forbidden access (role: Student)
+# Payload which was used to generate the Student/Non-Admin token: 
+# {
+#   "sub": "9876543210",
+#   "name": "Jane Smith",
+#   "role": "Student",
+#   "nbf": 1733256000,
+#   "exp": 2048616000,
+#   "iat": 1733256000,
+#   "iss": "StudentSystemManagement",
+#   "aud": "StudentSystemManagementUsers"
+# }
 @nonAdminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5ODc2NTQzMjEwIiwibmFtZSI6IkphbmUgU21pdGgiLCJyb2xlIjoiU3R1ZGVudCIsIm5iZiI6MTczMzI1NjAwMCwiZXhwIjoyMDQ4NjE2MDAwLCJpYXQiOjE3MzMyNTYwMDAsImlzcyI6IlN0dWRlbnRTeXN0ZW1NYW5hZ2VtZW50IiwiYXVkIjoiU3R1ZGVudFN5c3RlbU1hbmFnZW1lbnRVc2VycyJ9.g60wr7I9YI8EsgSiLAp7De_WPFnPkM8MINcDYWYqZ3Y
 
 ### -------------------------------------------------------
