@@ -9,14 +9,16 @@ using Faculty.Infrastructure;
 using Support.Infrastructure;
 using Notifications.Infrastructure;
 using Analytics.Infrastructure;
-using Identity.Infrastructure.DependencyInjection;
+using Faculty.Application.DependencyInjection;
+using Faculty.Infrastructure.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services from modules
-builder.Services.AddIdentityModule(builder.Configuration);
+builder.Services.AddIdentityModule();
 builder.Services.AddUniversityModule();
-builder.Services.AddFacultyModule();
+builder.Services.AddFacultyInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
+builder.Services.AddFacultyApplication();
 builder.Services.AddSupportModule();
 builder.Services.AddNotificationsModule();
 builder.Services.AddAnalyticsModule();
@@ -47,7 +49,6 @@ var app = builder.Build();
 
 // Middleware
 app.UseHttpsRedirection();
-app.UseAuthentication();
 app.UseAuthorization();
 
 // Enable Swagger in all environments
