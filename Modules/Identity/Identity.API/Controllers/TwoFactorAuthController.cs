@@ -1,19 +1,16 @@
+using System;
+using System.Threading.Tasks;
+using Identity.Application.DTO;
 using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Identity.Application.DTO;
-using Microsoft.AspNetCore.Identity;
-using Identity.Infrastructure.Entities;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
 
 [ApiController]
 [Route("api/auth")]
 public class TwoFactorAuthController : ControllerBase
 {
-    private readonly ITwoFactorAuthService _svc;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ITwoFactorTwoFactorAuthControllerAuthService _svc;
 
     public TwoFactorAuthController(
         ITwoFactorAuthService svc,
@@ -55,7 +52,7 @@ public class TwoFactorAuthController : ControllerBase
 
     // STEP 1 — GENERATE SECRET + QR FOR LAST USER
     [HttpPost("enable-2fa")]
-    public async Task<IActionResult> Enable()
+    public async Task<IActionResult> Enable([FromBody] TwoFAConfirmRequest dto)
     {
         var userId = await GetLastUserIdAsync();
         var res = await _svc.EnableTwoFactorAsync(userId);
@@ -66,7 +63,7 @@ public class TwoFactorAuthController : ControllerBase
     [HttpPost("enable-2fa/confirm")]
     public async Task<IActionResult> ConfirmEnable([FromBody] TwoFAConfirmRequest dto)
     {
-        var userId = await GetHanaaUserIdAsync();
+        string userId = "11111111-1111-1111-1111-111111111111";
         var res = await _svc.VerifySetupAsync(userId, dto.Code);
 
         if (!res.Success)
@@ -79,7 +76,7 @@ public class TwoFactorAuthController : ControllerBase
     [HttpPost("verify-2fa")]
     public async Task<IActionResult> VerifyLogin([FromBody] TwoFAConfirmRequest dto)
     {
-        var userId = await GetHanaaUserIdAsync();
+        string userId = "11111111-1111-1111-1111-111111111111";
         var res = await _svc.VerifyLoginAsync(userId, dto.Code);
 
         if (!res.Success)
