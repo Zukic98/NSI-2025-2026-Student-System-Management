@@ -26,14 +26,21 @@ namespace Faculty.API.Controllers
             var result = await _service.GetByIdAsync(id);
             return result == null ? NotFound() : Ok(result);
         }
-
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CourseDTO dto)
-            => Ok(await _service.AddAsync(dto));
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return Ok(await _service.AddAsync(dto));
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] CourseDTO dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _service.UpdateAsync(id, dto);
             return result == null ? NotFound() : Ok(result);
         }
