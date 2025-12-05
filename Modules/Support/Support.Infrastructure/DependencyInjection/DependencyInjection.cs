@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Support.Core.Interfaces;
 using Support.Application.Services;
+using Support.Core.Interfaces;
 using Support.Infrastructure.Db;
+using Support.Infrastructure.Services;
 
 namespace Support.Infrastructure.DependencyInjection
 {
@@ -14,6 +15,7 @@ namespace Support.Infrastructure.DependencyInjection
 
             // Servisi
             services.AddScoped<IRequestService, RequestService>();
+            services.AddScoped<IDocumentPdfGenerator, DocumentPdfGenerator>();
 
             return services;
         }

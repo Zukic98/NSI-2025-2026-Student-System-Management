@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using Support.Application.DTOs;
 
 namespace Support.API.Controllers
 {
@@ -7,103 +7,58 @@ namespace Support.API.Controllers
     [Route("api/[controller]")]
     public class DocumentsController : ControllerBase
     {
-        // Dummy dokumenti — simulacija baze
+        // Fake studenti – simulacija baze
+        private static readonly List<int> Students = new() { 10, 15 };
+
+        // Fake dokumenti – simulacija baze
         private static readonly List<DocumentDto> Documents = new()
         {
-            new DocumentDto(1, "example.pdf", "Sample PDF document", StudentId: 10),
-            new DocumentDto(2, "transcript.pdf", "Student transcript", StudentId: 10),
-            new DocumentDto(3, "enrollment.pdf", "Enrollment confirmation", StudentId: 15)
+            new DocumentDto(1, "example.pdf", "Sample PDF document", 10),
+            new DocumentDto(2, "transcript.pdf", "Transcript document", 10),
+            new DocumentDto(3, "enrollment.pdf", "Enrollment confirmation", 15)
         };
 
-        // -------------------------------------------------------
-        // TASK 328 — GET /api/documents
-        // -------------------------------------------------------
+        // -------------------------------------------------------------
+        // GET /api/documents
+        // -------------------------------------------------------------
         [HttpGet]
-        public IActionResult GetAvailableDocuments()
+        public IActionResult GetDocuments()
         {
             return Ok(Documents);
         }
 
-        // -------------------------------------------------------
-        // TASK 330 + TASK 329 + TASK 331
-        // GET /api/documents/{id}/download
-        // -------------------------------------------------------
+        // -------------------------------------------------------------
+        // GET /api/documents/{id}/download?studentId=10
+        // -------------------------------------------------------------
         [HttpGet("{id}/download")]
         public IActionResult DownloadDocument(int id, [FromQuery] int studentId)
         {
             try
             {
-                // TASK 331 — error handling: 400
+                // 1️⃣ Provjera da je studentId poslan
                 if (studentId <= 0)
-                    return BadRequest("Invalid studentId");
+                    return BadRequest("Invalid studentId.");
 
-                // TASK 331 — error handling: 404
-                var document = Documents.Find(d => d.Id == id);
+                // 2️⃣ Provjera da li student postoji (Matejev zahtjev!)
+                if (!Students.Contains(studentId))
+                    return NotFound($"Student with ID {studentId} does not exist.");
+
+                // 3️⃣ Provjera da li dokument postoji
+                var document = Documents.FirstOrDefault(d => d.Id == id);
                 if (document == null)
-                    return NotFound("Document not found");
+                    return NotFound($"Document with ID {id} does not exist.");
 
-                // TASK 329 — VALIDATION (student ownership)
+                // 4️⃣ Provjera vlasništva dokumenta
                 if (document.StudentId != studentId)
-                    return StatusCode(403, "You are not authorized to access this document");
+                    return StatusCode(403, "You are not authorized to access this document.");
 
-                // TASK 330 — Generate dummy PDF
-                byte[] pdfBytes = GenerateValidPdf();
-
-                return File(
-                    pdfBytes,
-                    "application/pdf",
-                    document.FileName
-                );
+                // 5️⃣ Umjesto PDF-a, samo poruka (task to NE TRAŽI PDF)
+                return Ok($"Document '{document.FileName}' is ready for download.");
             }
-            catch (Exception)
+            catch
             {
-                // TASK 331 — error handling: 500
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, "Internal server error.");
             }
         }
-
-        // -------------------------------------------------------
-        // Helper: valid PDF generator
-        // -------------------------------------------------------
-        private byte[] GenerateValidPdf()
-        {
-            string pdf = @"%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>
-endobj
-4 0 obj
-<< /Length 44 >>
-stream
-BT
-/F1 24 Tf
-100 700 Td
-(Hello from UNSA PDF!) Tj
-ET
-endstream
-endobj
-xref
-0 5
-0000000000 65535 f
-0000000010 00000 n
-0000000061 00000 n
-0000000114 00000 n
-0000000215 00000 n
-trailer
-<< /Size 5 /Root 1 0 R >>
-startxref
-330
-%%EOF";
-
-            return System.Text.Encoding.ASCII.GetBytes(pdf);
-        }
-
-        // DTO
-        private record DocumentDto(int Id, string FileName, string Description, int StudentId);
     }
 }
