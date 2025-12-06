@@ -1,33 +1,48 @@
-using System.Net;
-using System.Security.Cryptography;
+using System.Linq;
 using System.Text;
+using Identity.Core.Configuration;
 using Identity.Core.DomainServices;
+using Microsoft.Extensions.Options;
 using OtpNet;
+using QRCoder;
 
 namespace Identity.Infrastructure.TOTP
 {
     /// <summary>
-    /// Full real TOTP implementation using Otp.NET.
-    /// Compatible with Google Authenticator, Microsoft Authenticator, Authy…
+    /// Real TOTP provider backed by Otp.NET.
+    /// Handles secret generation, otpauth URI formatting, QR encoding and verification.
     /// </summary>
     public class TotpProvider : ITotpProvider
     {
-        private const string Issuer = "StudentSystem";
+        private readonly TotpSettings _settings;
+        private const string DataUriPrefix = "data:image/png;base64,";
+
+        public TotpProvider(IOptions<TotpSettings> settings)
+        {
+            _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
+        }
 
         public string GenerateSecret()
         {
-            var bytes = RandomNumberGenerator.GetBytes(20);
-
-            return Base32Encoding.ToString(bytes);
+            var secretLength = _settings.SecretLength <= 0 ? 20 : _settings.SecretLength;
+            // Generates a cryptographically-secure random key and encodes it in Base32.
+            var keyBytes = KeyGeneration.GenerateRandomKey(secretLength);
+            return Base32Encoding.ToString(keyBytes);
         }
 
-        public string GenerateQrCode(string username, string secret)
+        public TotpSetupArtifacts GenerateSetupArtifacts(string username, string secret)
         {
-            string otpauth =
-                $"otpauth://totp/{WebUtility.UrlEncode(Issuer)}:{WebUtility.UrlEncode(username)}"
-                + $"?secret={secret}&issuer={WebUtility.UrlEncode(Issuer)}&digits=6";
+            var otpauthUri = BuildOtpAuthUri(username, secret);
 
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(otpauth));
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(otpauthUri, QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new PngByteQRCode(qrData);
+
+            var pixelsPerModule = _settings.QrPixelsPerModule <= 0 ? 10 : _settings.QrPixelsPerModule;
+            var qrBytes = qrCode.GetGraphic(pixelsPerModule);
+
+            var qrBase64 = $"{DataUriPrefix}{Convert.ToBase64String(qrBytes)}";
+            return new TotpSetupArtifacts(otpauthUri, qrBase64);
         }
 
         public bool ValidateCode(string secret, string code)
@@ -35,16 +50,54 @@ namespace Identity.Infrastructure.TOTP
             if (string.IsNullOrWhiteSpace(secret) || string.IsNullOrWhiteSpace(code))
                 return false;
 
-            code = code.Replace(" ", "").Replace("-", "");
+            var sanitizedCode = new string(code.Trim().Where(char.IsDigit).ToArray());
+            if (sanitizedCode.Length != _settings.Digits)
+                return false;
 
-            var bytes = Base32Encoding.ToBytes(secret);
-            var totp = new Totp(bytes, step: 30, totpSize: 6);
+            try
+            {
+                var secretBytes = Base32Encoding.ToBytes(secret);
+                var totp = new Totp(
+                    secretBytes,
+                    step: _settings.StepSeconds <= 0 ? 30 : _settings.StepSeconds,
+                    totpSize: _settings.Digits);
 
-            return totp.VerifyTotp(
-                code,
-                out long _,
-                new VerificationWindow(previous: 1, future: 1)
-            );
+                return totp.VerifyTotp(
+                    sanitizedCode,
+                    out _,
+                    new VerificationWindow(previous: 1, future: 1));
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+        }
+
+        private string BuildOtpAuthUri(string username, string secret)
+        {
+            var issuerValue = string.IsNullOrWhiteSpace(_settings.Issuer)
+                ? "StudentSystem"
+                : _settings.Issuer;
+            var issuer = Uri.EscapeDataString(issuerValue);
+
+            var labelValue = string.IsNullOrWhiteSpace(username)
+                ? issuerValue
+                : $"{issuerValue}:{username}";
+            var label = Uri.EscapeDataString(labelValue);
+
+            var builder = new StringBuilder();
+            builder.Append("otpauth://totp/")
+                .Append(label)
+                .Append("?secret=").Append(secret)
+                .Append("&issuer=").Append(issuer)
+                .Append("&digits=").Append(_settings.Digits)
+                .Append("&period=").Append(_settings.StepSeconds <= 0 ? 30 : _settings.StepSeconds);
+
+            return builder.ToString();
         }
     }
 }

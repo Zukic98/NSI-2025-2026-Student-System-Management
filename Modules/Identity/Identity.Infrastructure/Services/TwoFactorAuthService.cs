@@ -62,10 +62,10 @@ namespace Identity.Infrastructure.Services
                 : identityUser.Email ?? identityUser.UserName;
 
             // Generate secret+QR
-            var (secret, qrCode) = _twoFactorDomain.GenerateSetupFor(username);
+            var (manualEntryKey, qrCode, otpauthUri) = _twoFactorDomain.GenerateSetupFor(username);
 
             // Encrypt
-            var encrypted = _encryption.Encrypt(secret);
+            var encrypted = _encryption.Encrypt(manualEntryKey);
 
             // Save pending secret
             identityUser.TwoFactorSecretPending = encrypted;
@@ -75,7 +75,7 @@ namespace Identity.Infrastructure.Services
             if (!res.Succeeded)
                 return new TwoFASetupResult(false, "Failed to update user record.");
 
-            return new TwoFASetupResult(true, "Successfully enabled initial data", secret, qrCode);
+            return new TwoFASetupResult(true, "Successfully enabled initial data", manualEntryKey, qrCode, otpauthUri);
         }
 
         public async Task<TwoFAVerificationResult> VerifySetupAsync(string userId, string code)
@@ -121,5 +121,6 @@ namespace Identity.Infrastructure.Services
 
             return new(true, "Login successful.");
         }
+
     }
 }
