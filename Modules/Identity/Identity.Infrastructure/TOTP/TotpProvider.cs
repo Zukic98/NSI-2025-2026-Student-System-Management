@@ -42,8 +42,8 @@ namespace Identity.Infrastructure.TOTP
 
             return totp.VerifyTotp(
                 code,
-                out long _,
-                new VerificationWindow(previous: 1, future: 1)
+                out _,
+                new VerificationWindow(previous: 2, future: 2)
             );
         }
     }
