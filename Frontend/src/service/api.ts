@@ -16,13 +16,6 @@ export class API {
     return this.#restClient.get('/api/University');
   }
 
-  async login(email: string, password: string): Promise<any> {
-    return this.#restClient.post('/api/auth/login', {
-      email,
-      password,
-    });
-  }
-
   // 2FA ENDPOINTS
 
   async enableTwoFactor(): Promise<TwoFASetupResponse> {

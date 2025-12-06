@@ -41,11 +41,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // CORS Configuration for aggregated host - allow frontend dev server
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("CorsPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
+        policy.WithOrigins(allowedOrigins!)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -59,7 +61,7 @@ app.UseHttpsRedirection();
 
 // Ensure routing is enabled before applying CORS so the middleware can handle preflight requests correctly
 app.UseRouting();
-app.UseCors("AllowFrontend");
+app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -150,9 +150,6 @@
 
 .login-title {
   color: #fff;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  font-weight: 400;
-  margin: 0;
 }
 
 .form-content {
@@ -168,9 +165,7 @@
 }
 
 .form-label {
-  color: #fff;
-  font-size: clamp(0.7rem, 1.5vw, 0.875rem);
-  font-weight: 400;
+  color: #fff !important;
 }
 
 .error-message {
@@ -180,15 +175,9 @@
 }
 
 .form-input {
+  background: rgba(255, 255, 255, 1) !important;
+  color: rgb(0,0,0) !important;
   width: 100%;
-  padding: clamp(0.35rem, 0.75vw, 0.5rem) !important;
-  border-radius: 0.9375rem !important;
-  border: 2.134px solid #bcbec0 !important;
-  background: #fff !important;
-  color: #333 !important;
-  font-size: clamp(0.65rem, 1.2vw, 0.8rem) !important;
-  font-family: inherit !important;
-  transition: border-color 0.3s;
 }
 
 .form-input::placeholder {
@@ -227,7 +216,7 @@
 
 .password-toggle {
   position: absolute;
-  right: clamp(0.35rem, 0.75vw, 0.5rem);
+  right: clamp(0.7rem, 0.75vw, 0.5rem);
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -245,16 +234,16 @@
 }
 
 .password-toggle svg {
-  width: clamp(0.75rem, 1.5vw, 1rem);
-  height: clamp(0.75rem, 1.5vw, 1rem);
+  width: clamp(1.2rem, 1.5vw, 1rem);
+  height: clamp(1.2rem, 1.5vw, 1rem);
 }
 
 .forgot-password {
-  color: #fff;
-  font-size: clamp(0.6rem, 1.2vw, 0.75rem);
+  color: #fff !important;
   text-decoration: none;
+  /* font-size: clamp(0.6rem, 1.2vw, 0.75rem);
   align-self: flex-start;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s; */
 }
 
 .forgot-password:hover {
@@ -263,17 +252,9 @@
 }
 
 .submit-button {
-  width: 100%;
-  padding: clamp(0.35rem, 0.75vw, 0.5rem) !important;
-  border-radius: 1.334rem !important;
   background: #003465 !important;
   color: #fff !important;
-  font-size: clamp(0.7rem, 1.2vw, 0.875rem) !important;
-  font-weight: 400 !important;
-  border: none !important;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.1s;
-  font-family: inherit !important;
+  text-transform: none !important;
 }
 
 .submit-button:hover {

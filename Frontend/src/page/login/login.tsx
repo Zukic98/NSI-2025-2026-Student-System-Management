@@ -10,48 +10,21 @@ import {
 } from "@coreui/react";
 import "./login.css";
 import logoImage from "../../assets/images/login/unsa-sms-logo.png";
-import { useAuthContext } from "../../init/auth.tsx";
-import { RestClient } from "../../service/rest.ts";
-import { API } from "../../service/api.ts";
-import { useAPI } from "../../context/services.tsx";
+import { useAuthContext, type AccessToken } from "../../init/auth.tsx";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router";
+import { extractApiErrorMessage } from "../../utils/apiError.ts";
+import { validateEmail, validatePassword } from "./loginUtils.ts";
+import { API_BASE_URL } from "../../constants/constants.ts";
+import type { LoginResponse } from "../../models/login/Login.types.ts";
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { authInfo, setAuthInfo } = useAuthContext();
-  const api = useAPI();
-
-  const validateEmail = (email: string) => {
-    if (!email) {
-      return "Email is required";
-    }
-    // Regex for email validation matching HTML5 email input behavior
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!pattern.test(email)) {
-      return "Invalid email format";
-    }
-    if (email.length > 256) {
-      return "Email must not exceed 256 characters";
-    }
-    return null;
-  };
-
-  const validatePassword = (pwd: string) => {
-    if (!pwd) {
-      return "Password is required";
-    }
-    if (pwd.length < 8 || pwd.length > 100) {
-      return "Password must be 8-100 characters";
-    }
-    // Pattern: must contain lowercase, uppercase, digit, and special character
-    const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/;
-    if (!pattern.test(pwd)) {
-      return "Password must contain uppercase, lowercase, number, and special character";
-    }
-    return null;
-  };
+  const { setAuthInfo } = useAuthContext();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,20 +39,37 @@ export function Login() {
     console.log("Login attempt:", { email, password });
 
     try {
-      const result: any = await api.login(email, password);
-      // If backend returned auth info, update context
-      if (result && result.accessToken) {
-        const accessToken = result.accessToken;
-        const expiresAt = result.expiresAt
-          ? new Date(result.expiresAt)
-          : new Date();
-        setAuthInfo({ accessToken, expiresOn: expiresAt });
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: 'include', // Include cookies in request
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(JSON.stringify(errorData));
       }
-      console.log("Login successful:", result);
-    } catch (err: any) {
-      const parsedError = JSON.parse(err?.message);
-      setError(parsedError.message ?? "Login failed");
-      console.error("Login error:", err);
+
+      const result : LoginResponse = await response.json();
+
+      const decoded = jwtDecode<AccessToken>(result.accessToken);
+      const authInfoData = {
+        accessToken: result.accessToken,
+        expiresOn: decoded.exp * 1000,
+        email: decoded.email,
+        userId: decoded.userId,
+        role: decoded.role,
+        tenantId: decoded.tenantId,
+        fullName: decoded.fullName,
+      };
+
+      setAuthInfo(authInfoData);
+      navigate("/2fa/setup");
+    } catch (error) {
+      setError(extractApiErrorMessage(error));
     }
   };
 
@@ -97,31 +87,31 @@ export function Login() {
           <img className="logo" src={logoImage} alt="UNSA SMS Logo" />
 
           <CForm className="login-form" onSubmit={handleSubmit}>
-            <h1 className="login-title">Login</h1>
+            <h1 className="login-title ui-heading-lg">Login</h1>
             <div className="form-content">
-              <div className="form-group">
-                <CFormLabel htmlFor="email" className="form-label">
+              <div className="ui-form-field">
+                <CFormLabel htmlFor="email" className="form-label ui-field-label">
                   Email
                 </CFormLabel>
                 <CFormInput
                   id="email"
                   type="email"
-                  className="form-input"
+                  className="form-input ui-input-base"
                   placeholder="username@faculty.unsa.ba"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
-              <div className="form-group">
-                <CFormLabel htmlFor="password" className="form-label">
+              <div className="ui-form-field">
+                <CFormLabel htmlFor="password" className="ui-field-label">
                   Password
                 </CFormLabel>
                 <CInputGroup className="password-input-wrapper">
                   <CFormInput
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    className="form-input password-input"
+                    className="form-input ui-input-base"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -136,9 +126,9 @@ export function Login() {
                       }
                     >
                       <svg
-                        width="35"
-                        height="35"
-                        viewBox="0 0 35 35"
+                        width="60"
+                        height="60"
+                        viewBox="3 3 30 30"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
@@ -161,17 +151,17 @@ export function Login() {
               </div>
 
               {error && (
-                <CAlert color="danger" className="error-message">
+                <CAlert color="danger" className="ui-alert ui-alert-error">
                   {error}
                 </CAlert>
               )}
 
-              <a href="#" className="forgot-password">
+              <a href="#" className="forgot-password ui-field-label">
                 Forgot Password?
               </a>
             </div>
 
-            <CButton type="submit" className="submit-button">
+            <CButton type="submit" className="submit-button ui-button-cta" color="primary">
               Sign in
             </CButton>
           </CForm>

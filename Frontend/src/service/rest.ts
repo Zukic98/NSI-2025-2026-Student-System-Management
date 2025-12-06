@@ -14,6 +14,7 @@ type APIResponse<T> = {
 };
 
 export class RestClient {
+  #baseUrl: string;
   #authInfo: AuthInfo;
   #authFailCallback: () => void;
 
@@ -22,18 +23,20 @@ export class RestClient {
    *
    * @param authInfo auth info necessary to construct auth headers
    * @param authFailCallback in case of 401 or 403, allows us to attempt silent refresh of token
+   * @param baseUrl base URL for the API endpoints
    */
-  constructor(authInfo: AuthInfo, authFailCallback: () => void) {
+  constructor(authInfo: AuthInfo, authFailCallback: () => void, baseUrl: string) {
+    this.#baseUrl = baseUrl;
     this.#authInfo = authInfo;
     this.#authFailCallback = authFailCallback;
   }
 
   async get<T>(url: string): Promise<T> {
-    return this.#submitRequestWithFallback<T>(url, 'GET');
+    return this.#submitRequestWithFallback<T>(this.#baseUrl + url, 'GET');
   }
 
   async post<T, B>(url: string, body?: B): Promise<T> {
-    return this.#submitRequestWithFallback<T>(url, 'POST', body);
+    return this.#submitRequestWithFallback<T>(this.#baseUrl + url, 'POST', body);
   }
 
   async #submitRequestWithFallback<T>(
@@ -85,6 +88,7 @@ export class RestClient {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Include cookies in requests
     }).then(async (response) => {
       if (!response.ok) {
         return {
