@@ -12,7 +12,7 @@ namespace Identity.Core.DomainServices
             _totpProvider = totpProvider;
         }
 
-        // Generiše novi secret + otpauth podatke za zadani username.
+        // Generiše novi secret + QR/otpauth podatke za zadani username.
         public (string ManualEntryKey, string QrCodeBase64, string OtpAuthUri) GenerateSetupFor(string username)
         {
             var secret = _totpProvider.GenerateSecret();

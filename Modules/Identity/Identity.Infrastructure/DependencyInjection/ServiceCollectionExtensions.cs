@@ -1,6 +1,7 @@
 using Identity.Application.Interfaces;
 using Identity.Application.Services;
 using Identity.Core.DomainServices;
+using Identity.Core.Configuration;
 using Identity.Core.Entities;
 using Identity.Core.Repositories;
 using Identity.Core.Services;
@@ -25,9 +26,16 @@ namespace Identity.Infrastructure.DependencyInjection
         )
         {
             // Entity Framework
+            var connectionString = configuration.GetConnectionString("Database");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new InvalidOperationException("ConnectionStrings:Database configuration value is missing.");
+            }
+
             services.AddDbContext<AuthDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("Database"))
-            );
+                options.UseNpgsql(connectionString));
+
+            services.Configure<TotpSettings>(configuration.GetSection("Totp"));
 
             // Identity Framework
             services
