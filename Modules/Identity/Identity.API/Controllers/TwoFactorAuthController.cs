@@ -22,7 +22,7 @@ public class TwoFactorAuthController : ControllerBase
         return Ok(res);
     }
 
-    [HttpPost("verify-2fa-setup")]
+    [HttpPost("enable-2fa/confirm")]
     public async Task<IActionResult> VerifySetup([FromBody] TwoFAConfirmRequest dto)
     {
         var res = await _svc.VerifySetupAsync(dto.UserId, dto.Code);

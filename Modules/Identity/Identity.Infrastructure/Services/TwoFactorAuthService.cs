@@ -29,52 +29,75 @@ namespace Identity.Infrastructure.Services
             _encryption = encryption;
         }
 
-        // STEP 1: Generate secret + QR + save encrypted secret
         public async Task<TwoFASetupResult> EnableTwoFactorAsync(string userId)
         {
-            var guid = Guid.Parse(userId);
+            // Validate GUID
+            if (!Guid.TryParse(userId, out var guid))
+                return new TwoFASetupResult(false, "Invalid user id format.");
 
             // DOMAIN USER
             var domainUser = await _userRepository.GetByIdAsync(guid);
             if (domainUser == null)
-                throw new InvalidOperationException("Domain user not found.");
+                return new TwoFASetupResult(false, "Domain user does not exist.");
 
             // IDENTITY USER
             var identityUser = await _userManager.FindByIdAsync(userId);
             if (identityUser == null)
-                throw new InvalidOperationException("Identity user not found.");
+                return new TwoFASetupResult(false, "Identity user does not exist.");
 
-            // Generate raw secret + QR (this uses Eldarov TOTP provider)
-            var (secret, qrCode) = _twoFactorDomain.GenerateSetupFor(domainUser.Username);
+            // Already enabled?
+            if (identityUser.TwoFactorEnabled)
+                return new TwoFASetupResult(false, "Two-factor authentication is already enabled.");
 
-            // Encrypt raw secret
+            // Already pending?
+            if (!string.IsNullOrEmpty(identityUser.TwoFactorSecretPending))
+                return new TwoFASetupResult(
+                    false,
+                    "A 2FA setup is already in progress. Verify it first."
+                );
+
+            // Username fallback if domainUser.Username is null
+            var username = !string.IsNullOrWhiteSpace(domainUser.Username)
+                ? domainUser.Username
+                : identityUser.Email ?? identityUser.UserName;
+
+            // Generate secret+QR
+            var (secret, qrCode) = _twoFactorDomain.GenerateSetupFor(username);
+
+            // Encrypt
             var encrypted = _encryption.Encrypt(secret);
 
-            // Save to AspNetUsers
-            identityUser.TwoFactorSecretEncrypted = encrypted;
-            identityUser.TwoFactorEnabled = false; // not confirmed yet
-            await _userManager.UpdateAsync(identityUser);
+            // Save pending secret
+            identityUser.TwoFactorSecretPending = encrypted;
+            identityUser.TwoFactorEnabled = false;
 
-            // Return raw secret + QR to frontend
-            return new TwoFASetupResult(secret, qrCode);
+            var res = await _userManager.UpdateAsync(identityUser);
+            if (!res.Succeeded)
+                return new TwoFASetupResult(false, "Failed to update user record.");
+
+            return new TwoFASetupResult(true, "Successfully enabled initial data", secret, qrCode);
         }
+
         public async Task<TwoFAVerificationResult> VerifySetupAsync(string userId, string code)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 return new(false, "User does not exist.");
 
-            if (string.IsNullOrEmpty(user.TwoFactorSecretEncrypted))
-                return new(false, "Two-factor authentication has not been initialized for this user.");
+            if (string.IsNullOrEmpty(user.TwoFactorSecretPending))
+                return new(false, "2FA setup was not initialized.");
 
-            var secret = _encryption.Decrypt(user.TwoFactorSecretEncrypted);
+            var secret = _encryption.Decrypt(user.TwoFactorSecretPending);
 
             bool ok = _twoFactorDomain.VerifyCode(secret, code);
-
             if (!ok)
-                return new(false, "The verification code is invalid or has expired. Please try again.");
+                return new(false, "Invalid or expired verification code.");
 
+            // CONFIRM PERMANENTLY
+            user.TwoFactorSecretEncrypted = user.TwoFactorSecretPending;
+            user.TwoFactorSecretPending = null;
             user.TwoFactorEnabled = true;
+
             await _userManager.UpdateAsync(user);
 
             return new(true, "Two-factor authentication has been successfully activated.");
