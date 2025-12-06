@@ -30,7 +30,7 @@ namespace Identity.Infrastructure.TOTP
             return Base32Encoding.ToString(keyBytes);
         }
 
-        public string GenerateQrCode(string username, string secret)
+        public TotpSetupArtifacts GenerateSetupArtifacts(string username, string secret)
         {
             var otpauthUri = BuildOtpAuthUri(username, secret);
 
@@ -41,7 +41,8 @@ namespace Identity.Infrastructure.TOTP
             var pixelsPerModule = _settings.QrPixelsPerModule <= 0 ? 10 : _settings.QrPixelsPerModule;
             var qrBytes = qrCode.GetGraphic(pixelsPerModule);
 
-            return $"{DataUriPrefix}{Convert.ToBase64String(qrBytes)}";
+            var qrBase64 = $"{DataUriPrefix}{Convert.ToBase64String(qrBytes)}";
+            return new TotpSetupArtifacts(otpauthUri, qrBase64);
         }
 
         public bool ValidateCode(string secret, string code)
