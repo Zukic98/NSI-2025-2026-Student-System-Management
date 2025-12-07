@@ -6,13 +6,6 @@ import {
   type FormEvent,
 } from 'react';
 
-import {
-  CToaster,
-  CToast,
-  CToastHeader,
-  CToastBody,
-} from '@coreui/react';
-
 import './FacultyListingPage.css';
 
 type Faculty = {
@@ -40,6 +33,47 @@ type ToastMessage = {
 type FacultyListingPageProps = {
   apiBaseUrl: string; // npr. /api/university/faculties
 };
+
+// Helper za izvlačenje “ljudske” poruke iz ASP.NET backend-a
+async function extractErrorMessage(
+  response: Response,
+  fallback: string,
+): Promise<string> {
+  try {
+    const text = await response.text();
+    if (!text) return fallback;
+
+    try {
+      const data = JSON.parse(text);
+
+      if (typeof data === 'string') return data;
+
+      if (data.message && typeof data.message === 'string') {
+        return data.message;
+      }
+
+      if (data.title && typeof data.title === 'string') {
+        return data.title;
+      }
+
+      // ASP.NET model validation: { errors: { Field: [msg1, msg2] } }
+      if (data.errors && typeof data.errors === 'object') {
+        const firstKey = Object.keys(data.errors)[0];
+        const firstError = data.errors[firstKey];
+        if (Array.isArray(firstError) && firstError.length > 0) {
+          return firstError[0];
+        }
+      }
+
+      return text; // fallback na raw tekst
+    } catch {
+      // nije JSON, samo plain text
+      return text;
+    }
+  } catch {
+    return fallback;
+  }
+}
 
 export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
   const [faculties, setFaculties] = useState<Faculty[]>([]);
@@ -81,7 +115,12 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
     try {
       const response = await fetch(apiBaseUrl);
       if (!response.ok) {
-        throw new Error('Failed to load faculties');
+        const msg = await extractErrorMessage(
+          response,
+          'Failed to load faculties.',
+        );
+        pushToast('error', 'Load failed', msg);
+        return; // ne diramo postojeći state
       }
 
       const data = await response.json();
@@ -98,7 +137,11 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
       setFaculties(mapped);
     } catch (error) {
       console.error(error);
-      pushToast('error', 'Load failed', 'Unable to load faculties from API.');
+      pushToast(
+        'error',
+        'Load failed',
+        'Unable to load faculties from API (network error).',
+      );
     }
   };
 
@@ -119,9 +162,12 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Create failed:', response.status, errorText);
-        throw new Error('Failed to create faculty');
+        const msg = await extractErrorMessage(
+          response,
+          'Failed to create faculty.',
+        );
+        pushToast('error', 'Create failed', msg);
+        return null;
       }
 
       const created = await response.json();
@@ -133,10 +179,20 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
         code: created.code,
       };
 
+      pushToast(
+        'success',
+        'Faculty created',
+        'Faculty has been created successfully.',
+      );
+
       return newFaculty;
     } catch (error) {
       console.error(error);
-      pushToast('error', 'Create failed', 'Unable to create faculty.');
+      pushToast(
+        'error',
+        'Create failed',
+        'Unable to create faculty (network error).',
+      );
       return null;
     }
   };
@@ -162,15 +218,27 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Update failed:', response.status, errorText);
-        throw new Error('Failed to update faculty');
+        const msg = await extractErrorMessage(
+          response,
+          'Failed to update faculty.',
+        );
+        pushToast('error', 'Update failed', msg);
+        return false;
       }
 
+      pushToast(
+        'success',
+        'Faculty updated',
+        'Faculty has been updated successfully.',
+      );
       return true;
     } catch (error) {
       console.error(error);
-      pushToast('error', 'Update failed', 'Unable to update faculty.');
+      pushToast(
+        'error',
+        'Update failed',
+        'Unable to update faculty (network error).',
+      );
       return false;
     }
   };
@@ -182,15 +250,27 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Delete failed:', response.status, errorText);
-        throw new Error('Failed to delete faculty');
+        const msg = await extractErrorMessage(
+          response,
+          'Failed to delete faculty.',
+        );
+        pushToast('error', 'Delete failed', msg);
+        return false;
       }
 
+      pushToast(
+        'success',
+        'Faculty deleted',
+        'Faculty has been deleted successfully.',
+      );
       return true;
     } catch (error) {
       console.error(error);
-      pushToast('error', 'Delete failed', 'Unable to delete faculty.');
+      pushToast(
+        'error',
+        'Delete failed',
+        'Unable to delete faculty (network error).',
+      );
       return false;
     }
   };
@@ -276,22 +356,12 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
             f.id === editingFaculty.id ? { ...f, ...newFaculty } : f,
           ),
         );
-        pushToast(
-          'success',
-          'Faculty updated',
-          'Faculty has been updated successfully.',
-        );
       }
     } else {
       // CREATE
       const created = await createFaculty(newFaculty);
       if (created) {
         setFaculties((prev) => [...prev, created]);
-        pushToast(
-          'success',
-          'Faculty created',
-          'Faculty has been created successfully.',
-        );
       }
     }
 
@@ -322,11 +392,6 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
     if (!ok) return;
 
     setFaculties((prev) => prev.filter((f) => f.id !== faculty.id));
-    pushToast(
-      'success',
-      'Faculty deleted',
-      'Faculty has been deleted successfully.',
-    );
   };
 
   const openCreateModal = () => {
@@ -479,20 +544,27 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
         )}
       </div>
 
-      {/* Toasts */}
-      <CToaster placement="top-end">
+      {/* Toasts – custom, bez CoreUI */}
+      <div className="fl-toast-container">
         {toasts.map((toast) => (
-          <CToast
+          <div
             key={toast.id}
-            visible
-            color={toast.type === 'success' ? 'success' : 'danger'}
-            onClose={() => removeToast(toast.id)}
+            className={`fl-toast fl-toast-${toast.type}`}
           >
-            <CToastHeader closeButton>{toast.title}</CToastHeader>
-            <CToastBody>{toast.message}</CToastBody>
-          </CToast>
+            <div className="fl-toast-header">
+              <strong>{toast.title}</strong>
+              <button
+                type="button"
+                className="fl-toast-close"
+                onClick={() => removeToast(toast.id)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="fl-toast-body">{toast.message}</div>
+          </div>
         ))}
-      </CToaster>
+      </div>
     </>
   );
 }

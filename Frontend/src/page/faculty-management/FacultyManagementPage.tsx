@@ -13,8 +13,8 @@ import './FacultyManagementPage.css';
 
 const FACULTIES_API_BASE_URL = '/api/university/faculties';
 
-//  Imitating authorization mechanism
-const CURRENT_USER_ROLE = 'Superadmin'; // change to 'User' to check authorization
+type Role = 'Superadmin' | 'User';
+const CURRENT_USER_ROLE: Role = 'Superadmin'; 
 
 export function FacultyManagementPage() {
   if (CURRENT_USER_ROLE !== 'Superadmin') {
@@ -39,6 +39,7 @@ export function FacultyManagementPage() {
     );
   }
 
+
   return (
     <CContainer fluid className="fm-page">
       <CHeader position="sticky" className="fm-header">
@@ -54,14 +55,36 @@ export function FacultyManagementPage() {
         <CSidebar className="fm-sidebar" unfoldable>
           <CSidebarNav className="fm-sidebar-nav">
             <div className="fm-sidebar-section">Navigation</div>
-            <CNavItem className="fm-sidebar-item"><span>Dashboard</span></CNavItem>
-            <CNavItem className="fm-sidebar-item"><span>Course Management</span></CNavItem>
-            <CNavItem className="fm-sidebar-item"><span>User Management</span></CNavItem>
-            <CNavItem className="fm-sidebar-item"><span>Tenant Management</span></CNavItem>
-            <CNavItem className="fm-sidebar-item"><span>Student Support</span></CNavItem>
+
+            <CNavItem className="fm-sidebar-item">
+              <span>Dashboard</span>
+            </CNavItem>
+
+            <CNavItem className="fm-sidebar-item">
+              <span>Course Management</span>
+            </CNavItem>
+
+            <CNavItem className="fm-sidebar-item">
+              <span>User Management</span>
+            </CNavItem>
+
+            <CNavItem className="fm-sidebar-item">
+              <span>Tenant Management</span>
+            </CNavItem>
+
+            <CNavItem className="fm-sidebar-item">
+              <span>Student Support</span>
+            </CNavItem>
+
             <div className="fm-sidebar-section">Settings</div>
-            <CNavItem className="fm-sidebar-item"><span>Settings</span></CNavItem>
-            <CNavItem className="fm-sidebar-item"><span>Help</span></CNavItem>
+
+            <CNavItem className="fm-sidebar-item">
+              <span>Settings</span>
+            </CNavItem>
+
+            <CNavItem className="fm-sidebar-item">
+              <span>Help</span>
+            </CNavItem>
           </CSidebarNav>
         </CSidebar>
 
