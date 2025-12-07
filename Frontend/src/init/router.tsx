@@ -26,7 +26,7 @@ export function Router(): React.ReactNode {
         <ProtectedRoute>
           <StudentLayout />
         </ProtectedRoute>
-      }>        {/* Nested routes inside StudentLayout */}
+      }>        {/*StudentLayout */}
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="document-center" element={<DocumentCenter />} />
         <Route path="analytics" element={<StudentAnalytics />} />
