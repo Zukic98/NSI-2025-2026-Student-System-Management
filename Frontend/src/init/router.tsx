@@ -44,7 +44,14 @@ export function Router(): React.ReactNode {
           </ProtectedRoute>
         }
       />
-      <Route path="/dashboard" element={<DashboardPage />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
