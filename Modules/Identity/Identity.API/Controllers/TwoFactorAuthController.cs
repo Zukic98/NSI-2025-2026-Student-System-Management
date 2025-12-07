@@ -41,23 +41,4 @@ public class TwoFactorAuthController : ControllerBase
 
         return Ok(res);
     }
-
-    [HttpPost("verify-2fa")]
-    public async Task<IActionResult> VerifyLogin([FromBody] TwoFAConfirmRequest dto)
-    {
-        var res = await _svc.VerifyLoginAsync(dto.UserId, dto.Code);
-
-        if (!res.Success)
-        {
-            return res.Error switch
-            {
-                TwoFAVerificationError.InvalidCode => Unauthorized(res),
-                TwoFAVerificationError.RateLimited => StatusCode(StatusCodes.Status429TooManyRequests, res),
-                TwoFAVerificationError.UserNotFound => NotFound(res),
-                _ => BadRequest(res)
-            };
-        }
-
-        return Ok(res);
-    }
 }

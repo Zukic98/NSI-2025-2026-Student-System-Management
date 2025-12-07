@@ -1,5 +1,4 @@
-﻿
-using Identity.Core.Entities;
+﻿using Identity.Core.Entities;
 using Identity.Core.Enums;
 using Identity.Core.Interfaces.Repositories;
 using Identity.Core.Interfaces.Services;
@@ -12,7 +11,6 @@ namespace Identity.Application.Services;
 
 public class AuthService : IAuthService
 {
-    //private readonly IUserRepository _userRepository;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IIdentityHasherService _passwordHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -105,9 +103,6 @@ public class AuthService : IAuthService
         // Get user
         var user = await _userRepository.GetByIdAsync(token.UserId);
 
-
-
-
         if (user == null)
         {
             _logger.LogWarning("Token refresh failed: User not found or inactive - {UserId}", token.UserId);
@@ -169,4 +164,62 @@ public class AuthService : IAuthService
         PublicKeyInfo publicKeyInfo = _jwtTokenService.GetPublicKey();
         return Task.FromResult(publicKeyInfo);
     }
+
+    
+    public async Task<User?> AuthenticatePasswordOnlyAsync(string email, string password)
+    {
+        var user = await _userRepository.GetByEmailAsync(email, CancellationToken.None);
+        if (user == null) return null;
+
+        if (!_passwordHasher.VerifyPassword(password, user.PasswordHash))
+            return null;
+
+        return user;
+    }
+
+    public async Task<AuthResult> IssueTokensForUserAsync(Guid userId)
+    {
+        // Load user
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new InvalidOperationException("User not found");
+
+        // Build claims object (consistent with AuthenticateAsync & Refresh)
+        var tokenClaims = new TokenClaims
+        {
+            UserId = user.Id.ToString(),
+            Email = user.Email,
+            Role = user.Role,
+            TenantId = user.FacultyId.ToString(),
+            FullName = $"{user.FirstName} {user.LastName}"
+        };
+
+        // Create JWT access token
+        var accessToken = _jwtTokenService.GenerateAccessToken(tokenClaims);
+
+        // Create refresh token (your existing method already does this correctly)
+        var refreshToken = _jwtTokenService.CreateRefreshToken(
+            user.Id,
+            ipAddress: "system",    // 2FA login isn’t using request IP directly
+            userAgent: "system"     // optional — you can pass values from controller if you want
+        );
+
+        // Save refresh token
+        await _refreshTokenRepository.AddAsync(refreshToken);
+
+        // Return authentication result to controller 
+        return new AuthResult
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken.Token,
+            ExpiresAt = refreshToken.ExpiresAt,
+
+            UserId = user.Id,
+            Email = user.Email,
+            Role = user.Role.ToString(),
+            TenantId = user.FacultyId,
+            FullName = $"{user.FirstName} {user.LastName}"
+        };
+    }
+
 }

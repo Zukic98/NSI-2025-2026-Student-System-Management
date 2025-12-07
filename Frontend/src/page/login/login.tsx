@@ -55,6 +55,18 @@ export function Login() {
 
       const result : LoginResponse = await response.json();
 
+      // 2FA SETUP FLOW
+      if (result.requires2FASetup) {
+        navigate(`/2fa/setup?userId=${result.userId}`);
+        return;
+      }
+
+      // 2FA LOGIN VERIFICATION FLOW
+      if (result.requires2FA) {
+        navigate(`/2fa/verify-login?userId=${result.userId}`);
+        return;
+      }
+
       const decoded = jwtDecode<AccessToken>(result.accessToken);
       const authInfoData = {
         accessToken: result.accessToken,
@@ -67,7 +79,7 @@ export function Login() {
       };
 
       setAuthInfo(authInfoData);
-      navigate("/2fa/setup");
+      navigate("/");
     } catch (error) {
       setError(extractApiErrorMessage(error));
     }

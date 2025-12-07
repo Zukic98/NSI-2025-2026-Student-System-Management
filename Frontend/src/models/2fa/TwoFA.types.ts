@@ -10,3 +10,15 @@ export type TwoFAConfirmResponse = {
     message?: string;
     recoveryCodes?: string[];
 };
+
+export type TwoFALoginResponse = {
+  accessToken: string;
+  tokenType: string;
+  expiresOn: number;
+
+  email: string;
+  userId: string;
+  role: string;
+  tenantId: string;
+  fullName: string;
+};

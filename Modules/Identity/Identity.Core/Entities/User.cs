@@ -15,6 +15,7 @@ public class User
     public string? IndexNumber { get; private set; }
     public UserRole Role { get; private set; }
     public UserStatus Status { get; private set; } = UserStatus.Active;
+    public bool TwoFactorEnabled { get; set; } = false;
 
     public User SetId(Guid id)
     {
@@ -62,8 +63,7 @@ public class User
             LastName = lastName,
             FacultyId = facultyId,
             Role = role,
-            Email = email,
-            IndexNumber = (role == UserRole.Student) ? indexNumber : null
+            Email = email
         };
     }
 

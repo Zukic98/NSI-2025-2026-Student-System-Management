@@ -3,6 +3,7 @@ import type { RestClient } from './rest';
 import type {
   TwoFASetupResponse,
   TwoFAConfirmResponse,
+  TwoFALoginResponse,
 } from '../models/2fa/TwoFA.types';
 
 export class API {
@@ -34,7 +35,6 @@ export class API {
     }
 
     async enableTwoFactor(): Promise<TwoFASetupResponse> {
-        // nema body-a, userId je za sada hardcodan u backendu ("demo")
         return this.#restClient.post('/api/auth/enable-2fa');
     }
 
@@ -42,7 +42,7 @@ export class API {
         return this.#restClient.post('/api/auth/verify-2fa-setup', { code });
     }
 
-    async verifyTwoFactorLogin(code: string): Promise<TwoFAConfirmResponse> {
-        return this.#restClient.post('/api/auth/verify-2fa', { code });
+    async verifyTwoFactorLogin(userId: string, code: string): Promise<TwoFALoginResponse> {
+        return this.#restClient.post('/api/auth/verify-2fa', { userId, code });
     }
 }
