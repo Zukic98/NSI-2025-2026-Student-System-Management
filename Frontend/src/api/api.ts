@@ -7,7 +7,6 @@ export class API {
         this.#restClient = restClient;
     }
 
-    // ← Ovo su univerzalne metode tako da courseService radi kako treba
     get<T>(url: string) {
         return this.#restClient.get<T>(url);
     }

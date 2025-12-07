@@ -30,7 +30,7 @@ export function Router(): React.ReactNode {
         <ProtectedRoute>
             <CourseListPage />
         </ProtectedRoute>
-        } />
+      } />
     </Routes>
   );
 }

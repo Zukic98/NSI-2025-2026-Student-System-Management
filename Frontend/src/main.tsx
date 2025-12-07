@@ -1,5 +1,5 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { App } from './init/app.tsx';
 import '@coreui/coreui/dist/css/coreui.min.css';
 import '@coreui/icons/css/free.min.css';
