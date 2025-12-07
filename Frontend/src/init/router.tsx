@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route, Routes } from 'react-router';
-import { Home } from '../page/home/home.tsx';
+import { Home } from '../page/home/home';
+import CourseListPage from '../page/university/courses/CourseListPage';
 import TwoFASetupPage from '../page/identity/2FASetupPage';
 import { Login } from '../page/login/login.tsx';
 import { ProtectedRoute } from '../component/ProtectedRoute.tsx';
@@ -21,6 +22,12 @@ export function Router(): React.ReactNode {
         </ProtectedRoute>
       } />
 
+      {/* Student Portal Routes - All under /student with Layout */}
+      <Route path="/student" element={
+        <ProtectedRoute>
+          <CourseListPage />
+        </ProtectedRoute>
+      } />
       {/* Student Portal Routes - All under /student with Layout */}
       <Route path="/student" element={
         <ProtectedRoute>
@@ -51,6 +58,7 @@ export function Router(): React.ReactNode {
           <a href="/login" className="btn btn-primary">Return to Login</a>
         </div>
       } />
+
     </Routes>
   );
 }

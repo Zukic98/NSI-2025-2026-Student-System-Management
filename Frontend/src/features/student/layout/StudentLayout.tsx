@@ -21,6 +21,7 @@ import {
     cilAccountLogout,
 } from '@coreui/icons';
 import { useAuthContext } from '../../../init/auth';
+import logo from '../../../assets/images/login/unsa-sms-logo.png'; 
 import './StudentLayout.css';
 
 export function StudentLayout() {
@@ -31,15 +32,7 @@ export function StudentLayout() {
             <CSidebar className="student-sidebar" position="fixed">
                 <CSidebarBrand className="sidebar-brand-wrapper">
                     <div className="unsa-logo">
-                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                            <rect width="40" height="40" rx="8" fill="white" />
-                            <path d="M20 10L12 15V25L20 30L28 25V15L20 10Z" fill="#0052A5" />
-                            <rect x="17" y="18" width="6" height="8" fill="white" />
-                        </svg>
-                    </div>
-                    <div className="brand-text">
-                        <span className="brand-name">UNSA</span>
-                        <span className="brand-subtitle">SMS</span>
+                        <img src={logo} alt="UNSA Logo" />
                     </div>
                 </CSidebarBrand>
 

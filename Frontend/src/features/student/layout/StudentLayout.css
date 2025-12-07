@@ -12,7 +12,7 @@
   left: 0;
   height: 100vh;
   width: 280px;
-  background-color: #1e40af;
+  background-color: #133E87 !important;
   z-index: 1030;
   display: flex;
   flex-direction: column;
@@ -20,21 +20,32 @@
 
 /* Sidebar Brand */
 .sidebar-brand-wrapper {
+  justify-content: center;
   display: flex;
   align-items: center;
-  gap: 12px;
   padding: 1.5rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .unsa-logo {
-  flex-shrink: 0;
+  max-width: 180px;
+  width: 100%;
+  flex-shrink: 1
+}
+
+.unsa-logo img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .brand-text {
   display: flex;
   flex-direction: column;
-  color: white;
+  color: white !important;
 }
 
 .brand-name {
@@ -59,7 +70,7 @@
 .student-sidebar .nav-title {
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(250, 246, 246, 0.918) !important;
   font-weight: 600;
   padding: 1.5rem 1rem 0.5rem;
   margin-top: 0.5rem;
@@ -69,7 +80,7 @@
   display: flex;
   align-items: center;
   padding: 0.75rem 1rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgb(255, 255, 255) !important;
   text-decoration: none;
   transition: all 0.2s;
   font-size: 0.9375rem;
@@ -77,16 +88,16 @@
 }
 
 .student-sidebar .nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-left-color: rgba(255, 255, 255, 0.3);
+  background-color: #385E9B !important;
+  color: white !important;
+  border-left-color: rgb(255, 255, 255) !important;
 }
 
 .student-sidebar .nav-link.active {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: white;
+  background-color: #385E9B !important;
+  color: white !important;
   font-weight: 600;
-  border-left-color: white;
+  border-left-color: white !important;
 }
 
 .student-sidebar .nav-icon {
@@ -96,12 +107,17 @@
   opacity: 0.9;
 }
 
+.student-sidebar .nav-icon,
+.student-sidebar .logout-btn svg {
+  color: white !important;
+  fill: white !important;
+  opacity: 1 !important;
+}
+
 /* Sidebar Footer */
 .sidebar-footer {
   margin-top: auto;
   padding: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .user-profile {
@@ -146,7 +162,7 @@
 }
 
 .logout-btn:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #385E9B;
   color: white;
 }
 
