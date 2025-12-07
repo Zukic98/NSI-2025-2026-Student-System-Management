@@ -8,7 +8,7 @@ import { Login } from '../page/login/login.tsx';
 import { ProtectedRoute } from '../component/ProtectedRoute.tsx';
 import { DocumentCenter,  ProfileSettings, RequestManagement, StudentAnalytics, StudentLayout, StudentSupport } from '../features/student/index.ts';
 import EnrollmentPage from "../page/enrollment/enrollment.tsx";
-import DashboardPage from "../page/student dashboard/Dashboard.tsx";
+import DashboardPage from '../page/student dashboard/dashboard.tsx';
 
 export function Router(): React.ReactNode {
   return (
