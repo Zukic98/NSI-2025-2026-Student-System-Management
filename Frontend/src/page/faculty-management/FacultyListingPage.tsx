@@ -79,8 +79,6 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortAsc, setSortAsc] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   const [showModal, setShowModal] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
@@ -299,13 +297,6 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
     });
   }, [filteredFaculties, sortAsc]);
 
-  const totalPages = Math.ceil(sortedFaculties.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const displayedFaculties = sortedFaculties.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
-
   const handleSortByName = () => setSortAsc((prev) => !prev);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -319,8 +310,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
       formErrors.name = 'Faculty name is required.';
     if (!newFaculty.address.trim())
       formErrors.address = 'Address is required.';
-    if (!newFaculty.code.trim())
-      formErrors.code = 'Code is required.';
+    if (!newFaculty.code.trim()) formErrors.code = 'Code is required.';
 
     const exists = faculties.some(
       (f) =>
@@ -416,7 +406,6 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1);
             }}
           />
           <button type="button" onClick={openCreateModal}>
@@ -440,7 +429,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
             </thead>
 
             <tbody>
-              {displayedFaculties.map((faculty) => (
+              {sortedFaculties.map((faculty) => (
                 <tr key={faculty.id}>
                   <td>{faculty.name}</td>
                   <td>{faculty.address}</td>
@@ -469,24 +458,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="pagination">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            Prev
-          </button>
-          <span>
-            Page {currentPage} of {totalPages || 1}
-          </span>
-          <button
-            disabled={currentPage === totalPages || totalPages === 0}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </button>
-        </div>
+        {/* NEMA više pagination bloka */}
 
         {/* Modal */}
         {showModal && (
