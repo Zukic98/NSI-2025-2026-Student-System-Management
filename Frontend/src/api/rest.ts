@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../constants/constants.ts';
 import type { AuthInfo } from '../init/auth.tsx';
 import { API } from './api.ts';
 
@@ -124,6 +125,6 @@ const authInfo: AuthInfo = {
     fullName: 'Mock User',
 };
 
-const restClient = new RestClient(authInfo, () => {}, "");
+const restClient = new RestClient(authInfo, () => {}, API_BASE_URL);
 
 export const api = new API(restClient);
