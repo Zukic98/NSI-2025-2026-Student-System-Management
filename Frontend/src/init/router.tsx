@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Route, Routes } from 'react-router';
 import { Home } from '../page/home/home';
@@ -5,12 +6,15 @@ import CourseListPage from '../page/university/courses/CourseListPage';
 import TwoFASetupPage from '../page/identity/2FASetupPage';
 import { Login } from '../page/login/login.tsx';
 import { ProtectedRoute } from '../component/ProtectedRoute.tsx';
-import { Dashboard, DocumentCenter, Enrollment, ProfileSettings, RequestManagement, StudentAnalytics, StudentLayout, StudentSupport } from '../features/student/index.ts';
+import { DocumentCenter,  ProfileSettings, RequestManagement, StudentAnalytics, StudentLayout, StudentSupport } from '../features/student/index.ts';
+import EnrollmentPage from "../page/enrollment/enrollment.tsx";
+import DashboardPage from "../page/student dashboard/Dashboard.tsx";
 
 export function Router(): React.ReactNode {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+
       <Route path="/" element={
         <ProtectedRoute>
           <Home />
@@ -34,14 +38,14 @@ export function Router(): React.ReactNode {
           <StudentLayout />
         </ProtectedRoute>
       }>        {/*StudentLayout */}
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="dashboard" element={<DashboardPage/>} />
         <Route path="document-center" element={<DocumentCenter />} />
         <Route path="analytics" element={<StudentAnalytics />} />
         <Route path="request-management" element={<RequestManagement />} />
-        <Route path="enrollment" element={<Enrollment />} />
+        <Route path="enrollment" element={<EnrollmentPage />} />
         <Route path="profile-settings" element={<ProfileSettings />} />
         <Route path="support" element={<StudentSupport />} />
-        <Route index element={<Dashboard />} /> {/* Default to dashboard */}
+        <Route index element={<DashboardPage />} /> {/* Default to dashboard */}
       </Route>
       {/* Unauthorized Page */}
       <Route path="/unauthorized" element={
@@ -58,6 +62,15 @@ export function Router(): React.ReactNode {
           <a href="/login" className="btn btn-primary">Return to Login</a>
         </div>
       } />
+
+      <Route
+        path="/faculty/courses"
+        element={
+          <ProtectedRoute>
+            <CourseListPage />
+          </ProtectedRoute>
+        }
+      />
 
     </Routes>
   );

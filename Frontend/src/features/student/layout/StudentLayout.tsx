@@ -19,17 +19,24 @@ import {
     cilUser,
     cilLifeRing,
     cilAccountLogout,
+    cilMenu,
 } from '@coreui/icons';
 import { useAuthContext } from '../../../init/auth';
-import logo from '../../../assets/images/login/unsa-sms-logo.png'; 
+import logo from '../../../assets/images/login/unsa-sms-logo.png';
 import './StudentLayout.css';
+import { useState } from 'react';
 
 export function StudentLayout() {
     const { authInfo, logout } = useAuthContext();
+    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     return (
         <div className="student-portal-wrapper">
-            <CSidebar className="student-sidebar" position="fixed">
+            <CSidebar
+                className={`student-sidebar ${sidebarOpen ? 'show' : ''}`}
+                position="fixed"
+            >
+
                 <CSidebarBrand className="sidebar-brand-wrapper">
                     <div className="unsa-logo">
                         <img src={logo} alt="UNSA Logo" />
@@ -113,6 +120,13 @@ export function StudentLayout() {
             </CSidebar>
 
             <div className="student-portal-content">
+                <button
+                    type="button"
+                    className="sidebar-toggle-btn"
+                    onClick={() => setSidebarOpen((prev) => !prev)}
+                >
+                    <CIcon icon={cilMenu} />
+                </button>
                 <CContainer fluid className="portal-body">
                     <Outlet />
                 </CContainer>

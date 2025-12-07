@@ -196,3 +196,33 @@
     padding: 1rem;
   }
 }
+
+.sidebar-toggle-btn {
+  display: none;
+}
+
+/* Show only on small screens */
+@media (max-width: 768px) {
+  .sidebar-toggle-btn {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1100;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #133E87;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
+
+  .sidebar-toggle-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+}
