@@ -1,4 +1,6 @@
 using Support.Infrastructure.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Support.Infrastructure.Db;
 
 var builder = WebApplication.CreateBuilder(args);
 

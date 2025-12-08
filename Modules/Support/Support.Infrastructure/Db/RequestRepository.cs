@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Support.Core.Entities;
 using Support.Core.Interfaces;
 
 namespace Support.Infrastructure.Db
 {
-    public class RequestRepository : IRequestRepository
+    public class RequestRepository : Core.Interfaces.IRequestRepository
     {
         private readonly SupportDbContext _db;
 
@@ -18,17 +13,21 @@ namespace Support.Infrastructure.Db
             _db = db;
         }
 
-        public async Task<Request> CreateAsync(Request request)
+        public async Task<DocumentRequest> CreateAsync(DocumentRequest request)
         {
-            _db.Requests.Add(request);
+            _db.DocumentRequests.Add(request);
             await _db.SaveChangesAsync();
             return request;
         }
 
-        public async Task<Request?> GetByIdAsync(int id)
+        public async Task<DocumentRequest?> GetByIdAsync(int id)
         {
-            return await _db.Requests.FirstOrDefaultAsync(x => x.Id == id);
+            return await _db.DocumentRequests.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        Task IRequestRepository.CreateAsync(Request request)
+        {
+            throw new NotImplementedException();
         }
     }
 }
-
