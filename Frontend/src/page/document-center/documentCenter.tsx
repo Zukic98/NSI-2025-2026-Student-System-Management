@@ -152,7 +152,7 @@ export default function DocumentCenter() {
                 <CFormInput
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
-                  placeholder="Enter user id"
+                  placeholder="Enter user Id"
                 />
                 {errors.userId && (
                   <div className="text-danger small mt-1">
