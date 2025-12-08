@@ -1,11 +1,11 @@
 import React from 'react';
 import { Route, Routes } from 'react-router';
 import { Home } from '../page/home/home';
-import { Page1 } from '../page/page1/page1';
 import CourseListPage from '../page/university/courses/CourseListPage';
 import TwoFASetupPage from '../page/identity/2FASetupPage';
 import { Login } from '../page/login/login.tsx';
 import { ProtectedRoute } from '../component/ProtectedRoute.tsx';
+import AvailableExamsPage from '../page/university/exams/ExamRegistrationPage.tsx';
 
 export function Router(): React.ReactNode {
   return (
@@ -16,11 +16,6 @@ export function Router(): React.ReactNode {
           <Home />
         </ProtectedRoute>
       } />
-      <Route path="/page1" element={
-        <ProtectedRoute>
-          <Page1 />
-        </ProtectedRoute>
-      } />
       <Route path="/2fa/setup" element={
         <ProtectedRoute>
           <TwoFASetupPage />
@@ -28,8 +23,12 @@ export function Router(): React.ReactNode {
       } />
       <Route path="/faculty/courses" element={
         <ProtectedRoute>
-            <CourseListPage />
+          <CourseListPage />
         </ProtectedRoute>
+      } />
+      <Route path="/student/exams" element={
+
+        <AvailableExamsPage />
       } />
     </Routes>
   );
