@@ -21,7 +21,7 @@ import "@coreui/coreui/dist/css/coreui.min.css";
 import {
   Search,
   ArrowRight,
-  CalendarIcon,
+  Calendar as CalendarIcon,
   FileText,
   Award,
   MoreHorizontal,
@@ -34,6 +34,8 @@ import {
   isToday,
 } from "date-fns";
 import { getDashboardData } from "../../service/dashboard/api";
+
+import "./dashboard.css";
 
 interface DashboardData {
   user: {
@@ -120,10 +122,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "400px" }}
-      >
+      <div className="dashboard-loading">
         <CSpinner color="primary" />
       </div>
     );
@@ -131,10 +130,12 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <CAlert color="danger">
-        <h4 className="alert-heading">Error loading dashboard</h4>
-        <p>{error}</p>
-      </CAlert>
+      <div className="dashboard-page">
+        <CAlert color="danger">
+          <h4 className="alert-heading">Error loading dashboard</h4>
+          <p>{error}</p>
+        </CAlert>
+      </div>
     );
   }
 
@@ -143,32 +144,18 @@ export default function DashboardPage() {
   }
 
   return (
-    <div
-      style={{
-        padding: "2rem",
-        backgroundColor: "#d1dae6",
-        minHeight: "100vh",
-      }}
-    >
+    <div className="dashboard-page">
       {/* Header */}
-      <CRow className="mb-4">
+      <CRow className="mb-4 align-items-center">
         <CCol xs={12} lg={8}>
-          <h1
-            className="mb-3"
-            style={{ fontSize: "2.5rem", fontWeight: 600, color: "#1e3a5f" }}
-          >
+          <h1 className="mb-3 dashboard-header-title">
             Welcome back, {data.user.name}!
           </h1>
         </CCol>
         <CCol xs={12} lg={4}>
-          <CInputGroup>
-            <CFormInput
-              placeholder="Search courses, grades ..."
-              style={{ backgroundColor: "white" }}
-            />
-            <CInputGroupText
-              style={{ backgroundColor: "white", border: "none" }}
-            >
+          <CInputGroup className="dashboard-search-input">
+            <CFormInput placeholder="Search courses, grades ..." />
+            <CInputGroupText className="dashboard-search-icon">
               <Search size={20} />
             </CInputGroupText>
           </CInputGroup>
@@ -178,84 +165,49 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <CRow className="mb-4 g-3">
         <CCol xs={6} md={3}>
-          <CCard
-            style={{ border: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
-          >
+          <CCard className="dashboard-stats-card">
             <CCardBody className="text-center">
-              <CCardTitle
-                style={{
-                  fontSize: "clamp(1.2rem, 3vw, 2.5rem)",
-                  whiteSpace: "nowrap",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
+              <CCardTitle className="dashboard-stats-value">
                 {data.stats.gpa}
               </CCardTitle>
-              <CCardText style={{ fontSize: "0.875rem", color: "#6b7280" }}>
-                GAP
-              </CCardText>
+              <CCardText className="dashboard-stats-label">GAP</CCardText>
             </CCardBody>
           </CCard>
         </CCol>
+
         <CCol xs={6} md={3}>
-          <CCard
-            style={{ border: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
-          >
+          <CCard className="dashboard-stats-card">
             <CCardBody className="text-center">
-              <CCardTitle
-                style={{
-                  fontSize: "clamp(1.2rem, 3vw, 2.5rem)",
-                  whiteSpace: "nowrap",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
+              <CCardTitle className="dashboard-stats-value">
                 {data.stats.enrolledCourses}
               </CCardTitle>
-              <CCardText style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+              <CCardText className="dashboard-stats-label">
                 Enrolled courses
               </CCardText>
             </CCardBody>
           </CCard>
         </CCol>
+
         <CCol xs={6} md={3}>
-          <CCard
-            style={{ border: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
-          >
+          <CCard className="dashboard-stats-card">
             <CCardBody className="text-center">
-              <CCardTitle
-                style={{
-                  fontSize: "clamp(1.2rem, 3vw, 2.5rem)",
-                  whiteSpace: "nowrap",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
+              <CCardTitle className="dashboard-stats-value">
                 {data.stats.attendanceRate}%
               </CCardTitle>
-              <CCardText style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+              <CCardText className="dashboard-stats-label">
                 Attendance rate
               </CCardText>
             </CCardBody>
           </CCard>
         </CCol>
+
         <CCol xs={6} md={3}>
-          <CCard
-            style={{ border: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
-          >
+          <CCard className="dashboard-stats-card">
             <CCardBody className="text-center">
-              <CCardTitle
-                style={{
-                  fontSize: "clamp(1.2rem, 3vw, 2.5rem)",
-                  whiteSpace: "nowrap",
-                  fontWeight: "bold",
-                  marginBottom: "0.5rem",
-                }}
-              >
+              <CCardTitle className="dashboard-stats-value">
                 {data.stats.deadlines.count} deadlines
               </CCardTitle>
-              <CCardText style={{ fontSize: "0.875rem", color: "#6b7280" }}>
+              <CCardText className="dashboard-stats-label">
                 {data.stats.deadlines.period}
               </CCardText>
             </CCardBody>
@@ -264,45 +216,24 @@ export default function DashboardPage() {
       </CRow>
 
       <CRow className="g-3">
+        {/* LEFT SIDE */}
         <CCol xs={12} lg={8}>
           {/* My Courses */}
-          <h2
-            className="mb-3"
-            style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1e3a5f" }}
-          >
-            My courses
-          </h2>
+          <h2 className="mb-3 dashboard-section-title">My courses</h2>
           <CRow className="mb-4 g-3">
             {data.courses.map((course) => (
               <CCol key={course.id} xs={12} md={6} lg={4}>
-                <CCard
-                  style={{
-                    border: "none",
-                    backgroundColor: "#f9f7f0",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                  }}
-                  className="h-100"
-                >
+                <CCard className="dashboard-course-card h-100">
                   <CCardBody className="d-flex flex-column justify-content-between">
                     <div>
                       <div className="d-flex justify-content-end mb-2">
                         <ArrowRight size={20} />
                       </div>
-                      <CCardTitle
-                        style={{
-                          fontSize: "1.125rem",
-                          fontWeight: 600,
-                          marginBottom: "1rem",
-                        }}
-                      >
+                      <CCardTitle className="dashboard-course-title">
                         {course.title}
                       </CCardTitle>
                     </div>
-                    <CCardText
-                      style={{ fontSize: "0.875rem", color: "#6b7280" }}
-                    >
+                    <CCardText className="dashboard-course-professor">
                       {course.professor}
                     </CCardText>
                   </CCardBody>
@@ -312,42 +243,24 @@ export default function DashboardPage() {
           </CRow>
 
           {/* Upcoming this week */}
-          <h2
-            className="mb-3"
-            style={{ fontSize: "1.5rem", fontWeight: 600, color: "#1e3a5f" }}
-          >
-            Upcoming this week
-          </h2>
+          <h2 className="mb-3 dashboard-section-title">Upcoming this week</h2>
           <CListGroup>
             {data.upcomingTasks.map((task) => (
               <CListGroupItem
                 key={task.id}
-                style={{
-                  backgroundColor: "transparent",
-                  backdropFilter: "none",
-                  border: "none",
-                  marginBottom: "0.5rem",
-                  borderRadius: "8px",
-                  boxShadow: "none",
-                }}
+                className="dashboard-upcoming-item"
               >
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="d-flex align-items-start gap-3">
                     <CalendarIcon
                       size={20}
-                      style={{ marginTop: "4px", color: "#6b7280" }}
+                      className="dashboard-upcoming-icon"
                     />
                     <div>
-                      <div style={{ fontWeight: 600 }}>
+                      <div className="dashboard-upcoming-title">
                         {task.course} - {task.task}
                       </div>
-                      <div
-                        style={{
-                          fontSize: "0.875rem",
-                          color: "#6b7280",
-                          fontStyle: "italic",
-                        }}
-                      >
+                      <div className="dashboard-upcoming-day">
                         {task.day}
                       </div>
                     </div>
@@ -355,7 +268,7 @@ export default function DashboardPage() {
                   <CButton
                     color="primary"
                     size="sm"
-                    style={{ backgroundColor: "#4f46e5", border: "none" }}
+                    className="dashboard-upcoming-button"
                   >
                     Submit
                   </CButton>
@@ -365,38 +278,24 @@ export default function DashboardPage() {
           </CListGroup>
         </CCol>
 
-        <CCol xs={12} lg={4}>
-          <CCard
-            style={{ border: "none", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
-          >
+        {/* RIGHT SIDE */}
+        <CCol xs={12} lg={4} className="dashboard-right-col">
+          <CCard className="dashboard-right-card">
             <CCardBody>
               {/* Calendar */}
               <div className="mb-4">
                 <div className="d-flex justify-content-center mb-3">
-                  <h3 style={{ fontSize: "1rem", fontWeight: 600 }}>
+                  <h3 className="dashboard-calendar-title">
                     {format(currentDate, "MMMM yyyy")}
                   </h3>
                 </div>
 
-                {/* Calendar Grid */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(7, 1fr)",
-                    gap: "0.5rem",
-                  }}
-                >
+                <div className="dashboard-calendar-grid">
                   {/* Weekday headers */}
                   {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
                     <div
                       key={idx}
-                      style={{
-                        textAlign: "center",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        color: "#9ca3af",
-                        padding: "0.5rem 0",
-                      }}
+                      className="dashboard-calendar-weekday"
                     >
                       {day}
                     </div>
@@ -411,15 +310,9 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={idx}
+                        className="dashboard-calendar-day"
                         style={{
-                          aspectRatio: "1",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "0.875rem",
-                          borderRadius: "8px",
-                          backgroundColor:
-                            bgColor || (date ? "transparent" : "transparent"),
+                          backgroundColor: bgColor || "transparent",
                           color: date ? textColor : "transparent",
                           fontWeight: bgColor || isCurrentDay ? 600 : 400,
                           border: isCurrentDay ? "2px solid #3b82f6" : "none",
@@ -434,12 +327,7 @@ export default function DashboardPage() {
 
               {/* Quick Actions */}
               <div>
-                <h3
-                  className="mb-3"
-                  style={{ fontSize: "1.125rem", fontWeight: 600 }}
-                >
-                  Quick Actions
-                </h3>
+                <h3 className="mb-3 dashboard-quick-title">Quick Actions</h3>
                 <div className="d-flex flex-column gap-2">
                   {data.quickActions.map((action) => {
                     const iconMap: Record<string, any> = {
@@ -458,38 +346,24 @@ export default function DashboardPage() {
                     return (
                       <div
                         key={action.id}
-                        style={{
-                          border: "1px solid #e5e7eb",
-                          borderRadius: "8px",
-                          padding: "0.75rem",
-                          cursor: "pointer",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
+                        className="dashboard-quick-action"
                       >
                         <div className="d-flex align-items-center gap-3">
                           <div
+                            className="dashboard-quick-action-icon"
                             style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "8px",
                               backgroundColor: colorMap[action.color],
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "white",
                             }}
                           >
                             <Icon size={20} />
                           </div>
-                          <span style={{ fontWeight: 500 }}>
+                          <span className="dashboard-quick-action-label">
                             {action.label}
                           </span>
                         </div>
                         <MoreHorizontal
                           size={20}
-                          style={{ color: "#9ca3af" }}
+                          className="dashboard-quick-action-more"
                         />
                       </div>
                     );
