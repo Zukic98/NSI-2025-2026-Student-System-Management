@@ -17,9 +17,9 @@ const string CorsPolicyName = "ReactDevClient";
 
 // Add services from modules
 builder.Services.AddIdentityModule(builder.Configuration);
-builder.Services.AddUniversityModule();
+builder.Services.AddUniversityModule(builder.Configuration);
 builder.Services.AddFacultyModule(builder.Configuration);
-builder.Services.AddSupportModule();
+builder.Services.AddSupportModule(builder.Configuration);
 builder.Services.AddNotificationsModule();
 builder.Services.AddAnalyticsModule();
 
