@@ -40,7 +40,7 @@ export default function DocumentCenter() {
   const [status, setStatus] = useState('');
   const [details, setDetails] = useState('');
 
-  const [userId, setUserId] = useState('student-123'); 
+  const [userId, setUserId] = useState(''); 
   const [facultyId, setFacultyId] = useState(1);
 
   const [errors, setErrors] = useState<ValidationErrors>({});
