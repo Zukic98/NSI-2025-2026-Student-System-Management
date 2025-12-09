@@ -1,23 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Support.Infrastructure.Db;
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-var builder = WebApplication.CreateBuilder(args);
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+	<ItemGroup>
+		<ProjectReference Include="..\Support.Core\Support.Core.csproj" />
+	</ItemGroup>
 
-// ❌ OVO SE BRIŠE — AddSupportModule ne postoji više
-// builder.Services.AddSupportModule();
-
-var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-app.UseSwagger();
-app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.MapControllers();
-app.Run();
+</Project>

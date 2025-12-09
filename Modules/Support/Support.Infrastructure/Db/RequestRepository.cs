@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Support.Core.Entities;
 using Support.Core.Interfaces;
 
 namespace Support.Infrastructure.Db
 {
-    public class RequestRepository : Core.Interfaces.IRequestRepository
+    public class RequestRepository : IRequestRepository
     {
         private readonly SupportDbContext _db;
 
@@ -22,12 +23,8 @@ namespace Support.Infrastructure.Db
 
         public async Task<DocumentRequest?> GetByIdAsync(int id)
         {
-            return await _db.DocumentRequests.FirstOrDefaultAsync(x => x.Id == id);
-        }
-
-        Task IRequestRepository.CreateAsync(Request request)
-        {
-            throw new NotImplementedException();
+            return await _db.DocumentRequests
+                            .FirstOrDefaultAsync(x => x.Id == id);
         }
     }
 }

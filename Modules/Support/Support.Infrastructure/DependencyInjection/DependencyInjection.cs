@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Support.Application.Services;
 using Support.Core.Interfaces;
 using Support.Infrastructure.Db;

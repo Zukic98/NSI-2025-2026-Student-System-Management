@@ -23,13 +23,16 @@ namespace Support.Application.Services
             if (dto.StudentId <= 0)
                 throw new ArgumentException("Invalid student id");
 
-            var request = new Request
+            // 🚀 KREIRAMO DocumentRequest SA TAČNIM TIPOVIMA
+            var request = new DocumentRequest
             {
-                StudentId = dto.StudentId,
-                RequestType = dto.RequestType,
+                UserId = dto.StudentId.ToString(),   // string
+                FacultyId = dto.FacultyId,           // DTO sada ima FacultyId
+                DocumentType = dto.RequestType,
                 Status = "Pending",
                 CreatedAt = DateTime.UtcNow
             };
+
 
             await _repo.CreateAsync(request);
 

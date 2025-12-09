@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +8,3 @@ namespace Support.Application.DTOs
 {
     public record DocumentDto(int Id, string FileName, string Description, int StudentId);
 }
-
-
