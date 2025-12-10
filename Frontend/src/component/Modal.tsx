@@ -8,7 +8,7 @@ interface ModalProps {
 
 export default function Modal({ children, onClose }: ModalProps) {
   return (
-    <CModal visible onClose={onClose} alignment="center">
+    <CModal visible onClose={onClose} alignment="center" backdrop={false}>
       <CModalBody>{children}</CModalBody>
     </CModal>
   );

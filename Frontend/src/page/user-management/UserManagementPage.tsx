@@ -51,6 +51,7 @@ const UserManagementPage: React.FC = () => {
   }, [isCreateModalOpen]);
 
   const fetchUserList = useCallback(async () => {
+    console.log(loading)
     setLoading(true);
     try {
       const data = await fetchUsers();
