@@ -1,4 +1,6 @@
+import { API_BASE_URL } from '../constants/constants.ts';
 import type { AuthInfo } from '../init/auth.tsx';
+import { API } from './api.ts';
 
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
@@ -31,13 +33,23 @@ export class RestClient {
     this.#authFailCallback = authFailCallback;
   }
 
-  async get<T>(url: string): Promise<T> {
-    return this.#submitRequestWithFallback<T>(this.#baseUrl + url, 'GET');
-  }
-
-  async post<T, B>(url: string, body?: B): Promise<T> {
-    return this.#submitRequestWithFallback<T>(this.#baseUrl + url, 'POST', body);
-  }
+    async get<T>(url: string): Promise<T> {
+        return this.#submitRequestWithFallback<T>(url, 'GET');
+    }
+    
+    async post<T>(url: string, body?: any): Promise<T> {
+        return this.#submitRequestWithFallback<T>(url, 'POST', body);
+    }
+    
+    async put<T>(url: string, body?: any): Promise<T> {
+        return this.#submitRequestWithFallback<T>(url, 'PUT', body);
+    }
+    
+    async delete<T>(url: string): Promise<T> {
+        return this.#submitRequestWithFallback<T>(url, 'DELETE');
+    }
+    
+    
 
   async #submitRequestWithFallback<T>(
     url: string,
@@ -75,34 +87,44 @@ export class RestClient {
     );
   }
 
-  async #submitRequest<T>(
-    url: string,
-    method: Method,
-    body?: unknown
-  ): Promise<APIResponse<T>> {
-    return fetch(url, {
-      method: method,
-      body: JSON.stringify(body),
-      headers: {
-        Authorization: `${this.#authInfo.accessToken}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include cookies in requests
-    }).then(async (response) => {
-      if (!response.ok) {
-        return {
-          ok: false,
-          errorResponse: { message: response.text(), status: response.status },
-        };
-      } else {
-        return {
-          ok: true,
-          successResponse: response
-            .text()
-            .then((text) => (text ? JSON.parse(text) : null) as T),
-        };
-      }
-    });
-  }
+    async #submitRequest<T>(url: string, method: Method, body?: unknown): Promise<APIResponse<T>> {
+        return fetch(
+            this.#baseUrl + url,
+            {
+                method: method,
+                body: JSON.stringify(body),
+                headers: {
+                    'Authorization': `${ this.#authInfo.accessToken }`,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+        ).then(async response => {
+            if (!response.ok) {
+                return {
+                    ok: false,
+                    errorResponse: { message: response.text(), status: response.status }
+                }
+            } else {
+                return {
+                    ok: true,
+                    successResponse: response.text().then(text => (text ? JSON.parse(text) : null) as T)
+                }
+            }
+        })
+    }
 }
+
+const authInfo: AuthInfo = {
+    accessToken: 'mock-token-123',
+    expiresOn: Date.now() + 3600 * 1000,
+    userId: '12345',
+    email: 'mock.user@example.com',
+    role: 'Admin',
+    tenantId: 'tenant-001',
+    fullName: 'Mock User',
+};
+
+const restClient = new RestClient(authInfo, () => {}, API_BASE_URL);
+
+export const api = new API(restClient);
