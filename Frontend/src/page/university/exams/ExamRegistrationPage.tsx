@@ -1,9 +1,13 @@
-// src/page/university/exams/ExamRegistrationPage.tsx
 import { useState } from "react";
 import { CFormInput, CRow, CCol } from "@coreui/react";
 import { ExamCard } from "../../../component/exams/ExamCard";
+import { examService } from "../../../service/examService";
+import { ExamEmptyState } from "../../../component/exams/ExamEmptyState";
 
-// Tip za lokalni mock (isti shape kao ExamDTO za UI potrebe)
+const delay = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
+
 type ExamItem = {
   id: number;
   courseName: string;
@@ -19,64 +23,64 @@ const mockAvailable: ExamItem[] = [
     id: 1,
     courseName: "Algorithms and Data Structures",
     courseCode: "ADS101",
-    examDate: "2025-02-10T09:00:00Z",
-    regDeadline: "2025-02-06T23:59:00Z",
+    examDate: "2026-02-10T09:00:00Z",
+    regDeadline: "2026-02-06T23:59:00Z",
     location: "Room 301 - ETF",
   },
   {
     id: 2,
     courseName: "Computer Networks",
     courseCode: "CN201",
-    examDate: "2025-02-12T11:00:00Z",
-    regDeadline: "2025-02-07T23:59:00Z",
+    examDate: "2026-02-12T11:00:00Z",
+    regDeadline: "2026-02-07T23:59:00Z",
     location: "Lab 2 - ETF",
   },
   {
     id: 3,
     courseName: "Operating Systems",
     courseCode: "OS150",
-    examDate: "2025-02-14T08:00:00Z",
-    regDeadline: "2025-02-09T23:59:00Z",
+    examDate: "2026-02-14T08:00:00Z",
+    regDeadline: "2026-02-09T23:59:00Z",
     location: "Room 207 - ETF",
   },
   {
     id: 4,
     courseName: "Database Systems",
     courseCode: "DB265",
-    examDate: "2025-02-18T12:00:00Z",
-    regDeadline: "2025-02-11T23:59:00Z",
+    examDate: "2026-02-18T12:00:00Z",
+    regDeadline: "2026-02-11T23:59:00Z",
     location: "Room 105 - ETF",
   },
   {
     id: 5,
     courseName: "Software Engineering",
     courseCode: "SE310",
-    examDate: "2025-02-20T10:00:00Z",
-    regDeadline: "2025-02-13T23:59:00Z",
+    examDate: "2026-02-20T10:00:00Z",
+    regDeadline: "2026-02-13T23:59:00Z",
     location: "Room 220 - ETF",
   },
   {
     id: 6,
     courseName: "Machine Learning Basics",
     courseCode: "ML101",
-    examDate: "2025-02-22T13:00:00Z",
-    regDeadline: "2025-02-16T23:59:00Z",
+    examDate: "2026-02-22T13:00:00Z",
+    regDeadline: "2026-02-16T23:59:00Z",
     location: "Room 112 - ETF",
   },
   {
     id: 7,
     courseName: "Digital Logic Design",
     courseCode: "DLD140",
-    examDate: "2025-02-25T09:00:00Z",
-    regDeadline: "2025-02-18T23:59:00Z",
+    examDate: "2026-02-25T09:00:00Z",
+    regDeadline: "2026-02-18T23:59:00Z",
     location: "Room 108 - ETF",
   },
   {
     id: 8,
     courseName: "Discrete Mathematics",
     courseCode: "DM120",
-    examDate: "2025-02-27T11:00:00Z",
-    regDeadline: "2025-02-21T23:59:00Z",
+    examDate: "2026-02-27T11:00:00Z",
+    regDeadline: "2026-02-21T23:59:00Z",
     location: "Room 115 - ETF",
   },
 ];
@@ -182,6 +186,9 @@ const mockRegistered: ExamItem[] = [
 ];
 
 export default function ExamRegistrationPage() {
+
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [tab, setTab] = useState<"available" | "registered">("available");
   const [search, setSearch] = useState("");
   const [loadingId, setLoadingId] = useState<number | null>(null);
@@ -211,39 +218,76 @@ export default function ExamRegistrationPage() {
         new Date(a.examDate).getTime() - new Date(b.examDate).getTime()
     );
 
-  const handleRegister = async (id: number) => {
-    setLoadingId(id);
-
-    // TODO: zamijeni sa realnim API pozivom
-    setTimeout(() => {
-      const exam = available.find((x) => x.id === id);
-      if (!exam) {
+    const handleRegister = async (id: number) => {
+      setError(null);
+      setSuccess(null);
+      setLoadingId(id);
+    
+      try {
+        const exam = available.find(x => x.id === id);
+        if (!exam) return;
+    
+        if (new Date(exam.regDeadline) < new Date()) {
+          setError("Registration deadline has passed.");
+          return;
+        }
+    
+        await Promise.all([
+          examService.registerForExam(id),
+          delay(600), // UX delay – loading must be visible
+        ]);
+    
+        setRegistered(prev => [
+          ...prev,
+          { ...exam, registrationDate: new Date().toISOString() },
+        ]);
+    
+        setAvailable(prev => prev.filter(x => x.id !== id));
+    
+        setSuccess("Successfully registered for the exam.");
+      } catch (e: any) {
+        if (e?.status === 400) {
+          setError("You are already registered for this exam.");
+        } else if (e?.status === 401 || e?.status === 403) {
+          setError("You are not authorized to perform this action.");
+        } else {
+          setError("Something went wrong. Please try again later.");
+        }
+      } finally {
         setLoadingId(null);
-        return;
       }
-
-      setRegistered((prev) => [...prev, exam]);
-      setAvailable((prev) => prev.filter((x) => x.id !== id));
-      setLoadingId(null);
-    }, 900);
-  };
-
-  const handleUnregister = async (id: number) => {
-    setLoadingId(id);
-
-    // TODO: zamijeni sa realnim API pozivom
-    setTimeout(() => {
-      const exam = registered.find((x) => x.id === id);
-      if (!exam) {
+    };
+    
+    const handleUnregister = async (id: number) => {
+      setError(null);
+      setSuccess(null);
+      setLoadingId(id);
+    
+      try {
+        const exam = registered.find(x => x.id === id);
+        if (!exam) return;
+    
+        await Promise.all([
+          examService.unregisterExam(id),
+          delay(600), // UX delay – loading must be visible
+        ]);
+    
+        // vraćamo u available SAMO ako deadline nije prošao
+        if (new Date(exam.regDeadline) > new Date()) {
+          setAvailable(prev => [...prev, exam]);
+        }
+    
+        setRegistered(prev => prev.filter(x => x.id !== id));
+    
+        setSuccess("Successfully unregistered from the exam.");
+      } catch {
+        setError("Unable to unregister from the exam.");
+      } finally {
         setLoadingId(null);
-        return;
       }
+    };
+    
 
-      setAvailable((prev) => [...prev, exam]);
-      setRegistered((prev) => prev.filter((x) => x.id !== id));
-      setLoadingId(null);
-    }, 900);
-  };
 
   return (
     <div
@@ -274,17 +318,26 @@ export default function ExamRegistrationPage() {
         <div className="d-flex justify-content-center mb-3 gap-3">
           <button
             className={`ui-tab-btn ${tab === "available" ? "active" : ""}`}
-            onClick={() => setTab("available")}
+            onClick={() => {
+              setTab("available");
+              setError(null);
+              setSuccess(null);
+            }}
           >
             Available Exams
           </button>
 
           <button
             className={`ui-tab-btn ${tab === "registered" ? "active" : ""}`}
-            onClick={() => setTab("registered")}
+            onClick={() => {
+              setTab("registered");
+              setError(null);
+              setSuccess(null);
+            }}
           >
             Registered Exams
           </button>
+
         </div>
 
         {/* INFO PILL – objašnjenje šta je već primijenjeno */}
@@ -304,14 +357,27 @@ export default function ExamRegistrationPage() {
             )}
           </div>
         </div>
+        {error && (
+          <div className="d-flex justify-content-center mb-3">
+            <div className="ui-alert ui-alert-error">{error}</div>
+          </div>
+        )}
+
+        {success && (
+          <div className="d-flex justify-content-center mb-3">
+            <div className="ui-alert ui-alert-success">{success}</div>
+          </div>
+        )}
+
 
         {/* AVAILABLE TAB */}
         {tab === "available" && (
           <>
             {availableFiltered.length === 0 ? (
-              <p className="text-center ui-text-muted">
-                No available exams.
-              </p>
+              <ExamEmptyState
+                title="No available exams"
+                description="There are currently no exams you can register for."
+              />
             ) : (
               <CRow className="g-4">
                 {availableFiltered.map((exam) => (
@@ -333,9 +399,11 @@ export default function ExamRegistrationPage() {
         {tab === "registered" && (
           <>
             {registeredFiltered.length === 0 ? (
-              <p className="text-center ui-text-muted">
-                You have no registered exams.
-              </p>
+              <ExamEmptyState
+                title="No registered exams"
+                description="You have not registered for any exams yet."
+              />
+
             ) : (
               <CRow className="g-4">
                 {registeredFiltered.map((exam) => (

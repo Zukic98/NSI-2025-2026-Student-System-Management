@@ -1,5 +1,5 @@
 // src/component/exams/ExamCard.tsx
-import { CCard, CCardBody, CBadge, CButton } from "@coreui/react";
+import { CCard, CCardBody, CBadge, CButton, CSpinner } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
 import {
   cilLibrary,
@@ -9,7 +9,6 @@ import {
 } from "@coreui/icons";
 import { formatDateTime, formatDateOnly } from "../../utils/dateFormatting";
 
-// ako imaš već ExamDTO – slobodno zamijeni any sa njim
 type ExamCardProps = {
   exam: {
     id: number;
@@ -18,6 +17,7 @@ type ExamCardProps = {
     examDate: string;
     regDeadline: string;
     location: string;
+    registrationDate?: string;
   };
   isRegistered?: boolean;
   loading?: boolean;
@@ -34,6 +34,7 @@ export function ExamCard({
 }: ExamCardProps) {
   const examDate = formatDateTime(exam.examDate);
   const regDeadline = formatDateOnly(exam.regDeadline);
+  const deadlinePassed = new Date(exam.regDeadline) < new Date();
 
   const handleClick = () => {
     if (loading) return;
@@ -49,13 +50,16 @@ export function ExamCard({
       ? "Unregistering..."
       : "Registering..."
     : isRegistered
-    ? "Unregister"
-    : "Register";
+      ? "Unregister"
+      : "Register";
 
   return (
     <CCard
       className="ui-surface-glass-card"
       style={{
+        opacity: loading ? 0.75 : 1,
+        pointerEvents: loading ? "none" : "auto",
+        transition: "opacity 0.2s ease",
         borderRadius: 28,
         padding: 28,
         minHeight: 260,
@@ -119,22 +123,42 @@ export function ExamCard({
 
         {/* ACTION ROW */}
         <div
-          className="d-flex justify-content-end"
-          style={{ marginTop: 14 }}
+          className="d-flex justify-content-between align-items-center"
+          style={{ marginTop: 16 }}
         >
           <CButton
-            className={`ui-button-cta ${
-              isRegistered ? "ui-button-cta-danger" : ""
-            }`}
+            className="ui-button-cta"
             style={{
-              minWidth: 150,
-              paddingInline: 20,
+              minWidth: 120,
+              padding: "10px 18px",
+              fontSize: 13,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
             }}
             disabled={loading}
             onClick={handleClick}
           >
-            {buttonLabel.toUpperCase()}
+            {loading ? (
+              <>
+                <CSpinner size="sm" />
+                <span>
+                  {isRegistered ? "Unregistering" : "Registering"}
+                </span>
+              </>
+            ) : (
+              buttonLabel.toUpperCase()
+            )}
           </CButton>
+
+
+          {exam.registrationDate && (
+            <span className="ui-text-caption">
+              Registered on {formatDateOnly(exam.registrationDate)}
+            </span>
+          )}
+
         </div>
       </CCardBody>
     </CCard>
