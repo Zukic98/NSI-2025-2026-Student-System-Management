@@ -6,10 +6,18 @@ using Analytics.Infrastructure;
 using Identity.Infrastructure.DependencyInjection;
 using Faculty.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+<<<<<<< HEAD
 using Support.Infrastructure.Db;
 using University.Infrastructure.Db;
 using Identity.Infrastructure.Db;
 using Faculty.Infrastructure.Db;
+=======
+using Faculty.Application.Interfaces; 
+using Faculty.Application.Services;
+
+using System.Reflection;
+using System.IO;
+>>>>>>> 020f3e0 (Request Management Screen Implementation)
 
 var builder = WebApplication.CreateBuilder(args);
 const string CorsPolicyName = "ReactDevClient";
@@ -21,6 +29,7 @@ builder.Services.AddFacultyModule(builder.Configuration);
 builder.Services.AddSupportModule(builder.Configuration);
 builder.Services.AddNotificationsModule();
 builder.Services.AddAnalyticsModule();
+builder.Services.AddScoped<IRequestService, RequestService>();
 
 // Add controllers and module API assemblies
 var mvcBuilder = builder.Services.AddControllers();
