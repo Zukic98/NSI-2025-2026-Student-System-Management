@@ -70,7 +70,6 @@ export default function UserManagement() {
       setUsers(parsedUsers);
 
     } catch (error) {
-      console.log('Error fetching users:', error);
       showToast('Failed to fetch users', 'error');
     }
   };

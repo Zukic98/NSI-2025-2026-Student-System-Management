@@ -2,14 +2,9 @@ import React, { useState } from "react";
 import type { User } from "../../../types/user-types";
 import Modal from "../../Modal";
 import { CForm, CFormInput, CFormSelect, CButton, CFormLabel } from '@coreui/react';
+import { ROLE_MAP } from "../../../page/userManagement";
 
-const ROLE_MAP: Record<number, string> = {
-  1: 'Superadmin',
-  2: 'Admin',
-  3: 'Teacher',
-  4: 'Assistant',
-  5: 'Student',
-};
+
 
 interface EditUserModalProps {
   user: User;
