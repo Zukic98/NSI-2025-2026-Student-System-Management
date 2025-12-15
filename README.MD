@@ -117,3 +117,19 @@ To start the frontend:
 
 Before commiting new changes to frontend please run `npm run build` to make sure there are no build
 breaking changes.
+
+### SSL
+In order to run the app in Https mode (which is required) you will need to generate a 
+certificate/key pair which is trusted both by the backend .net and vite.
+
+To generate such certificates create a `/certs` folder in root of the project and then execute:
+```shell
+dotnet dev-certs https -ep ./certs/localhost.pfx -p unsa123 
+dotnet dev-certs https --trust
+openssl pkcs12 -in ./certs/localhost.pfx -nocerts -nodes -out ./certs/localhost-key.pem
+openssl pkcs12 -in ./certs/localhost.pfx -clcerts -nokeys -out ./certs/localhost-cert.pem
+```
+^ Note that these commands are tested on MACOS and may require slight changes on other OS.
+
+After doing the above commands a certificate/key pair wil be generated under `/certs` folder. Then proceed
+to put these files under `/certs` folder in the `Frontend` package.

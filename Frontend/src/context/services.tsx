@@ -4,7 +4,6 @@ import { useAuthContext } from '../init/auth.tsx';
 import { API } from '../api/api.ts';
 import { RestClient } from '../api/rest.ts';
 import { attemptSilentRefresh, resetAuthInfo } from '../utils/authUtils.ts';
-import { API_BASE_URL } from '../constants/constants.ts';
 
 export interface Services {
     api: API
@@ -32,7 +31,7 @@ export function ServiceContextProvider({ children }: PropsWithChildren<object>) 
     const value: Services = {
         // Since login API call is done without using API service, and all pages require login,
         // we can be sure auth info is initialized
-        api: new API(new RestClient(authContextData.authInfo!, refreshToken, API_BASE_URL))
+        api: new API(new RestClient(authContextData.authInfo!, refreshToken))
     }
 
     return (
