@@ -1,5 +1,5 @@
 import type { User } from "../../../types/user-types";
-import Modal from "../../Modal";
+import Modal from "../../shared/Modal";
 import { CButton } from '@coreui/react';
 
 interface DeleteConfirmDialogProps {

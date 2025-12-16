@@ -5,7 +5,7 @@ import UserDetailsPanel from '../../component/user-management/UserDetailsPanel';
 import AddUserModal from '../../component/user-management/modals/AddUserModal';
 import EditUserModal from '../../component/user-management/modals/EditUserModal';
 import DeleteConfirmDialog from '../../component/user-management/modals/DeleteUserDialog';
-import Header from '../../component/Header';
+import Header from '../../component/shared/Header';
 import { CContainer, CRow, CCol } from '@coreui/react';
 import type { User } from '../../types/user-types';
 import { useAPI } from '../../context/services';

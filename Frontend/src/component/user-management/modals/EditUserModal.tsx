@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { User } from "../../../types/user-types";
-import Modal from "../../Modal";
+import Modal from "../../shared/Modal";
 import { CForm, CFormInput, CFormSelect, CButton, CFormLabel } from '@coreui/react';
 import { ROLE_MAP } from "../../../page/userManagement";
 
