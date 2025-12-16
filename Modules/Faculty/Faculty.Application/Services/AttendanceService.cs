@@ -26,26 +26,6 @@ public class AttendanceService : IAttendanceService
     }
 
     /// <summary>
-    /// Gets the current user ID from JWT claims.
-    /// </summary>
-    private string GetCurrentUserId()
-    {
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext == null || httpContext.User?.Identity?.IsAuthenticated != true)
-        {
-            throw new UnauthorizedAccessException("User is not authenticated.");
-        }
-
-        var userIdClaim = httpContext.User.FindFirst("userId");
-        if (userIdClaim == null)
-        {
-            throw new UnauthorizedAccessException("UserId claim not found in token.");
-        }
-
-        return userIdClaim.Value;
-    }
-
-    /// <summary>
     /// Verifies that the current user is assigned to the specified course.
     /// </summary>
     private async Task VerifyTeacherAssignmentAsync(Guid courseId, string userId)
