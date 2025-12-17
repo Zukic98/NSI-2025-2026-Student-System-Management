@@ -69,25 +69,22 @@ namespace Faculty.Application.Services
             {
                 var studentId = GetStudentIdFromJwt();
 
-                // 1) student postoji
+                //student exits
                 var studentExists = await _db.Students.AnyAsync(s => s.Id == studentId);
                 if (!studentExists)
                     throw new KeyNotFoundException("Student not found.");
 
-                // 2) course postoji
+                //course exists
                 var course = await _db.Courses.FirstOrDefaultAsync(c => c.Id == dto.CourseId);
                 if (course == null)
                     throw new KeyNotFoundException("Course not found.");
 
-                // 3) nije već upisan
+                //not already enrolled
                 var already = await _db.Enrollments.AnyAsync(e => e.StudentId == studentId && e.CourseId == dto.CourseId);
                 if (already)
                     throw new InvalidOperationException("Already enrolled in this course");
 
-            // 4) prerequisites (ovo ti je dio koji moraš spojiti na vaše tabele)
-            // TODO: implementiraj real check (npr. CoursePrerequisites / Enrollment passed)
-            // Ako nemaš još model, za sada preskoči ili stavi minimalno:
-            // bool prereqOk = true;
+           
 
             /* var enrollment = new Faculty.Core.Entities.Enrollment
              {

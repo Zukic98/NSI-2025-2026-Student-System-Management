@@ -39,7 +39,7 @@ namespace Faculty.API.Controllers
             try
             {
                 var result = await _enrollmentService.CreateEnrollmentAsync(dto);
-                return Created("", result); // 201
+                return Ok(result); //200
             }
             catch (InvalidOperationException ex)
             {
