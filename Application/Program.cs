@@ -73,6 +73,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Apply pending migrations automatically
+using (var scope = app.Services.CreateScope())
+{
+    var supportDb = scope.ServiceProvider.GetRequiredService<Support.Infrastructure.Db.SupportDbContext>();
+    supportDb.Database.Migrate();
+}
+
 // Middleware
 app.UseHttpsRedirection();
 
