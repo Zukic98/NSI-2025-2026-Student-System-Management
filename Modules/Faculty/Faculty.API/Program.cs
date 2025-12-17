@@ -7,6 +7,7 @@ using Faculty.Core.Services;
 using Faculty.Infrastructure.Repositories;
 using Faculty.Infrastructure.DependencyInjection;
 using Faculty.Infrastructure.DependencyInjection;
+using Faculty.API;
 
 
 
@@ -38,13 +39,13 @@ builder.Services.AddFacultyModule(builder.Configuration);
 ///DODANO ZBOG JWT JER LOGIN NE RADI SAMO ZA TESTIRANJE
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddScoped<ITenantService>(_ =>
-        new DevTenantServiceFAKE(Guid.Parse("641a4bfe-d83b-403d-be28-db9fa4130e5e")));
+    builder.Services.AddScoped<ITenantService, DevTenantServiceFAKE>();
 }
 else
 {
     builder.Services.AddScoped<ITenantService, HttpTenantService>();
 }
+
 ///
 
 
