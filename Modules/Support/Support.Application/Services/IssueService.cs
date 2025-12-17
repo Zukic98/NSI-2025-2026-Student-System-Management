@@ -131,6 +131,38 @@ namespace Support.Application.Services
             return true;
         }
 
+        public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto createCategoryDto, CancellationToken cancellationToken = default)
+        {
+            var category = new Category
+            {
+                Title = createCategoryDto.Title,
+                Priority = createCategoryDto.Priority
+            };
+
+            var createdCategory = await _categoryRepository.AddAsync(category, cancellationToken);
+
+            return new CategoryDto
+            {
+                Id = createdCategory.Id,
+                Title = createdCategory.Title,
+                Priority = createdCategory.Priority
+            };
+        }
+
+        public async Task<CategoryDto?> GetCategoryByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id, cancellationToken);
+            if (category == null)
+                return null;
+
+            return new CategoryDto
+            {
+                Id = category.Id,
+                Title = category.Title,
+                Priority = category.Priority
+            };
+        }
+
         public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync(CancellationToken cancellationToken = default)
         {
             var categories = await _categoryRepository.GetAsync(
@@ -144,6 +176,43 @@ namespace Support.Application.Services
                 Title = c.Title,
                 Priority = c.Priority
             });
+        }
+
+        public async Task<CategoryDto?> UpdateCategoryAsync(int id, UpdateCategoryDto updateCategoryDto, CancellationToken cancellationToken = default)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id, cancellationToken);
+            if (category == null)
+                return null;
+
+            if (!string.IsNullOrEmpty(updateCategoryDto.Title))
+                category.Title = updateCategoryDto.Title;
+
+            if (updateCategoryDto.Priority.HasValue)
+                category.Priority = updateCategoryDto.Priority.Value;
+
+            await _categoryRepository.UpdateAsync(category, cancellationToken);
+
+            return new CategoryDto
+            {
+                Id = category.Id,
+                Title = category.Title,
+                Priority = category.Priority
+            };
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int id, CancellationToken cancellationToken = default)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id, cancellationToken);
+            if (category == null)
+                return false;
+
+            // Check if any issues are using this category
+            var hasIssues = await _issueRepository.AnyAsync(i => i.CategoryId == id, cancellationToken);
+            if (hasIssues)
+                throw new InvalidOperationException($"Cannot delete category with ID {id} because it has associated issues.");
+
+            await _categoryRepository.DeleteAsync(category, cancellationToken);
+            return true;
         }
 
         private IssueDto MapToIssueDto(Issue issue)
