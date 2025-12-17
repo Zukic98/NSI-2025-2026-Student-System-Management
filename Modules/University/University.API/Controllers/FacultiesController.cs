@@ -5,7 +5,7 @@ using University.Application.Interfaces.Services;
 namespace University.API.Controllers
 {
     [ApiController]
-    [Route("api/university/faculties")]
+    [Route("api/university/facultiess")]
     public class FacultiesController : ControllerBase
     {
         private readonly IFacultyService _facultyService;
