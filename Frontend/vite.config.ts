@@ -39,6 +39,8 @@ export default defineConfig(() => {
         }
 
         console.info('Created certificate/key pair.');
+    } else {
+        console.info('Detected already present certificate/key pair.');
     }
 
     return {
