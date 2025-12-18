@@ -7,13 +7,17 @@ import {
   CNavLink,
   CContainer,
   CButton,
+  CAccordion,
+  CAccordionBody,
+  CAccordionHeader,
+  CAccordionItem,
 } from "@coreui/react";
 
 import CIcon from "@coreui/icons-react";
 import {
   cilDescription,
   cilChart,
-  cilListRich,
+  //cilListRich,
   cilSchool,
   cilSettings,
   cilAccountLogout,
@@ -27,8 +31,39 @@ import logo from '../../assets/logo-unsa-sms.png'
 import "./StudentSupportPage.css";
 import CategoryCard from "./CategoryCard";
 
+import { useEffect, useState } from "react";
+
+type FAQ = {
+  id: number;
+  question: string;
+  answer: string;
+};
+        
 
 export default function StudentSupportPage() {
+  
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/faqs")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load FAQs");
+        }
+        return res.json();
+      })
+      .then((data: FAQ[]) => {
+        setFaqs(data);
+        setLoading(false);
+      })
+      .catch((err: Error) => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
   return (
     <div className="ss-page">
       <CSidebar className="ss-sidebar" unfoldable visible>
@@ -172,7 +207,31 @@ export default function StudentSupportPage() {
 
             {/* Ispod: prazan kontejner */}
             <div className="ss-belowEmpty">
-              {/* DODATNI PRAZAN KONTEJNER */}
+              <section className="ss-faq">
+            <h3 className="ss-faqTitle">Frequently Asked Questions</h3>
+
+            {loading && <p>Loading FAQs...</p>}
+            {error && <p>{error}</p>}
+
+            {!loading && !error && (
+              <CAccordion>
+                {faqs.map((faq) => (
+                  <CAccordionItem key={faq.id} itemKey={faq.id}>
+                    
+                    <CAccordionHeader>
+                      {faq.question}
+                    </CAccordionHeader>
+
+                    <CAccordionBody>
+                      {faq.answer}
+                    </CAccordionBody>
+
+                  </CAccordionItem>
+                ))}
+              </CAccordion>
+            )}
+          </section>
+
             </div>
           </section>
 
