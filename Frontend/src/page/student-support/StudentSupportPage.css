@@ -171,6 +171,44 @@
   min-height: 420px;
 }
 
+/* FAQ styles */
+
+.ss-faqTitle {
+  color: var(--ss-text);
+  margin-bottom: 1.5rem;
+}
+
+.accordion-button::after {
+  display: none;
+}
+
+
+.accordion-button::before {
+  content: "›";
+  font-size: 1.5rem;
+  margin-right: 12px;
+  transition: transform 0.2s ease;
+}
+
+.accordion-button:not(.collapsed)::before {
+  transform: rotate(90deg);
+}
+
+.accordion-button {
+  color: #000;              
+  font-weight: 600;
+  background-color: transparent !important;
+  box-shadow: none;
+}
+
+.accordion-button:not(.collapsed) {
+  color: #000;
+  background-color: transparent !important;
+  box-shadow: none;
+}
+
+
+
 /* responsive */
 @media (max-width: 980px) {
   .ss-sidebar {
