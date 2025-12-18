@@ -13,20 +13,25 @@ import CIcon from "@coreui/icons-react";
 import {
   cilDescription,
   cilChart,
-  cilListRich,
+//  cilListRich,
   cilSchool,
   cilSettings,
   cilAccountLogout,
   cilInfo,
   cilChartPie,
+  cilList,
 } from "@coreui/icons";
 
 import logo from '../../assets/logo-unsa-sms.png'
 
 import "./StudentSupportPage.css";
+import CategoryCard from "./CategoryCard";
+import SupportRequestForm from "./SupportRequestForm";
+import { useState } from "react";
 
 
 export default function StudentSupportPage() {
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   return (
     <div className="ss-page">
       <CSidebar className="ss-sidebar" unfoldable visible>
@@ -68,7 +73,7 @@ export default function StudentSupportPage() {
 
           <CNavItem>
             <CNavLink href="#" onClick={(e) => e.preventDefault()} className="ss-navLink">
-              <CIcon icon={cilListRich} className="ss-navIcon" />
+              <CIcon icon={cilList} className="ss-navIcon" />
               Request management
             </CNavLink>
           </CNavItem>
@@ -136,7 +141,44 @@ export default function StudentSupportPage() {
             </p>
           </header>
 
-          <section className="ss-empty" />
+          <section className="ss-content">
+            <div className="ss-twoCol">
+              {/* Lijevo: 4 kartice (2x2 grid) */}
+              <div className="ss-categories">
+                <CategoryCard
+                  title="Academic support"
+                  description="Questions about exams, grades or enrolment ..."
+                  onClick={() => setSelectedCategoryId(1)}
+                />
+                <CategoryCard
+                  title="Technical issues"
+                  description="Platform errors, UI errors, login ..."
+                  onClick={() => setSelectedCategoryId(2)}
+                />
+                <CategoryCard
+                  title="Administrative help"
+                  description="Payments, documentation ..."
+                  onClick={() => setSelectedCategoryId(3)}
+                />
+                <CategoryCard
+                  title="Account & Security"
+                  description="Profile security update"
+                  onClick={() => setSelectedCategoryId(4)}
+                />
+              </div>
+
+              {/* Desno: prostor za formu */}
+              <div className="ss-formSpace">
+                <SupportRequestForm selectedCategoryId={selectedCategoryId} />
+              </div>
+            </div>
+
+            {/* Ispod: prazan kontejner */}
+            <div className="ss-belowEmpty">
+              {/* DODATNI PRAZAN KONTEJNER */}
+            </div>
+          </section>
+
         </CContainer>
       </main>
     </div>

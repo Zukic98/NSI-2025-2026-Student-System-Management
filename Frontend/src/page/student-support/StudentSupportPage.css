@@ -27,7 +27,8 @@
   background: linear-gradient(180deg, var(--ss-sidebar), var(--ss-sidebar-2)) !important;
   border-right: none !important;
   padding: 18px 14px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* Sidebar brand container */
@@ -195,4 +196,64 @@
   .ss-title {
     font-size: 28px;
   }
+}
+
+.ss-content{
+  margin-top: 18px;
+}
+
+.ss-twoCol{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.ss-categories{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ss-formSpace{
+  min-height: 220px;
+  padding: 8px;
+
+}
+
+
+.ss-belowEmpty{
+  margin-top: 28px;
+  min-height: 120px;
+  
+}
+
+
+@media (max-width: 900px){
+  .ss-twoCol{
+    grid-template-columns: 1fr;
+  }
+
+  .ss-categories{
+    grid-template-columns: 1fr;
+  }
+}
+
+.ss-formSpace .ui-surface-glass-card {
+  background-color: #fff !important;
+  color: #0b1b3a;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Labels, inputs, textarea, selects inside the form */
+.ss-formSpace .ui-surface-glass-card label,
+.ss-formSpace .ui-surface-glass-card input,
+.ss-formSpace .ui-surface-glass-card textarea,
+.ss-formSpace .ui-surface-glass-card select {
+  color: #0b1b3a !important; /* dark text */
+}
+
+.ss-formSpace .ui-surface-glass-card input::placeholder,
+.ss-formSpace .ui-surface-glass-card textarea::placeholder {
+  color: rgba(0, 0, 0, 0.5); /* gray placeholder */
 }
