@@ -1,3 +1,4 @@
+/*
 import {
   CSidebar,
   CSidebarBrand,
@@ -27,6 +28,7 @@ import {
 } from "@coreui/icons";
 
 import logo from '../../assets/logo-unsa-sms.png'
+*/
 
 import "./StudentSupportPage.css";
 import CategoryCard from "./CategoryCard";
