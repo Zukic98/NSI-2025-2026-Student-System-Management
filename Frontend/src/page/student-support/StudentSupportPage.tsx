@@ -1,34 +1,10 @@
-/*
 import {
-  CSidebar,
-  CSidebarBrand,
-  CSidebarNav,
-  CNavTitle,
-  CNavItem,
-  CNavLink,
   CContainer,
-  CButton,
   CAccordion,
   CAccordionBody,
   CAccordionHeader,
   CAccordionItem,
 } from "@coreui/react";
-
-import CIcon from "@coreui/icons-react";
-import {
-  cilDescription,
-  cilChart,
-  //cilListRich,
-  cilSchool,
-  cilSettings,
-  cilAccountLogout,
-  cilInfo,
-  cilChartPie,
-  cilList,
-} from "@coreui/icons";
-
-import logo from '../../assets/logo-unsa-sms.png'
-*/
 
 import "./StudentSupportPage.css";
 import CategoryCard from "./CategoryCard";
