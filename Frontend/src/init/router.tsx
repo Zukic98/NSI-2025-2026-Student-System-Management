@@ -24,7 +24,8 @@ import DocumentCenterDashboard from '../page/document-center/documentCenter.tsx'
 import AppLayout from '../component/AppLayout/AppLayout.tsx';
 import DefaultLayout from '../component/UniversityDashboardLayout/DefaultLayout.tsx';
 import UniversityDashboard from "../page/university-dashboard/UniversityDashboard.tsx";
-
+import { ExamPage } from '../page/exams/ExamPage.tsx';
+import { CreateExamPage } from '../page/exams/CreateExamPage.tsx';
 
 export function Router(): React.ReactNode {
   return (
@@ -87,6 +88,8 @@ export function Router(): React.ReactNode {
           <Route path="/support" element={<DefaultLayout><StudentSupport /></DefaultLayout>} />
           <Route path="/help" element={<DefaultLayout><HelpPage /></DefaultLayout>} />
 
+      <Route path="/faculty/exams" element={<DefaultLayout><ExamPage /></DefaultLayout>} />
+      <Route path="/faculty/exams/create" element={<DefaultLayout><CreateExamPage /></DefaultLayout>} />
 
       {/* error pages */}
       <Route path="/unauthorized" element={
