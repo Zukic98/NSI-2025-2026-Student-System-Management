@@ -12,10 +12,10 @@ namespace Faculty.Core.Interfaces
         Task<Exam> AddAsync(Exam exam);
         Task<Exam?> GetByIdAsync(int id);
         Task<List<Exam>> GetAllAsync();
-        Task<List<Exam>> GetExamsByProfessorAsync(int teacherId);
+        Task<List<Exam>> GetExamsByTeacherAsync(int teacherId);
         Task<Exam?> UpdateAsync(Exam exam);
         Task<bool> DeleteAsync(int id);
-        Task<bool> IsProfessorAssignedToCourseAsync(int teacherId, Guid courseId);
+        Task<bool> IsTeacherAssignedToCourseAsync(int teacherId, Guid courseId);
         Task<bool> HasDateConflictAsync(Guid courseId, int? excludeExamId, DateTime examDate, string location);
     }
 }

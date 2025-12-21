@@ -28,11 +28,11 @@ namespace Faculty.API.Controllers
 
         private async Task<int> GetCurrentTeacherIdAsync()
         {
-            // Check if user has Professor role
+            // Check if user has Teacher role
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role != "Professor")
+            if (role != "Teacher")
             {
-                throw new UnauthorizedAccessException("Only professors can access exam management.");
+                throw new UnauthorizedAccessException("Only teachers can access exam management.");
             }
 
             var userId = User.FindFirst("userId")?.Value;
@@ -87,7 +87,7 @@ namespace Faculty.API.Controllers
             try
             {
                 var teacherId = await GetCurrentTeacherIdAsync();
-                var exams = await _examService.GetExamsByProfessorAsync(teacherId);
+                var exams = await _examService.GetExamsByTeacherAsync(teacherId);
                 return Ok(exams);
             }
             catch (UnauthorizedAccessException ex)

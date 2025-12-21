@@ -44,7 +44,7 @@ public class ExamServiceTests
         };
 
         _tenantServiceMock.Setup(x => x.GetCurrentFacultyId()).Returns(facultyId);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+        _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(true);
 
         var createdExam = new Exam
@@ -87,7 +87,7 @@ public class ExamServiceTests
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
 
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(false);
 
         // Act & Assert
@@ -111,7 +111,7 @@ public class ExamServiceTests
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(exam);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(true);
 
         // Act
@@ -138,7 +138,7 @@ public class ExamServiceTests
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(exam);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(false);
 
         // Act & Assert
@@ -147,7 +147,7 @@ public class ExamServiceTests
     }
 
     [Fact]
-    public async Task GetExamsByProfessorAsync_ShouldReturnExams()
+    public async Task GetExamsByTeacherAsync_ShouldReturnExams()
     {
         // Arrange
         var teacherId = 1;
@@ -169,11 +169,11 @@ public class ExamServiceTests
             }
         };
 
-        _examRepositoryMock.Setup(x => x.GetExamsByProfessorAsync(teacherId))
+        _examRepositoryMock.Setup(x => x.GetExamsByTeacherAsync(teacherId))
             .ReturnsAsync(exams);
 
         // Act
-        var result = await _examService.GetExamsByProfessorAsync(teacherId);
+        var result = await _examService.GetExamsByTeacherAsync(teacherId);
 
         // Assert
         Assert.Equal(2, result.Count);
@@ -210,7 +210,7 @@ public class ExamServiceTests
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(existingExam);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(true);
         _examRepositoryMock.Setup(x => x.UpdateAsync(It.IsAny<Exam>()))
             .ReturnsAsync(existingExam);
@@ -241,7 +241,7 @@ public class ExamServiceTests
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(exam);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(true);
         _examRepositoryMock.Setup(x => x.DeleteAsync(examId)).ReturnsAsync(true);
 
@@ -268,7 +268,7 @@ public class ExamServiceTests
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(exam);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(false);
 
         // Act & Assert
@@ -297,7 +297,7 @@ public class ExamServiceTests
         };
 
         _tenantServiceMock.Setup(x => x.GetCurrentFacultyId()).Returns(facultyId);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(true);
         _examRepositoryMock.Setup(x => x.HasDateConflictAsync(courseId, null, examDate, location))
             .ReturnsAsync(true);
@@ -339,7 +339,7 @@ public class ExamServiceTests
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(existingExam);
-        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            _examRepositoryMock.Setup(x => x.IsTeacherAssignedToCourseAsync(teacherId, courseId))
             .ReturnsAsync(true);
         _examRepositoryMock.Setup(x => x.HasDateConflictAsync(courseId, examId, examDate, location))
             .ReturnsAsync(true);

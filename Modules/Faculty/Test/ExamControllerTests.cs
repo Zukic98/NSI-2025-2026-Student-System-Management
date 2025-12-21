@@ -32,7 +32,7 @@ public class ExamControllerTests
         // Setup controller context with claims
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Role, "Professor"),
+            new Claim(ClaimTypes.Role, "Teacher"),
             new Claim("userId", "user123")
         };
         var identity = new ClaimsIdentity(claims);
@@ -101,7 +101,7 @@ public class ExamControllerTests
     [Fact]
     public async Task CreateExam_UnauthorizedRole_ShouldReturnForbid()
     {
-        // Arrange - Setup controller with non-Professor role
+        // Arrange - Setup controller with non-Teacher role
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Role, "Student"),
@@ -190,7 +190,7 @@ public class ExamControllerTests
         var teacher = new Teacher { Id = teacherId, UserId = "user123" };
 
         _teacherRepositoryMock.Setup(x => x.GetByUserIdAsync("user123")).ReturnsAsync(teacher);
-        _examServiceMock.Setup(x => x.GetExamsByProfessorAsync(teacherId)).ReturnsAsync(exams);
+        _examServiceMock.Setup(x => x.GetExamsByTeacherAsync(teacherId)).ReturnsAsync(exams);
 
         // Act
         var result = await _controller.GetExams();

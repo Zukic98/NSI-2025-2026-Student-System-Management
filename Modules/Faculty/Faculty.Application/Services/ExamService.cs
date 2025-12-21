@@ -27,7 +27,7 @@ namespace Faculty.Application.Services
             _logger.LogInformation("Creating exam for course {CourseId} by teacher {TeacherId}", request.CourseId, teacherId);
 
             // Validate that the teacher is assigned to the course
-            var isAssigned = await _examRepository.IsProfessorAssignedToCourseAsync(teacherId, request.CourseId);
+            var isAssigned = await _examRepository.IsTeacherAssignedToCourseAsync(teacherId, request.CourseId);
             if (!isAssigned)
             {
                 _logger.LogWarning("Teacher {TeacherId} is not assigned to course {CourseId}", teacherId, request.CourseId);
@@ -66,7 +66,7 @@ namespace Faculty.Application.Services
                 return null;
 
             // Check if the teacher is assigned to the course
-            var isAssigned = await _examRepository.IsProfessorAssignedToCourseAsync(teacherId, exam.CourseId);
+            var isAssigned = await _examRepository.IsTeacherAssignedToCourseAsync(teacherId, exam.CourseId);
             if (!isAssigned)
             {
                 _logger.LogWarning("Teacher {TeacherId} attempted to access exam {ExamId} for unauthorized course", teacherId, id);
@@ -76,9 +76,9 @@ namespace Faculty.Application.Services
             return MapToResponse(exam);
         }
 
-        public async Task<List<ExamResponseDTO>> GetExamsByProfessorAsync(int teacherId)
+        public async Task<List<ExamResponseDTO>> GetExamsByTeacherAsync(int teacherId)
         {
-            var exams = await _examRepository.GetExamsByProfessorAsync(teacherId);
+            var exams = await _examRepository.GetExamsByTeacherAsync(teacherId);
             return exams.Select(MapToResponse).ToList();
         }
 
@@ -91,7 +91,7 @@ namespace Faculty.Application.Services
                 return null;
 
             // Check if the teacher is assigned to the course
-            var isAssigned = await _examRepository.IsProfessorAssignedToCourseAsync(teacherId, existingExam.CourseId);
+            var isAssigned = await _examRepository.IsTeacherAssignedToCourseAsync(teacherId, existingExam.CourseId);
             if (!isAssigned)
             {
                 _logger.LogWarning("Teacher {TeacherId} attempted to update exam {ExamId} for unauthorized course", teacherId, id);
@@ -130,7 +130,7 @@ namespace Faculty.Application.Services
                 return false;
 
             // Check if the teacher is assigned to the course
-            var isAssigned = await _examRepository.IsProfessorAssignedToCourseAsync(teacherId, exam.CourseId);
+            var isAssigned = await _examRepository.IsTeacherAssignedToCourseAsync(teacherId, exam.CourseId);
             if (!isAssigned)
             {
                 _logger.LogWarning("Teacher {TeacherId} attempted to delete exam {ExamId} for unauthorized course", teacherId, id);

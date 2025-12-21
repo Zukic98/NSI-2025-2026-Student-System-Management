@@ -36,7 +36,7 @@ namespace Faculty.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<Exam>> GetExamsByProfessorAsync(int teacherId)
+        public async Task<List<Exam>> GetExamsByTeacherAsync(int teacherId)
         {
             return await _context.Exams
                 .Include(e => e.Course)
@@ -73,7 +73,7 @@ namespace Faculty.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<bool> IsProfessorAssignedToCourseAsync(int teacherId, Guid courseId)
+        public async Task<bool> IsTeacherAssignedToCourseAsync(int teacherId, Guid courseId)
         {
             return await _context.CourseAssignments
                 .AnyAsync(ca => ca.TeacherId == teacherId && ca.CourseId == courseId);

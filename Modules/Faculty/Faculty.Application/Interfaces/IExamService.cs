@@ -12,7 +12,7 @@ namespace Faculty.Application.Interfaces
     {
         Task<ExamResponseDTO> CreateExamAsync(CreateExamRequestDTO request, int teacherId);
         Task<ExamResponseDTO?> GetExamByIdAsync(int id, int teacherId);
-        Task<List<ExamResponseDTO>> GetExamsByProfessorAsync(int teacherId);
+        Task<List<ExamResponseDTO>> GetExamsByTeacherAsync(int teacherId);
         Task<ExamResponseDTO?> UpdateExamAsync(int id, UpdateExamRequestDTO request, int teacherId);
         Task<bool> DeleteExamAsync(int id, int teacherId);
     }
