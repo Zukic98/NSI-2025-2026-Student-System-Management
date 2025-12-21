@@ -2,7 +2,6 @@ using Faculty.Application.DTOs;
 using Faculty.Application.Interfaces;
 using Faculty.Core.Entities;
 using Faculty.Core.Interfaces;
-using Microsoft.AspNetCore.Http;
 
 namespace Faculty.Application.Services;
 
@@ -12,16 +11,13 @@ namespace Faculty.Application.Services;
 public class AttendanceService : IAttendanceService
 {
     private readonly IAttendanceRepository _attendanceRepository;
-    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITenantService _tenantService;
 
     public AttendanceService(
         IAttendanceRepository attendanceRepository,
-        IHttpContextAccessor httpContextAccessor,
         ITenantService tenantService)
     {
         _attendanceRepository = attendanceRepository ?? throw new ArgumentNullException(nameof(attendanceRepository));
-        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         _tenantService = tenantService ?? throw new ArgumentNullException(nameof(tenantService));
     }
 
@@ -95,9 +91,9 @@ public class AttendanceService : IAttendanceService
         }
 
         // Create or update attendance records
-        var dateOnly = request.Date.Date;
+        var dateOnly = DateTime.SpecifyKind(request.Date.Date, DateTimeKind.Utc);
         var facultyId = _tenantService.GetCurrentFacultyId();
-        
+
         foreach (var record in request.Records)
         {
             var attendance = new Attendance

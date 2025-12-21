@@ -1,5 +1,5 @@
 ﻿using Faculty.Core.Entities;
-using Faculty.Infrastructure.Http;
+using Faculty.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Faculty.Infrastructure.Db;
