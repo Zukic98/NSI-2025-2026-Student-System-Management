@@ -63,6 +63,7 @@ public class UserRepositoryTests : IDisposable
             PageNumber = 1,
             PageSize = 10
         };
+
         var result = await _repository.GetAllFilteredAsync(filter);
 
         Assert.Single(result);
