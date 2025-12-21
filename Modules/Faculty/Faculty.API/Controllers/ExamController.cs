@@ -28,11 +28,11 @@ namespace Faculty.API.Controllers
 
         private async Task<int> GetCurrentTeacherIdAsync()
         {
-            // Check if user has Teacher role
+            // Check if user has Professor role
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role != "Teacher")
+            if (role != "Professor")
             {
-                throw new UnauthorizedAccessException("Only teachers can access exam management.");
+                throw new UnauthorizedAccessException("Only professors can access exam management.");
             }
 
             var userId = User.FindFirst("userId")?.Value;
@@ -51,11 +51,11 @@ namespace Faculty.API.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(ExamResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ExamResponseDTO), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> CreateExam([FromBody] CreateExamRequest request)
+        public async Task<IActionResult> CreateExam([FromBody] CreateExamRequestDTO request)
         {
             try
             {
@@ -80,7 +80,7 @@ namespace Faculty.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(List<ExamResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<ExamResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetExams()
         {
@@ -103,7 +103,7 @@ namespace Faculty.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(ExamResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ExamResponseDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -132,12 +132,12 @@ namespace Faculty.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [ProducesResponseType(typeof(ExamResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ExamResponseDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<IActionResult> UpdateExam(int id, [FromBody] UpdateExamRequest request)
+        public async Task<IActionResult> UpdateExam(int id, [FromBody] UpdateExamRequestDTO request)
         {
             try
             {

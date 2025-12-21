@@ -1,7 +1,7 @@
 export const UserRole = {
   Superadmin: 'Superadmin',
   Admin: 'Admin',
-  Teacher: 'Teacher',
+  Professor: 'Professor',
   Assistant: 'Assistant',
   Student: 'Student',
 } as const;
@@ -11,7 +11,7 @@ export type UserRole = typeof UserRole[keyof typeof UserRole];
 export const UserRoleValue = {
   Superadmin: 1,
   Admin: 2,
-  Teacher: 3,
+  Professor: 3,
   Assistant: 4,
   Student: 5,
 } as const;
@@ -33,9 +33,9 @@ export function isAdmin(userRole: string): boolean {
   return isRole(userRole, UserRole.Admin) || isRole(userRole, UserRole.Superadmin);
 }
 
-// Helper function to check if user is teacher
-export function isTeacher(userRole: string): boolean {
-  return isRole(userRole, UserRole.Teacher);
+// Helper function to check if user is professor
+export function isProfessor(userRole: string): boolean {
+  return isRole(userRole, UserRole.Professor);
 }
 
 // Helper function to check if user is assistant

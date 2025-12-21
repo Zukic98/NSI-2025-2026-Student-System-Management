@@ -22,7 +22,7 @@ namespace Faculty.Application.Services
             this._logger = _logger;
         }
 
-        public async Task<ExamResponse> CreateExamAsync(CreateExamRequest request, int teacherId)
+        public async Task<ExamResponseDTO> CreateExamAsync(CreateExamRequestDTO request, int teacherId)
         {
             _logger.LogInformation("Creating exam for course {CourseId} by teacher {TeacherId}", request.CourseId, teacherId);
 
@@ -34,11 +34,21 @@ namespace Faculty.Application.Services
                 throw new UnauthorizedAccessException("You are not authorized to create exams for this course.");
             }
 
+            // Check for date conflicts
+            var hasConflict = await _examRepository.HasDateConflictAsync(request.CourseId, null, request.ExamDate, request.Location);
+            if (hasConflict)
+            {
+                _logger.LogWarning("Date conflict detected for course {CourseId} at {Location} on {ExamDate}", request.CourseId, request.Location, request.ExamDate);
+                throw new InvalidOperationException("There is already an exam scheduled for this course at the same location and date.");
+            }
+
             var exam = new Exam
             {
                 FacultyId = _tenantService.GetCurrentFacultyId(),
                 CourseId = request.CourseId,
                 Name = request.Name,
+                Location = request.Location,
+                ExamType = request.ExamType,
                 ExamDate = request.ExamDate,
                 RegDeadline = request.RegDeadline
             };
@@ -49,7 +59,7 @@ namespace Faculty.Application.Services
             return MapToResponse(createdExam);
         }
 
-        public async Task<ExamResponse?> GetExamByIdAsync(int id, int teacherId)
+        public async Task<ExamResponseDTO?> GetExamByIdAsync(int id, int teacherId)
         {
             var exam = await _examRepository.GetByIdAsync(id);
             if (exam == null)
@@ -66,13 +76,13 @@ namespace Faculty.Application.Services
             return MapToResponse(exam);
         }
 
-        public async Task<List<ExamResponse>> GetExamsByProfessorAsync(int teacherId)
+        public async Task<List<ExamResponseDTO>> GetExamsByProfessorAsync(int teacherId)
         {
             var exams = await _examRepository.GetExamsByProfessorAsync(teacherId);
             return exams.Select(MapToResponse).ToList();
         }
 
-        public async Task<ExamResponse?> UpdateExamAsync(int id, UpdateExamRequest request, int teacherId)
+        public async Task<ExamResponseDTO?> UpdateExamAsync(int id, UpdateExamRequestDTO request, int teacherId)
         {
             _logger.LogInformation("Updating exam {ExamId} by teacher {TeacherId}", id, teacherId);
 
@@ -88,8 +98,18 @@ namespace Faculty.Application.Services
                 throw new UnauthorizedAccessException("You are not authorized to update this exam.");
             }
 
+            // Check for date conflicts (exclude current exam)
+            var hasConflict = await _examRepository.HasDateConflictAsync(request.CourseId, id, request.ExamDate, request.Location);
+            if (hasConflict)
+            {
+                _logger.LogWarning("Date conflict detected for course {CourseId} at {Location} on {ExamDate} (excluding exam {ExamId})", request.CourseId, request.Location, request.ExamDate, id);
+                throw new InvalidOperationException("There is already an exam scheduled for this course at the same location and date.");
+            }
+
             existingExam.CourseId = request.CourseId;
             existingExam.Name = request.Name;
+            existingExam.Location = request.Location;
+            existingExam.ExamType = request.ExamType;
             existingExam.ExamDate = request.ExamDate;
             existingExam.RegDeadline = request.RegDeadline;
 
@@ -126,14 +146,16 @@ namespace Faculty.Application.Services
             return result;
         }
 
-        private ExamResponse MapToResponse(Exam exam)
+        private ExamResponseDTO MapToResponse(Exam exam)
         {
-            return new ExamResponse
+            return new ExamResponseDTO
             {
                 Id = exam.Id,
                 CourseId = exam.CourseId,
                 CourseName = exam.Course?.Name,
                 Name = exam.Name,
+                Location = exam.Location,
+                ExamType = exam.ExamType,
                 ExamDate = exam.ExamDate,
                 RegDeadline = exam.RegDeadline,
                 CreatedAt = exam.CreatedAt,

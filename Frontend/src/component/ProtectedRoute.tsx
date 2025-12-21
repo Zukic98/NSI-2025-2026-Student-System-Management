@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router';
 import { useAuthContext } from '../init/auth.tsx';
-import { isAdmin, isAssistant, isStudent, isTeacher } from '../constants/roles.ts';
+import { isAdmin, isAssistant, isStudent, isProfessor } from '../constants/roles.ts';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
         case 'student':
           return isStudent(authInfo.role);
         case 'teacher':
-          return isTeacher(authInfo.role);
+          return isProfessor(authInfo.role);
         case 'admin':
         case 'superadmin':
           return isAdmin(authInfo.role);
@@ -52,7 +52,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   // Check if accessing teacher routes (future)
-  if (location.pathname.startsWith('/teacher') && !isTeacher(authInfo.role)) {
+  if (location.pathname.startsWith('/teacher') && !isProfessor(authInfo.role)) {
     return <Navigate to="/unauthorized" replace />;
   }
 

@@ -16,5 +16,6 @@ namespace Faculty.Core.Interfaces
         Task<Exam?> UpdateAsync(Exam exam);
         Task<bool> DeleteAsync(int id);
         Task<bool> IsProfessorAssignedToCourseAsync(int teacherId, Guid courseId);
+        Task<bool> HasDateConflictAsync(Guid courseId, int? excludeExamId, DateTime examDate, string location);
     }
 }

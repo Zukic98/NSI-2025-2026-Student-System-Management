@@ -3,8 +3,10 @@ using FluentValidation;
 
 namespace Faculty.Application.Validators
 {
-    public class CreateExamRequestValidator : AbstractValidator<CreateExamRequest>
+    public class CreateExamRequestValidator : AbstractValidator<CreateExamRequestDTO>
     {
+        private static readonly string[] ValidExamTypes = { "Written", "Oral", "Practical", "Online" };
+
         public CreateExamRequestValidator()
         {
             RuleFor(x => x.CourseId)
@@ -13,6 +15,14 @@ namespace Faculty.Application.Validators
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Exam name is required.")
                 .MaximumLength(200).WithMessage("Exam name cannot exceed 200 characters.");
+
+            RuleFor(x => x.Location)
+                .NotEmpty().WithMessage("Exam location is required.")
+                .MaximumLength(200).WithMessage("Exam location cannot exceed 200 characters.");
+
+            RuleFor(x => x.ExamType)
+                .NotEmpty().WithMessage("Exam type is required.")
+                .Must(type => ValidExamTypes.Contains(type)).WithMessage($"Exam type must be one of: {string.Join(", ", ValidExamTypes)}.");
 
             RuleFor(x => x.ExamDate)
                 .NotEmpty().WithMessage("Exam date is required.")
@@ -24,8 +34,10 @@ namespace Faculty.Application.Validators
         }
     }
 
-    public class UpdateExamRequestValidator : AbstractValidator<UpdateExamRequest>
+    public class UpdateExamRequestValidator : AbstractValidator<UpdateExamRequestDTO>
     {
+        private static readonly string[] ValidExamTypes = { "Written", "Oral", "Practical", "Online" };
+
         public UpdateExamRequestValidator()
         {
             RuleFor(x => x.CourseId)
@@ -34,6 +46,14 @@ namespace Faculty.Application.Validators
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Exam name is required.")
                 .MaximumLength(200).WithMessage("Exam name cannot exceed 200 characters.");
+
+            RuleFor(x => x.Location)
+                .NotEmpty().WithMessage("Exam location is required.")
+                .MaximumLength(200).WithMessage("Exam location cannot exceed 200 characters.");
+
+            RuleFor(x => x.ExamType)
+                .NotEmpty().WithMessage("Exam type is required.")
+                .Must(type => ValidExamTypes.Contains(type)).WithMessage($"Exam type must be one of: {string.Join(", ", ValidExamTypes)}.");
 
             RuleFor(x => x.ExamDate)
                 .NotEmpty().WithMessage("Exam date is required.")

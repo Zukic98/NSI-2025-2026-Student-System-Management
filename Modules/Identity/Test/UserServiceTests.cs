@@ -35,7 +35,7 @@ public class UserServiceTests
     {
         var username = "testuser";
         var password = "Password123";
-        var role = UserRole.Teacher;
+        var role = UserRole.Professor;
         var expectedHash = "base64hashedpasswordstring";
         
         _mockRepo.Setup(r => r.IsUsernameTakenAsync(username)).ReturnsAsync(false);
@@ -119,7 +119,7 @@ public class UserServiceTests
         var request = new UpdateUserRequest 
         { 
             FirstName = "N", LastName = "L", FacultyId = Guid.NewGuid(), 
-            Role = UserRole.Teacher, Status = UserStatus.Active 
+            Role = UserRole.Professor, Status = UserStatus.Active 
         };
 
         var result = await _userService.UpdateUserAsync(userId, request);
@@ -137,7 +137,7 @@ public class UserServiceTests
 public async Task DeactivateUserAsync_ShouldReturnTrue_WhenUserIsActive()
 {
     var userId = Guid.NewGuid();
-    var activeUser = User.Create("u", string.Empty, "F", "L", Guid.NewGuid(), UserRole.Teacher);
+    var activeUser = User.Create("u", string.Empty, "F", "L", Guid.NewGuid(), UserRole.Professor);
     typeof(User).GetProperty("Id")?.SetValue(activeUser, userId); 
 
     _mockRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(activeUser);
@@ -180,7 +180,7 @@ public async Task DeleteUserAsync_ShouldReturnFalse_WhenUserNotFound()
 public async Task DeleteUserAsync_ShouldPublishEvent_OnSuccess()
 {
     var userId = Guid.NewGuid();
-    var user = User.Create("u", string.Empty, "F", "L", Guid.NewGuid(), UserRole.Teacher);
+    var user = User.Create("u", string.Empty, "F", "L", Guid.NewGuid(), UserRole.Professor);
     typeof(User).GetProperty("Id")?.SetValue(user, userId); 
 
     _mockRepo.Setup(r => r.GetByIdAsync(userId)).ReturnsAsync(user);

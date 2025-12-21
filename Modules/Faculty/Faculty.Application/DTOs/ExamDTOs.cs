@@ -12,13 +12,15 @@ namespace Faculty.Application.DTOs
         public int Id { get; set; }
         public Guid CourseId { get; set; }
         public string? Name { get; set; }
+        public string? Location { get; set; }
+        public string? ExamType { get; set; }
         public DateTime? ExamDate { get; set; }
         public DateTime? RegDeadline { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
 
-    public class CreateExamRequest
+    public class CreateExamRequestDTO
     {
         [Required]
         public Guid CourseId { get; set; }
@@ -28,13 +30,20 @@ namespace Faculty.Application.DTOs
         public string Name { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(200, MinimumLength = 1)]
+        public string Location { get; set; } = string.Empty;
+
+        [Required]
+        public string ExamType { get; set; } = string.Empty;
+
+        [Required]
         public DateTime ExamDate { get; set; }
 
         [Required]
         public DateTime RegDeadline { get; set; }
     }
 
-    public class UpdateExamRequest
+    public class UpdateExamRequestDTO
     {
         [Required]
         public Guid CourseId { get; set; }
@@ -44,18 +53,27 @@ namespace Faculty.Application.DTOs
         public string Name { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(200, MinimumLength = 1)]
+        public string Location { get; set; } = string.Empty;
+
+        [Required]
+        public string ExamType { get; set; } = string.Empty;
+
+        [Required]
         public DateTime ExamDate { get; set; }
 
         [Required]
         public DateTime RegDeadline { get; set; }
     }
 
-    public class ExamResponse
+    public class ExamResponseDTO
     {
         public int Id { get; set; }
         public Guid CourseId { get; set; }
         public string? CourseName { get; set; }
         public string? Name { get; set; }
+        public string? Location { get; set; }
+        public string? ExamType { get; set; }
         public DateTime? ExamDate { get; set; }
         public DateTime? RegDeadline { get; set; }
         public DateTime CreatedAt { get; set; }

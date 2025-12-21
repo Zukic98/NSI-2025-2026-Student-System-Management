@@ -34,7 +34,7 @@ public class UserRepositoryTests : IDisposable
     private void SeedData()
     {
         
-        _context.DomainUsers.Add(User.Create("teacher_a", string.Empty, "Teacher", "A", FacultyA, UserRole.Teacher).SetId(Guid.NewGuid()));
+        _context.DomainUsers.Add(User.Create("teacher_a", string.Empty, "Teacher", "A", FacultyA, UserRole.Professor).SetId(Guid.NewGuid()));
         
         _context.DomainUsers.Add(User.Create("student_b", string.Empty, "Student", "B", FacultyB, UserRole.Student).SetId(Guid.NewGuid()));
         

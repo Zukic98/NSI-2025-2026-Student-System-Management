@@ -33,10 +33,12 @@ public class ExamServiceTests
         var teacherId = 1;
         var courseId = Guid.NewGuid();
         var facultyId = Guid.NewGuid();
-        var request = new CreateExamRequest
+        var request = new CreateExamRequestDTO
         {
             CourseId = courseId,
             Name = "Final Exam",
+            Location = "Room 101",
+            ExamType = "Written",
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -75,10 +77,12 @@ public class ExamServiceTests
         // Arrange
         var teacherId = 1;
         var courseId = Guid.NewGuid();
-        var request = new CreateExamRequest
+        var request = new CreateExamRequestDTO
         {
             CourseId = courseId,
             Name = "Final Exam",
+            Location = "Room 101",
+            ExamType = "Written",
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -189,14 +193,18 @@ public class ExamServiceTests
             Id = examId,
             CourseId = courseId,
             Name = "Old Exam",
+            Location = "Room 101",
+            ExamType = "Written",
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
 
-        var request = new UpdateExamRequest
+        var request = new UpdateExamRequestDTO
         {
             CourseId = courseId,
             Name = "Updated Exam",
+            Location = "Room 202",
+            ExamType = "Oral",
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -266,5 +274,135 @@ public class ExamServiceTests
         // Act & Assert
         await Assert.ThrowsAsync<UnauthorizedAccessException>(
             () => _examService.DeleteExamAsync(examId, teacherId));
+    }
+
+    [Fact]
+    public async Task CreateExamAsync_DateConflict_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var teacherId = 1;
+        var courseId = Guid.NewGuid();
+        var facultyId = Guid.NewGuid();
+        var examDate = DateTime.UtcNow.AddDays(7);
+        var location = "Room 101";
+
+        var request = new CreateExamRequestDTO
+        {
+            CourseId = courseId,
+            Name = "Final Exam",
+            Location = location,
+            ExamType = "Written",
+            ExamDate = examDate,
+            RegDeadline = DateTime.UtcNow.AddDays(5)
+        };
+
+        _tenantServiceMock.Setup(x => x.GetCurrentFacultyId()).Returns(facultyId);
+        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            .ReturnsAsync(true);
+        _examRepositoryMock.Setup(x => x.HasDateConflictAsync(courseId, null, examDate, location))
+            .ReturnsAsync(true);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _examService.CreateExamAsync(request, teacherId));
+    }
+
+    [Fact]
+    public async Task UpdateExamAsync_DateConflict_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        var examId = 1;
+        var teacherId = 1;
+        var courseId = Guid.NewGuid();
+        var examDate = DateTime.UtcNow.AddDays(10);
+        var location = "Room 202";
+
+        var existingExam = new Exam
+        {
+            Id = examId,
+            CourseId = courseId,
+            Name = "Old Exam",
+            Location = "Room 101",
+            ExamType = "Written",
+            ExamDate = DateTime.UtcNow.AddDays(7),
+            RegDeadline = DateTime.UtcNow.AddDays(5)
+        };
+
+        var request = new UpdateExamRequestDTO
+        {
+            CourseId = courseId,
+            Name = "Updated Exam",
+            Location = location,
+            ExamType = "Oral",
+            ExamDate = examDate,
+            RegDeadline = DateTime.UtcNow.AddDays(8)
+        };
+
+        _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(existingExam);
+        _examRepositoryMock.Setup(x => x.IsProfessorAssignedToCourseAsync(teacherId, courseId))
+            .ReturnsAsync(true);
+        _examRepositoryMock.Setup(x => x.HasDateConflictAsync(courseId, examId, examDate, location))
+            .ReturnsAsync(true);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _examService.UpdateExamAsync(examId, request, teacherId));
+    }
+
+    [Fact]
+    public async Task UpdateExamAsync_ExamNotFound_ShouldReturnNull()
+    {
+        // Arrange
+        var examId = 999;
+        var teacherId = 1;
+        var request = new UpdateExamRequestDTO
+        {
+            CourseId = Guid.NewGuid(),
+            Name = "Updated Exam",
+            Location = "Room 202",
+            ExamType = "Oral",
+            ExamDate = DateTime.UtcNow.AddDays(10),
+            RegDeadline = DateTime.UtcNow.AddDays(8)
+        };
+
+        _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync((Exam)null);
+
+        // Act
+        var result = await _examService.UpdateExamAsync(examId, request, teacherId);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task DeleteExamAsync_ExamNotFound_ShouldReturnFalse()
+    {
+        // Arrange
+        var examId = 999;
+        var teacherId = 1;
+
+        _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync((Exam)null);
+
+        // Act
+        var result = await _examService.DeleteExamAsync(examId, teacherId);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task GetExamByIdAsync_ExamNotFound_ShouldReturnNull()
+    {
+        // Arrange
+        var examId = 999;
+        var teacherId = 1;
+
+        _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync((Exam)null);
+
+        // Act
+        var result = await _examService.GetExamByIdAsync(examId, teacherId);
+
+        // Assert
+        Assert.Null(result);
     }
 }

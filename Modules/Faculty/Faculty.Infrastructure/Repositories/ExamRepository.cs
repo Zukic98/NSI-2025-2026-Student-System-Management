@@ -52,6 +52,8 @@ namespace Faculty.Infrastructure.Repositories
                 return null;
 
             existing.Name = exam.Name;
+            existing.Location = exam.Location;
+            existing.ExamType = exam.ExamType;
             existing.ExamDate = exam.ExamDate;
             existing.RegDeadline = exam.RegDeadline;
             existing.UpdatedAt = DateTime.UtcNow;
@@ -75,6 +77,22 @@ namespace Faculty.Infrastructure.Repositories
         {
             return await _context.CourseAssignments
                 .AnyAsync(ca => ca.TeacherId == teacherId && ca.CourseId == courseId);
+        }
+
+        public async Task<bool> HasDateConflictAsync(Guid courseId, int? excludeExamId, DateTime examDate, string location)
+        {
+            var query = _context.Exams
+                .Where(e => e.CourseId == courseId &&
+                           e.ExamDate.HasValue &&
+                           e.ExamDate.Value.Date == examDate.Date &&
+                           e.Location == location);
+
+            if (excludeExamId.HasValue)
+            {
+                query = query.Where(e => e.Id != excludeExamId.Value);
+            }
+
+            return await query.AnyAsync();
         }
     }
 }
