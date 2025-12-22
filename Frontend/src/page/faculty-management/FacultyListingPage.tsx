@@ -30,11 +30,8 @@ type ToastMessage = {
   message: string;
 };
 
-type FacultyListingPageProps = {
-  apiBaseUrl: string; // npr. /api/university/faculties
-};
-
 // Helper za izvlačenje “ljudske” poruke iz ASP.NET backend-a
+// TODO: This entire page is a travesty and should be completely refactored.
 async function extractErrorMessage(
   response: Response,
   fallback: string,
@@ -75,7 +72,7 @@ async function extractErrorMessage(
   }
 }
 
-export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
+export function FacultyListingPage() {
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortAsc, setSortAsc] = useState(true);
@@ -111,7 +108,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
 
   const fetchFaculties = async () => {
     try {
-      const response = await fetch(apiBaseUrl);
+      const response = await fetch('/api/university/faculties');
       if (!response.ok) {
         const msg = await extractErrorMessage(
           response,
@@ -151,7 +148,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
         code: input.code,
       };
 
-      const response = await fetch(apiBaseUrl, {
+      const response = await fetch('/api/university/faculties', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,7 +204,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
         code: input.code,
       };
 
-      const response = await fetch(`${apiBaseUrl}/${id}`, {
+      const response = await fetch(`/api/university/faculties/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -243,7 +240,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
 
   const deleteFacultyApi = async (id: number): Promise<boolean> => {
     try {
-      const response = await fetch(`${apiBaseUrl}/${id}`, {
+      const response = await fetch(`/api/university/faculties/${id}`, {
         method: 'DELETE',
       });
 
@@ -278,7 +275,7 @@ export function FacultyListingPage({ apiBaseUrl }: FacultyListingPageProps) {
   useEffect(() => {
     fetchFaculties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBaseUrl]);
+  }, []);
 
   /* FILTER + SORT */
   const filteredFaculties = useMemo(

@@ -1,4 +1,3 @@
-import { API_BASE_URL } from '../constants/constants.ts';
 import type { AuthInfo, AccessToken } from '../init/auth.tsx';
 import { jwtDecode } from 'jwt-decode';
 
@@ -15,7 +14,7 @@ interface RefreshResponse {
 
 export async function loginWithCredentials(email: string, password: string): Promise<AuthInfo> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetch(`/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,7 +48,7 @@ export async function loginWithCredentials(email: string, password: string): Pro
 
 export async function logoutFromServer(): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+    const response = await fetch(`/api/auth/logout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,7 +70,7 @@ export async function logoutFromServer(): Promise<void> {
 
 export async function attemptSilentRefresh(): Promise<AuthInfo> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+    const response = await fetch(`/api/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
