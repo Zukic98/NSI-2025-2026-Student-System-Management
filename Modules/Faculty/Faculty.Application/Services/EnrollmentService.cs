@@ -97,7 +97,7 @@ namespace Faculty.Application.Services
 
             var enrollment = new Faculty.Core.Entities.Enrollment
             {
-                FacultyId = Guid.Parse("641a4bfe-d83b-403d-be28-db9fa41330e5e"),
+                FacultyId = Guid.Parse("d02e30bd-0b3a-4342-8b33-cff097f5f9c1"),
                 StudentId = 1,
                 CourseId = dto.CourseId,
                 Status = "Enrolled",

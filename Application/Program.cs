@@ -17,6 +17,7 @@ using University.Application.Interfaces.Services;
 using University.Application.Services;
 using Faculty.API;
 using Faculty.Core.Interfaces;
+using Faculty.Infrastructure.Db;
 
 
 
@@ -139,6 +140,17 @@ if (applyMigrations)
         catch (Exception ex)
         {
             Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
+        }
+
+        // Faculty module
+        try
+        {
+            var facultyDb = services.GetRequiredService<FacultyDbContext>();
+            facultyDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
         }
 
         // Support module
