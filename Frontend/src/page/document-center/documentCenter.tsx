@@ -33,6 +33,8 @@ import {
 } from '@coreui/react';
 import './documentCenter.css';
 
+const API_BASE_URL = 'https://localhost:5001'; 
+
 export default function DocumentCenterDashboard() {
   const [requestType, setRequestType] = useState('');
   const [status, setStatus] = useState('');
@@ -82,7 +84,7 @@ export default function DocumentCenterDashboard() {
       setSubmitting(true);
 
       const response = await fetch(
-        `/api/Support/document-request`,
+        `${API_BASE_URL}/api/Support/document-request`,
         {
           method: 'POST',
           headers: {

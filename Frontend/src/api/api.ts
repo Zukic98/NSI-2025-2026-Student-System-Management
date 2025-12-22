@@ -1,8 +1,9 @@
-import type { Course } from '../component/faculty/courses/types/Course';
-import type { CourseDTO } from '../dto/CourseDTO';
-
-import type { TwoFAConfirmResponse, TwoFASetupResponse } from '../models/2fa/TwoFA.types';
 import type { RestClient } from './rest';
+
+import type {
+  TwoFASetupResponse,
+  TwoFAConfirmResponse,
+} from '../models/2fa/TwoFA.types';
 
 export class API {
     #restClient: RestClient;
@@ -43,26 +44,5 @@ export class API {
 
     async verifyTwoFactorLogin(code: string): Promise<TwoFAConfirmResponse> {
         return this.#restClient.post('/api/auth/verify-2fa', { code });
-    }
-
-    // Course management methods
-    async getAllCourses(): Promise<Course[]> {
-        return this.get<Course[]>("/api/faculty/courses");
-    }
-
-    async getCourse(id: string): Promise<Course> {
-        return this.get<Course>(`/api/faculty/courses/${id}`);
-    }
-
-    async createCourse(dto: CourseDTO): Promise<Course> {
-        return this.post<Course>("/api/faculty/courses", dto);
-    }
-
-    async updateCourse(id: string, dto: CourseDTO): Promise<Course> {
-        return this.put<Course>(`/api/faculty/courses/${id}`, dto);
-    }
-
-    async deleteCourse(id: string): Promise<void> {
-        return this.delete<void>(`/api/faculty/courses/${id}`);
     }
 }

@@ -11,6 +11,8 @@ import logo from '../../assets/images/logo.jpg';
 import { FacultyListingPage } from './FacultyListingPage';
 import './FacultyManagementPage.css';
 
+const FACULTIES_API_BASE_URL = '/api/university/faculties';
+
 type Role = 'Superadmin' | 'User';
 const CURRENT_USER_ROLE: Role = 'Superadmin'; 
 
@@ -87,7 +89,7 @@ export function FacultyManagementPage() {
         </CSidebar>
 
         <main className="fm-content">
-          <FacultyListingPage />
+          <FacultyListingPage apiBaseUrl={FACULTIES_API_BASE_URL} />
         </main>
       </div>
     </CContainer>

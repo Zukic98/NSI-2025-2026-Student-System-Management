@@ -12,6 +12,7 @@ namespace Identity.Application.Services;
 
 public class AuthService : IAuthService
 {
+    //private readonly IUserRepository _userRepository;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IIdentityHasherService _passwordHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -51,7 +52,7 @@ public class AuthService : IAuthService
         }
 
         // Verify password
-        if (!_passwordHasher.VerifyPassword(user, password, user.PasswordHash))
+        if (!_passwordHasher.VerifyPassword(password, user.PasswordHash))
         {
             _logger.LogWarning("Authentication failed: Invalid password - {Email}", email);
             throw new UnauthorizedAccessException("Invalid email or password");
@@ -103,6 +104,9 @@ public class AuthService : IAuthService
 
         // Get user
         var user = await _userRepository.GetByIdAsync(token.UserId);
+
+
+
 
         if (user == null)
         {

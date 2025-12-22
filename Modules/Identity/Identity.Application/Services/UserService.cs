@@ -32,10 +32,8 @@ internal class UserService(
 
         if (await userRepository.IsUsernameTakenAsync(username))
         {
-            // TODO: this should check for email instead ?? Thats what we login with
             throw new ArgumentException($"Username '{username}' is already taken.", nameof(username));
         }
-
         var passwordHash = identityHasherService.HashPassword(password);
         var newUser = User.Create(
             username,
