@@ -35,8 +35,6 @@ public class AuthService : IAuthService
     public async Task<AuthResult> AuthenticateAsync(
         string email,
         string password,
-        string ipAddress,
-        string userAgent,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Authentication attempt for email: {Email}", email);
@@ -68,7 +66,7 @@ public class AuthService : IAuthService
         };
 
         var accessToken = _jwtTokenService.GenerateAccessToken(tokenClaims);
-        var refreshToken = _jwtTokenService.CreateRefreshToken(user.Id, ipAddress, userAgent);
+        var refreshToken = _jwtTokenService.CreateRefreshToken(user.Id);
 
         // Save refresh token to repository
         await _refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
@@ -86,8 +84,6 @@ public class AuthService : IAuthService
 
     public async Task<AuthResult> RefreshAuthenticationAsync(
         string refreshToken,
-        string ipAddress,
-        string userAgent,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Token refresh attempt");
@@ -126,7 +122,7 @@ public class AuthService : IAuthService
         };
 
         var accessToken = _jwtTokenService.GenerateAccessToken(tokenClaims);
-        var newRefreshToken = _jwtTokenService.CreateRefreshToken(user.Id, ipAddress, userAgent);
+        var newRefreshToken = _jwtTokenService.CreateRefreshToken(user.Id);
 
         token.ReplacedByToken = newRefreshToken.Token;
         await _refreshTokenRepository.UpdateAsync(token, cancellationToken);

@@ -1,4 +1,3 @@
-import { api } from "../../api/rest"
 import type { Course } from "./types";
 
 async function fetchCoursesFromAPI(): Promise<Course[]> {
