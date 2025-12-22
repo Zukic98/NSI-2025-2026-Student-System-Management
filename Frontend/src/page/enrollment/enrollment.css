@@ -276,15 +276,13 @@
 
 /* Confirm button centered and sized to match Figma modal design */
 .confirm-button {
-  width: auto;
-  min-width: 400px;
   padding: 1rem 3rem;
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 600;
   background-color: #1e4d8b !important;
   color: white !important;
   border: none !important;
-  border-radius: 3rem;
+  border-radius: 1rem;
   transition: all 0.2s ease;
 }
 

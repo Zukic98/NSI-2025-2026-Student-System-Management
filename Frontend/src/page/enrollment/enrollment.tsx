@@ -218,7 +218,7 @@ const fetchCourses = useCallback(
         )}
       </CContainer>
 
-      <CModal visible={showModal} onClose={() => setShowModal(false)} alignment="center" size="lg" z-index="10000">
+      <CModal visible={showModal} onClose={() => setShowModal(false)} alignment="center" size="lg" className="modal-super-high-zindex">
         <CModalHeader className="modal-header-custom">
           <CModalTitle className="modal-title-custom">Course Details</CModalTitle>
         </CModalHeader>
@@ -235,7 +235,7 @@ const fetchCourses = useCallback(
         </CModalBody>
         <div className="modal-footer-custom">
           <CButton className="confirm-button" onClick={handleConfirmEnrollment} disabled={isEnrolling}>
-            {isEnrolling ? "Enrolling..." : "Confirm enrollment"}
+            {"Confirm enrollment"}
           </CButton>
         </div>
       </CModal>
