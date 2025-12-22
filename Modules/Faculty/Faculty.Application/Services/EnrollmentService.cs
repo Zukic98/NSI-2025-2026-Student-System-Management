@@ -1,13 +1,8 @@
-﻿using Faculty.Application.DTOs;
+﻿using System.Security.Claims;
+using Faculty.Application.DTOs;
 using Faculty.Application.Interfaces;
-using Faculty.Core.Entities;
 using Faculty.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Faculty.Application.Services
 {
@@ -16,17 +11,12 @@ namespace Faculty.Application.Services
         private readonly IEnrollmentRepository _repo;
         private readonly IHttpContextAccessor _http;
 
-        public EnrollmentService(
-            IEnrollmentRepository repo,
-            IHttpContextAccessor http)
+        public EnrollmentService(IEnrollmentRepository repo, IHttpContextAccessor http)
         {
             _repo = repo;
             _http = http;
         }
 
-        // =========================
-        // JWT helper (OSTAJE)
-        // =========================
         private int GetStudentIdFromJwt()
         {
             var user = _http.HttpContext?.User;
@@ -44,9 +34,6 @@ namespace Faculty.Application.Services
             return studentId;
         }
 
-        // =========================
-        // GET MY ENROLLMENTS
-        // =========================
         public async Task<List<EnrollmentListItemDto>> GetMyEnrollmentsAsync()
         {
             var studentId = GetStudentIdFromJwt();
@@ -57,34 +44,32 @@ namespace Faculty.Application.Services
             {
                 EnrollmentId = e.Id,
                 CourseId = e.CourseId,
-                CourseName = e.Course.Name,
+                CourseName = e.Course?.Name ?? "",
                 Status = e.Status,
                 Grade = e.Grade
             }).ToList();
         }
 
-        // =========================
-        // CREATE ENROLLMENT
-        // =========================
-        public async Task<CreateEnrollmentResponseDto> CreateEnrollmentAsync(
-            CreateEnrollmentRequestDto dto)
+        public async Task<CreateEnrollmentResponseDto> CreateEnrollmentAsync(CreateEnrollmentRequestDto dto)
         {
             var studentId = GetStudentIdFromJwt();
 
             // student exists
-            if (!await _repo.StudentExistsAsync(studentId))
+            var studentExists = await _repo.StudentExistsAsync(studentId);
+            if (!studentExists)
                 throw new KeyNotFoundException("Student not found.");
 
             // course exists
-            var course = await _repo.GetCourseAsync(dto.CourseId);
+            var course = await _repo.GetCourseByIdAsync(dto.CourseId);
             if (course is null)
                 throw new KeyNotFoundException("Course not found.");
 
             // not already enrolled
-            if (await _repo.ExistsAsync(studentId, dto.CourseId))
-                throw new InvalidOperationException("Already enrolled in this course.");
+            var already = await _repo.IsAlreadyEnrolledAsync(studentId, dto.CourseId);
+            if (already)
+                throw new InvalidOperationException("Already enrolled in this course");
 
-            var enrollment = new Enrollment
+            var enrollment = new Faculty.Core.Entities.Enrollment
             {
                 StudentId = studentId,
                 CourseId = dto.CourseId,
@@ -93,15 +78,16 @@ namespace Faculty.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            var created = await _repo.AddAsync(enrollment);
+            await _repo.AddAsync(enrollment);
+            await _repo.SaveChangesAsync();
 
             return new CreateEnrollmentResponseDto
             {
-                EnrollmentId = created.Id,
-                StudentId = created.StudentId,
-                CourseId = created.CourseId,
+                EnrollmentId = enrollment.Id,
+                StudentId = enrollment.StudentId,
+                CourseId = enrollment.CourseId,
                 CourseName = course.Name,
-                EnrollmentDate = created.CreatedAt
+                EnrollmentDate = enrollment.CreatedAt
             };
         }
     }

@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Faculty.Infrastructure.Repositories;
+using Faculty.Core.Interfaces;
+using Faculty.Infrastructure.Repositories;
+
 
 
 namespace Faculty.Infrastructure.DependencyInjection
@@ -14,6 +17,7 @@ namespace Faculty.Infrastructure.DependencyInjection
         public static IServiceCollection AddFacultyModule(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ICourseRepository, CourseRepository>();
+            services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
             services.AddHttpContextAccessor();
             services.AddScoped<ITenantService, HttpTenantService>();
             services.AddDbContext<FacultyDbContext>(options =>
