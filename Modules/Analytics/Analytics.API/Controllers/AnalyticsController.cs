@@ -1,45 +1,55 @@
 ﻿using Analytics.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Faculty.Infrastructure.Http;
+using System.Security.Claims;
 
-using Faculty.Core.Interfaces;
-using Faculty.Core.Services;
+namespace Analytics.API.Controllers;
 
-
-namespace Analytics.API.Controllers
+[ApiController]
+[Route("api/analytics")]
+[Authorize]
+public class AnalyticsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/Analytics")]
-    public class AnalyticsController : ControllerBase
+    private readonly IStudentAnalyticsService _analyticsService;
+    private readonly ITenantService _tenantService;
+
+    public AnalyticsController(IStudentAnalyticsService analyticsService, ITenantService tenantService)
     {
-        private readonly IStudentAnalyticsService _analyticsService;
-        private readonly ITenantService _tenantService; 
+        _analyticsService = analyticsService;
+        _tenantService = tenantService;
+    }
 
-        public AnalyticsController(IStudentAnalyticsService analyticsService, ITenantService tenantService)
-        {
-            _analyticsService = analyticsService;
-            _tenantService = tenantService;
-        }
-
-        [HttpGet("student-performance")]
-        public async Task<IActionResult> GetStudentStats()
+    [HttpGet("student-performance")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetStudentStats()
+    {
+        try
         {
             var facultyId = _tenantService.GetCurrentFacultyId().ToString();
 
-            var userId = "user123"; // hardcoded 
+            var userId = User.FindFirst("userId")?.Value;
 
-            try
+            if (string.IsNullOrEmpty(userId))
             {
-                var stats = await _analyticsService.GetStudentStatsAsync(userId, facultyId);
-
-                if (stats == null) return NotFound("Data not found.");
-
-                return Ok(stats);
+                return Unauthorized("User identity could not be verified from the provided token.");
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error: {ex.Message}");
-            }
+
+            var stats = await _analyticsService.GetStudentStatsAsync(userId, facultyId);
+
+            return stats is null
+                ? NotFound($"Statistics not found for student {userId} at faculty {facultyId}.")
+                : Ok(stats);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"An internal error occurred: {ex.Message}");
         }
     }
 }
