@@ -117,3 +117,9 @@ To start the frontend:
 
 Before commiting new changes to frontend please run `npm run build` to make sure there are no build
 breaking changes.
+
+### SSL
+In order to run the app in Https mode (which is required) you will need to generate a 
+certificate/key pair which is trusted both by the backend .net and vite.
+
+This key/certificate pair is automatically generated when you run `npm run build` or `dotnet build`.
