@@ -9,6 +9,5 @@ public interface IJwtTokenService
     string GenerateAccessToken(TokenClaims claims);
     string GenerateRefreshToken();
     RefreshToken CreateRefreshToken(Guid userId);
-    PublicKeyInfo GetPublicKey();
     ClaimsPrincipal? ValidateAccessToken(string token);
 }
