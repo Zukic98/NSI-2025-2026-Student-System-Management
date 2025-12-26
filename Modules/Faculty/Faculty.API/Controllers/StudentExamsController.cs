@@ -27,14 +27,14 @@ public class StudentExamsController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        if (!TryResolveIdentity(out var userId, out var facultyId, out var errorResult))
+        if (!TryResolveUserId(out var userId, out var errorResult))
         {
             return errorResult!;
         }
 
         try
         {
-            var registration = await _service.RegisterAsync(request.ExamId, userId!, facultyId, cancellationToken);
+            var registration = await _service.RegisterAsync(request.ExamId, userId!, cancellationToken);
             return CreatedAtAction(nameof(GetRegistrations), null, registration);
         }
         catch (FacultyApplicationException ex)
@@ -46,14 +46,14 @@ public class StudentExamsController : ControllerBase
     [HttpGet("available")]
     public async Task<IActionResult> GetAvailableExams(CancellationToken cancellationToken)
     {
-        if (!TryResolveIdentity(out var userId, out var facultyId, out var errorResult))
+        if (!TryResolveUserId(out var userId, out var errorResult))
         {
             return errorResult!;
         }
 
         try
         {
-            var exams = await _service.GetAvailableExamsAsync(userId!, facultyId, cancellationToken);
+            var exams = await _service.GetAvailableExamsAsync(userId!, cancellationToken);
             return Ok(exams);
         }
         catch (FacultyApplicationException ex)
@@ -65,14 +65,14 @@ public class StudentExamsController : ControllerBase
     [HttpGet("registrations")]
     public async Task<IActionResult> GetRegistrations(CancellationToken cancellationToken)
     {
-        if (!TryResolveIdentity(out var userId, out var facultyId, out var errorResult))
+        if (!TryResolveUserId(out var userId, out var errorResult))
         {
             return errorResult!;
         }
 
         try
         {
-            var registrations = await _service.GetRegistrationsAsync(userId!, facultyId, cancellationToken);
+            var registrations = await _service.GetRegistrationsAsync(userId!, cancellationToken);
             return Ok(registrations);
         }
         catch (FacultyApplicationException ex)
@@ -81,21 +81,13 @@ public class StudentExamsController : ControllerBase
         }
     }
 
-    private bool TryResolveIdentity(out string? userId, out Guid facultyId, out IActionResult? errorResult)
+    private bool TryResolveUserId(out string? userId, out IActionResult? errorResult)
     {
         userId = User.FindFirst("userId")?.Value;
-        var facultyClaim = User.FindFirst("tenantId")?.Value;
 
         if (string.IsNullOrWhiteSpace(userId))
         {
             errorResult = Unauthorized(new { error = "Missing user identifier claim." });
-            facultyId = Guid.Empty;
-            return false;
-        }
-
-        if (!Guid.TryParse(facultyClaim, out facultyId))
-        {
-            errorResult = Unauthorized(new { error = "Missing faculty identifier claim." });
             return false;
         }
 

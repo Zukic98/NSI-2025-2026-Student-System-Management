@@ -23,7 +23,7 @@ public class StudentExamRegistrationServiceTests
         var exam = SeedExam(context, course.Id, DateTime.UtcNow.AddDays(3), DateTime.UtcNow.AddDays(1));
         var service = CreateService(context);
 
-        var result = await service.RegisterAsync(exam.Id, userId, _facultyId);
+        var result = await service.RegisterAsync(exam.Id, userId);
 
         Assert.Equal(exam.Id, result.ExamId);
         Assert.Equal(student.Id, result.StudentId);
@@ -41,7 +41,7 @@ public class StudentExamRegistrationServiceTests
         var service = CreateService(context);
 
         var exception = await Assert.ThrowsAsync<FacultyApplicationException>(() =>
-            service.RegisterAsync(exam.Id, userId, _facultyId));
+            service.RegisterAsync(exam.Id, userId));
 
         Assert.Equal(HttpStatusCode.Forbidden, exception.StatusCode);
     }
@@ -70,7 +70,7 @@ public class StudentExamRegistrationServiceTests
 
         var service = CreateService(context);
 
-        var exams = await service.GetAvailableExamsAsync(userId, _facultyId);
+        var exams = await service.GetAvailableExamsAsync(userId);
 
         Assert.Single(exams);
         Assert.Equal(visibleExam.Id, exams[0].ExamId);

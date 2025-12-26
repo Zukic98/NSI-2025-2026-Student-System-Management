@@ -17,16 +17,16 @@ public class StudentExamRegistrationService : IStudentExamRegistrationService
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
-    public async Task<ExamRegistrationResponseDto> RegisterAsync(int examId, string userId, Guid facultyId, CancellationToken cancellationToken = default)
+    public async Task<ExamRegistrationResponseDto> RegisterAsync(int examId, string userId, CancellationToken cancellationToken = default)
     {
         if (examId <= 0)
         {
             throw new FacultyApplicationException("A valid exam identifier must be provided.", HttpStatusCode.BadRequest);
         }
 
-        ValidateIdentity(userId, facultyId);
+        ValidateIdentity(userId);
 
-        var student = await ResolveStudentAsync(userId, facultyId, cancellationToken);
+        var student = await ResolveStudentAsync(userId, cancellationToken);
         var exam = await _repository.GetExamWithDetailsAsync(examId, cancellationToken)
                    ?? throw new FacultyApplicationException("Requested exam does not exist.", HttpStatusCode.NotFound);
 
@@ -58,7 +58,7 @@ public class StudentExamRegistrationService : IStudentExamRegistrationService
         {
             StudentId = student.Id,
             ExamId = exam.Id,
-            FacultyId = facultyId,
+            FacultyId = student.FacultyId,
             RegistrationDate = now,
             CreatedAt = now,
             Status = DefaultStatus
@@ -78,10 +78,10 @@ public class StudentExamRegistrationService : IStudentExamRegistrationService
         };
     }
 
-    public async Task<IReadOnlyList<AvailableExamDto>> GetAvailableExamsAsync(string userId, Guid facultyId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<AvailableExamDto>> GetAvailableExamsAsync(string userId, CancellationToken cancellationToken = default)
     {
-        ValidateIdentity(userId, facultyId);
-        var student = await ResolveStudentAsync(userId, facultyId, cancellationToken);
+        ValidateIdentity(userId);
+        var student = await ResolveStudentAsync(userId, cancellationToken);
 
         var enrolledCourseIds = student.Enrollments
             .Select(e => e.CourseId)
@@ -102,10 +102,10 @@ public class StudentExamRegistrationService : IStudentExamRegistrationService
         }).ToList();
     }
 
-    public async Task<IReadOnlyList<RegisteredExamDto>> GetRegistrationsAsync(string userId, Guid facultyId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<RegisteredExamDto>> GetRegistrationsAsync(string userId, CancellationToken cancellationToken = default)
     {
-        ValidateIdentity(userId, facultyId);
-        var student = await ResolveStudentAsync(userId, facultyId, cancellationToken);
+        ValidateIdentity(userId);
+        var student = await ResolveStudentAsync(userId, cancellationToken);
 
         var registrations = await _repository.GetRegistrationsAsync(student.Id, cancellationToken);
 
@@ -123,9 +123,9 @@ public class StudentExamRegistrationService : IStudentExamRegistrationService
         }).ToList();
     }
 
-    private async Task<Student> ResolveStudentAsync(string userId, Guid facultyId, CancellationToken cancellationToken)
+    private async Task<Student> ResolveStudentAsync(string userId, CancellationToken cancellationToken)
     {
-        var student = await _repository.GetStudentByUserIdAsync(userId, facultyId, cancellationToken);
+        var student = await _repository.GetStudentByUserIdAsync(userId, cancellationToken);
         if (student == null)
         {
             throw new FacultyApplicationException("Student record for the current user was not found.", HttpStatusCode.NotFound);
@@ -134,16 +134,11 @@ public class StudentExamRegistrationService : IStudentExamRegistrationService
         return student;
     }
 
-    private static void ValidateIdentity(string userId, Guid facultyId)
+    private static void ValidateIdentity(string userId)
     {
         if (string.IsNullOrWhiteSpace(userId))
         {
             throw new FacultyApplicationException("Authenticated user identifier was not provided.", HttpStatusCode.BadRequest);
-        }
-
-        if (facultyId == Guid.Empty)
-        {
-            throw new FacultyApplicationException("Faculty identifier derived from the token is invalid.", HttpStatusCode.BadRequest);
         }
     }
 

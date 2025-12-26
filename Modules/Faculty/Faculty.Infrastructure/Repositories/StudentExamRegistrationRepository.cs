@@ -14,12 +14,12 @@ public class StudentExamRegistrationRepository : IStudentExamRegistrationReposit
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task<Student?> GetStudentByUserIdAsync(string userId, Guid facultyId, CancellationToken cancellationToken = default)
+    public async Task<Student?> GetStudentByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         return await _context.Students
             .Include(s => s.Enrollments)
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.UserId == userId && s.FacultyId == facultyId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.UserId == userId, cancellationToken);
     }
 
     public async Task<Exam?> GetExamWithDetailsAsync(int examId, CancellationToken cancellationToken = default)
