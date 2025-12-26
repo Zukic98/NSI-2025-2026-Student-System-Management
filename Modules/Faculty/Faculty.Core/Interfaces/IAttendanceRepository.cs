@@ -13,5 +13,7 @@ public interface IAttendanceRepository
     Task<Attendance> CreateOrUpdateAttendanceAsync(Attendance attendance);
     Task<bool> IsTeacherAssignedToCourseAsync(string userId, Guid courseId);
     Task<Teacher?> GetTeacherByUserIdAsync(string userId);
+
+    Task<Guid> GetCourseFacultyIdAsync(Guid courseId);
 }
 

@@ -11,14 +11,10 @@ namespace Faculty.Application.Services;
 public class AttendanceService : IAttendanceService
 {
     private readonly IAttendanceRepository _attendanceRepository;
-    private readonly ITenantService _tenantService;
-
     public AttendanceService(
-        IAttendanceRepository attendanceRepository,
-        ITenantService tenantService)
+        IAttendanceRepository attendanceRepository)
     {
         _attendanceRepository = attendanceRepository ?? throw new ArgumentNullException(nameof(attendanceRepository));
-        _tenantService = tenantService ?? throw new ArgumentNullException(nameof(tenantService));
     }
 
     /// <summary>
@@ -92,8 +88,7 @@ public class AttendanceService : IAttendanceService
 
         // Create or update attendance records
         var dateOnly = DateTime.SpecifyKind(request.Date.Date, DateTimeKind.Utc);
-        var facultyId = _tenantService.GetCurrentFacultyId();
-
+        var facultyId = await _attendanceRepository.GetCourseFacultyIdAsync(request.CourseId);
         foreach (var record in request.Records)
         {
             var attendance = new Attendance

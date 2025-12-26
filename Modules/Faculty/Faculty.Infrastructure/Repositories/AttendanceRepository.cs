@@ -97,5 +97,20 @@ public class AttendanceRepository : IAttendanceRepository
         return await _context.Teachers
             .FirstOrDefaultAsync(t => t.UserId == userId);
     }
+
+    public async Task<Guid> GetCourseFacultyIdAsync(Guid courseId)
+    {
+        var facultyId = await _context.Courses
+            .Where(c => c.Id == courseId)
+            .Select(c => c.FacultyId)
+            .FirstOrDefaultAsync();
+
+        if (facultyId == Guid.Empty)
+        {
+            throw new ArgumentException($"Course with ID '{courseId}' was not found.");
+        }
+
+        return facultyId;
+    }
 }
 

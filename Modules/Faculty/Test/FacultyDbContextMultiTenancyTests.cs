@@ -1,5 +1,5 @@
 using Faculty.Core.Entities;
-using Faculty.Core.Interfaces;
+using Faculty.Infrastructure.Http;
 using Faculty.Infrastructure.Db;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
