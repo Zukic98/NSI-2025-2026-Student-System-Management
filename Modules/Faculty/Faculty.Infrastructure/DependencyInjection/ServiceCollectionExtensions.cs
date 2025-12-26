@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Faculty.Infrastructure.Repositories;
 using Faculty.Application.Services;
 using Faculty.Application.Interfaces;
+using Faculty.Infrastructure.Http;
 using FluentValidation;
 using Faculty.Application.Validators;
 
@@ -18,15 +19,19 @@ namespace Faculty.Infrastructure.DependencyInjection
         {
             services.AddScoped<ICourseRepository, CourseRepository>();
             services.AddScoped<ICourseService, CourseService>();
+
+            // From feature branch: exams & teachers
             services.AddScoped<IExamRepository, ExamRepository>();
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<ITeacherRepository, TeacherRepository>();
+
             services.AddHttpContextAccessor();
             services.AddScoped<ITenantService, HttpTenantService>();
+
             services.AddDbContext<FacultyDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("Database")));
 
-            // Add FluentValidation
+            // Add FluentValidation validators if present (feature branch)
             services.AddValidatorsFromAssemblyContaining<CreateExamRequestValidator>();
 
             return services;

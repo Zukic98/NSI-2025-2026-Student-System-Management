@@ -1,15 +1,20 @@
-// Import module DI namespaces
-using University.Infrastructure;
-using Support.Infrastructure;
-using Notifications.Infrastructure;
+using Analytics.API.Controllers;
 using Analytics.Infrastructure;
-using Identity.Infrastructure.DependencyInjection;
-using Faculty.Infrastructure.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using Support.Infrastructure.Db;
-using University.Infrastructure.Db;
-using Identity.Infrastructure.Db;
 using Faculty.Infrastructure.Db;
+using Faculty.Infrastructure.DependencyInjection;
+using Identity.API.Controllers;
+using Identity.Infrastructure.Db;
+using Identity.Infrastructure.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.EntityFrameworkCore;
+using Notifications.API.Controllers;
+using Notifications.Infrastructure;
+using Support.API.Controllers;
+using Support.Infrastructure;
+using Support.Infrastructure.Db;
+using University.API.Controllers;
+using University.Infrastructure;
+using University.Infrastructure.Db;
 using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,23 +43,24 @@ var moduleControllers = new[]
 
 foreach (var asm in moduleControllers)
 {
-    mvcBuilder.PartManager.ApplicationParts.Add(new Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart(asm));
+    mvcBuilder.PartManager.ApplicationParts.Add(new AssemblyPart(asm));
 }
 
-// Add FluentValidation
+// Add FluentValidation (from your branch)
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 
+// Development CORS policy (master)
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy(CorsPolicyName, policy =>
-	{
-		policy
-			.WithOrigins("http://localhost:5173")  
-			.AllowAnyHeader()
-			.AllowAnyMethod()
-		    .AllowCredentials();   
-	});
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
 
 // Add Swagger
@@ -70,9 +76,8 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// CORS Configuration for aggregated host - allow frontend dev server
+// CORS Configuration for aggregated host - allow frontend dev server (your branch)
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
@@ -91,45 +96,44 @@ var applyMigrations = true;
 
 if (applyMigrations)
 {
-
     using (var scope = app.Services.CreateScope())
     {
-    var services = scope.ServiceProvider;
+        var services = scope.ServiceProvider;
 
-    // Identity module
-    try
-    {
-        var identityDb = services.GetRequiredService<AuthDbContext>();
-        identityDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
-    }
+        // Identity module
+        try
+        {
+            var identityDb = services.GetRequiredService<AuthDbContext>();
+            identityDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
+        }
 
-    // University module
-    try
-    {
-        var universityDb = services.GetRequiredService<UniversityDbContext>();
-        universityDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
-    }
+        // University module
+        try
+        {
+            var universityDb = services.GetRequiredService<UniversityDbContext>();
+            universityDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
+        }
 
-    // Faculty module
-    try
-    {
-        var facultyDb = services.GetRequiredService<FacultyDbContext>();
-        facultyDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
-    }
+        // Faculty module
+        try
+        {
+            var facultyDb = services.GetRequiredService<FacultyDbContext>();
+            facultyDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
+        }
 
-    // Support module
+        // Support module
         try
         {
             var supportDb = services.GetRequiredService<SupportDbContext>();
@@ -140,31 +144,9 @@ if (applyMigrations)
             Console.WriteLine($"Error migrating SupportDbContext: {ex.Message}");
         }
 
-    // Notifications module - still no migrations present so commenting this code for now
-    //try
-    //{
-    //var notificationsDb = services.GetRequiredService<NotificationsDbContext>();
-    //notificationsDb.Database.Migrate();
-    //}
-    //catch (Exception ex)
-    //{
-    // Console.WriteLine($"Error migrating NotificationsDbContext: {ex.Message}");
-    //}
-
-    // Analytics module - still no migrations present so commenting this code for now
-    //try
-    //{
-    // var analyticsDb = services.GetRequiredService<AnalyticsDbContext>();
-    // analyticsDb.Database.Migrate();
-    //}
-    //catch (Exception ex)
-    //{
-    // Console.WriteLine($"Error migrating AnalyticsDbContext: {ex.Message}");
-    //}
+        // Notifications & Analytics migrations were commented out in branches
     }
-
 }
-
 
 // Middleware
 app.UseHttpsRedirection();

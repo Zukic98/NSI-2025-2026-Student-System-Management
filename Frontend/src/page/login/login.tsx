@@ -35,7 +35,6 @@ export function Login() {
     }
 
     setError(null);
-    console.log("Login attempt:", { email, password });
 
     try {
 
@@ -52,7 +51,8 @@ export function Login() {
       // result.requires2FASetup)
 
       if (!authInfoData.email) {
-        navigate("/2fa/setup");
+        // TODO: maybe first implement the 2fa with non-dummy data before actually putting it here?
+        // navigate("/2fa/setup");
       } else {
         const dashboardRoute = getDashboardRoute(authInfoData.role);
         navigate(dashboardRoute);
