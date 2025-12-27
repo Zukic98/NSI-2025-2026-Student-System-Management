@@ -1,6 +1,7 @@
 ﻿using Faculty.Core.Entities;
 using Faculty.Core.Interfaces;
 using Faculty.Infrastructure.Db;
+using Faculty.Infrastructure.Mappers;
 
 namespace Faculty.Infrastructure.Repositories
 {
@@ -16,15 +17,26 @@ namespace Faculty.Infrastructure.Repositories
         public Task<Course> AddAsync(Course course)
         {
             course.Id = Guid.NewGuid();
-            _context.Courses.Add(course);
+            var schema = CourseMapper.ToPersistence(course);
+            _context.Courses.Add(schema);
             return Task.FromResult(course);
         }
 
         public Task<Course?> GetByIdAsync(Guid id)
-            => Task.FromResult(_context.Courses.FirstOrDefault(x => x.Id == id));
+        {
+            var schema = _context.Courses.FirstOrDefault(x => x.Id == id);
+            if (schema == null)
+                return Task.FromResult<Course?>(null);
+            
+            return Task.FromResult<Course?>(CourseMapper.ToDomain(schema, includeRelationships: false));
+        }
 
         public Task<List<Course>> GetAllAsync()
-            => Task.FromResult(_context.Courses.ToList());
+        {
+            var schemas = _context.Courses.ToList();
+            var domains = CourseMapper.ToDomainCollection(schemas, includeRelationships: false);
+            return Task.FromResult(domains.ToList());
+        }
 
         public Task<Course?> UpdateAsync(Course course)
         {
@@ -32,13 +44,9 @@ namespace Faculty.Infrastructure.Repositories
             if (existing == null)
                 return Task.FromResult<Course?>(null);
 
-            existing.Name = course.Name;
-            existing.Code = course.Code;
-            existing.Type = course.Type;
-            existing.ProgramId = course.ProgramId;
-            existing.ECTS = course.ECTS;
-
-            return Task.FromResult(existing);
+            CourseMapper.UpdatePersistence(existing, course);
+            var updated = CourseMapper.ToDomain(existing, includeRelationships: false);
+            return Task.FromResult<Course?>(updated);
         }
 
         public Task<bool> DeleteAsync(Guid id)
