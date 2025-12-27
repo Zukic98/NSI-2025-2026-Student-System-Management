@@ -25,6 +25,9 @@ namespace Support.Infrastructure
 			services.AddScoped<IDocumentPdfGenerator, DocumentPdfGenerator>();
 			services.AddScoped<IIssueService, IssueService>();
 
+			// Register data seeder
+			services.AddHostedService<SupportDataSeeder>();
+
 			return services;
 		}
 	}

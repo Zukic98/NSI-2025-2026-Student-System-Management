@@ -12,6 +12,8 @@ import {
   CFormTextarea,
   CSpinner,
 } from "@coreui/react";
+import { useAPI } from "../../context/services";
+import { createIssue } from "../../service/student-support/api";
 
 type SupportRequestFormProps = {
   selectedCategoryId: number | null;
@@ -20,6 +22,7 @@ type SupportRequestFormProps = {
 export default function SupportRequestForm({
   selectedCategoryId,
 }: SupportRequestFormProps) {
+  const api = useAPI();
   // --- form state ---
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -65,23 +68,12 @@ export default function SupportRequestForm({
     setSuccess(false);
 
     try {
-      const res = await fetch("/api/issue", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject,
-          description,
-          categoryId,
-          userId: USER_ID,
-        }),
+      await createIssue(api, {
+        subject,
+        description,
+        categoryId: Number(categoryId),
+        userId: USER_ID,
       });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || "Failed to submit support request.");
-      }
 
       setSuccess(true);
       resetForm();

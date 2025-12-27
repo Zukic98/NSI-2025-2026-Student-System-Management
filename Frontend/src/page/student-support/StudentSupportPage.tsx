@@ -11,14 +11,13 @@ import CategoryCard from "./CategoryCard";
 import SupportRequestForm from "./SupportRequestForm";
 import { useEffect, useState } from "react";
 
-type FAQ = {
-  id: number;
-  question: string;
-  answer: string;
-};
-        
+import { getFaqs } from "../../service/student-support/api";
+import type { FAQ } from "../../service/student-support/types";
+import { useAPI } from "../../context/services";
+
 
 export default function StudentSupportPage() {
+  const api = useAPI();
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [faqs, setFaqs] = useState<FAQ[]>([]);
@@ -26,18 +25,12 @@ export default function StudentSupportPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/faqs")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to load FAQs");
-        }
-        return res.json();
-      })
-      .then((data: FAQ[]) => {
+    getFaqs(api)
+      .then((data) => {
         setFaqs(data);
         setLoading(false);
       })
-      .catch((err: Error) => {
+      .catch((err: any) => {
         setError(err.message);
         setLoading(false);
       });
@@ -89,29 +82,29 @@ export default function StudentSupportPage() {
             {/* Ispod: prazan kontejner */}
             <div className="ss-belowEmpty">
               <section className="ss-faq">
-            <h3 className="ss-faqTitle">Frequently Asked Questions</h3>
+                <h3 className="ss-faqTitle">Frequently Asked Questions</h3>
 
-            {loading && <p>Loading FAQs...</p>}
-            {error && <p>{error}</p>}
+                {loading && <p>Loading FAQs...</p>}
+                {error && <p>{error}</p>}
 
-            {!loading && !error && (
-              <CAccordion>
-                {faqs.map((faq) => (
-                  <CAccordionItem key={faq.id} itemKey={faq.id}>
-                    
-                    <CAccordionHeader>
-                      {faq.question}
-                    </CAccordionHeader>
+                {!loading && !error && (
+                  <CAccordion>
+                    {faqs.map((faq) => (
+                      <CAccordionItem key={faq.id} itemKey={faq.id}>
 
-                    <CAccordionBody>
-                      {faq.answer}
-                    </CAccordionBody>
+                        <CAccordionHeader>
+                          {faq.question}
+                        </CAccordionHeader>
 
-                  </CAccordionItem>
-                ))}
-              </CAccordion>
-            )}
-          </section>
+                        <CAccordionBody>
+                          {faq.answer}
+                        </CAccordionBody>
+
+                      </CAccordionItem>
+                    ))}
+                  </CAccordion>
+                )}
+              </section>
 
             </div>
           </section>
