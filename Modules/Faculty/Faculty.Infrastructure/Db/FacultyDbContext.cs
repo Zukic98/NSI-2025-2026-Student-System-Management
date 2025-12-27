@@ -15,8 +15,8 @@ public class FacultyDbContext : DbContext
     public FacultyDbContext(DbContextOptions<FacultyDbContext> options, ITenantService tenantService)
         : base(options)
     {
-        _tenantService = tenantService ?? throw new ArgumentNullException(nameof(tenantService));
-        _currentFacultyId = _tenantService.GetCurrentFacultyId();
+         _tenantService = tenantService ?? throw new ArgumentNullException(nameof(tenantService));
+         _currentFacultyId = _tenantService.GetCurrentFacultyId();
     }
 
 	/// <summary>

@@ -68,42 +68,31 @@ if (applyMigrations)
 
     using (var scope = app.Services.CreateScope())
     {
-    var services = scope.ServiceProvider;
+        var services = scope.ServiceProvider;
 
-    // Identity module
-    try
-    {
-        var identityDb = services.GetRequiredService<AuthDbContext>();
-        identityDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
-    }
+        // Identity module
+        try
+        {
+            var identityDb = services.GetRequiredService<AuthDbContext>();
+            identityDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
+        }
 
-    // University module
-    try
-    {
-        var universityDb = services.GetRequiredService<UniversityDbContext>();
-        universityDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
-    }
+        // University module
+        try
+        {
+            var universityDb = services.GetRequiredService<UniversityDbContext>();
+            universityDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
+        }
 
-    // Faculty module
-    try
-    {
-        var facultyDb = services.GetRequiredService<FacultyDbContext>();
-        facultyDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
-    }
-
-    // Support module
+        // Support module
         try
         {
             var supportDb = services.GetRequiredService<SupportDbContext>();
@@ -113,8 +102,21 @@ if (applyMigrations)
         {
             Console.WriteLine($"Error migrating SupportDbContext: {ex.Message}");
         }
-    }
 
+        // Set true if you want to seed faculty module
+        var seedFacultyModule = false;
+        if (seedFacultyModule) {
+            try
+            {
+                var facultyDb = services.GetRequiredService<FacultyDbContext>();
+                await FacultyDbContextSeed.SeedAsync(facultyDb);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error seeding FacultyDbContext: {ex.Message}");
+            }
+        }
+    }
 }
 
 // Middleware
