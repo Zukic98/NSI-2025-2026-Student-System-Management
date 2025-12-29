@@ -72,7 +72,9 @@ export default function AcademicRecordsPage() {
   const [courses, setCourses] = useState<CourseApiDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSemester, setSelectedSemester] = useState<number | "all">("all");
+  const [selectedSemester, setSelectedSemester] = useState<number | "all">(
+    "all"
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -85,13 +87,15 @@ export default function AcademicRecordsPage() {
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await fetch("https://localhost:5283/api/faculty/courses");
-        
+
+        const response = await fetch(
+          "https://localhost:5283/api/faculty/courses"
+        );
+
         if (response.status === 401) {
-          throw new Error("Niste autorizovani (401). Provjerite login sesiju.");
+          throw new Error("Unauthorized (401). Please check your session.");
         }
-        
+
         if (!response.ok) {
           throw new Error(`Server error: ${response.status}`);
         }
@@ -99,7 +103,7 @@ export default function AcademicRecordsPage() {
         const data = await response.json();
         setCourses(Array.isArray(data) ? data : []);
       } catch (err: any) {
-        setError(err.message || "Mrežna greška ili CORS problem.");
+        setError(err.message || "Network error or CORS issue.");
         setCourses([]);
       } finally {
         setLoading(false);
@@ -120,15 +124,19 @@ export default function AcademicRecordsPage() {
     return courses.filter((c) => c.semester === selectedSemester);
   }, [courses, selectedSemester]);
 
-  const completedCourses = useMemo(() => 
-    filteredCourses.filter((c) => c.grade !== undefined && c.grade >= 6),
-  [filteredCourses]);
+  const completedCourses = useMemo(
+    () => filteredCourses.filter((c) => c.grade !== undefined && c.grade >= 6),
+    [filteredCourses]
+  );
 
   const completedEcts = completedCourses.reduce((sum, c) => sum + c.ects, 0);
 
   const gpa = useMemo(() => {
     if (!completedCourses.length) return "0.00";
-    const total = completedCourses.reduce((s, c) => s + (c.grade ?? 0) * c.ects, 0);
+    const total = completedCourses.reduce(
+      (s, c) => s + (c.grade ?? 0) * c.ects,
+      0
+    );
     return (total / completedEcts).toFixed(2);
   }, [completedCourses, completedEcts]);
 
@@ -139,7 +147,7 @@ export default function AcademicRecordsPage() {
   }));
 
   const semesterPie = {
-    labels: ["Ostvareni ECTS", "Preostalo"],
+    labels: ["Completed ECTS", "Remaining"],
     datasets: [
       {
         data: [completedEcts, Math.max(0, 30 - completedEcts)],
@@ -154,20 +162,24 @@ export default function AcademicRecordsPage() {
   return (
     <div className="p-3 p-md-4 bg-light min-vh-100">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-        <h2 className="fw-bold mb-0">Akademski Karton</h2>
+        <h2 className="fw-bold mb-0">Academic Records</h2>
         <div className="d-flex gap-2">
           <CButton color="primary" variant="outline" className="shadow-sm">
-            Prepis ocjena
+            Detailed Transcript
           </CButton>
           <CDropdown>
             <CDropdownToggle color="white" className="border shadow-sm">
-              {selectedSemester === "all" ? "Svi semestri" : `Semestar ${selectedSemester}`}
+              {selectedSemester === "all"
+                ? "All Semesters"
+                : `Semester ${selectedSemester}`}
             </CDropdownToggle>
             <CDropdownMenu>
-              <CDropdownItem onClick={() => setSelectedSemester("all")}>Svi semestri</CDropdownItem>
+              <CDropdownItem onClick={() => setSelectedSemester("all")}>
+                All Semesters
+              </CDropdownItem>
               {semesters.map((s) => (
                 <CDropdownItem key={s} onClick={() => setSelectedSemester(s)}>
-                  Semestar {s}
+                  Semester {s}
                 </CDropdownItem>
               ))}
             </CDropdownMenu>
@@ -175,7 +187,11 @@ export default function AcademicRecordsPage() {
         </div>
       </div>
 
-      {error && <CAlert color="danger" className="mb-4">{error}</CAlert>}
+      {error && (
+        <CAlert color="danger" className="mb-4">
+          {error}
+        </CAlert>
+      )}
 
       <CCard className="mb-4 border-0 shadow-sm">
         <CCardBody className="p-0">
@@ -184,17 +200,21 @@ export default function AcademicRecordsPage() {
               <CSpinner color="primary" />
             </div>
           ) : filteredCourses.length === 0 ? (
-            <div className="text-center text-muted py-5">Nema podataka za prikaz.</div>
+            <div className="text-center text-muted py-5">
+              No data available.
+            </div>
           ) : (
             <CTable hover responsive align="middle" className="mb-0">
               <CTableHead color="light">
                 <CTableRow>
-                  <CTableHeaderCell className="ps-4">Šifra</CTableHeaderCell>
-                  <CTableHeaderCell>Predmet</CTableHeaderCell>
+                  <CTableHeaderCell className="ps-4">Code</CTableHeaderCell>
+                  <CTableHeaderCell>Course Name</CTableHeaderCell>
                   <CTableHeaderCell>ECTS</CTableHeaderCell>
-                  <CTableHeaderCell>Ocjena</CTableHeaderCell>
-                  <CTableHeaderCell>Datum</CTableHeaderCell>
-                  <CTableHeaderCell className="pe-4 text-center">Status</CTableHeaderCell>
+                  <CTableHeaderCell>Grade</CTableHeaderCell>
+                  <CTableHeaderCell>Date</CTableHeaderCell>
+                  <CTableHeaderCell className="pe-4 text-center">
+                    Status
+                  </CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -202,14 +222,26 @@ export default function AcademicRecordsPage() {
                   const passed = (c.grade ?? 0) >= 6;
                   return (
                     <CTableRow key={c.id}>
-                      <CTableDataCell className="ps-4 text-muted small">{c.code}</CTableDataCell>
-                      <CTableDataCell className="fw-medium">{c.name}</CTableDataCell>
+                      <CTableDataCell className="ps-4 text-muted small">
+                        {c.code}
+                      </CTableDataCell>
+                      <CTableDataCell className="fw-medium">
+                        {c.name}
+                      </CTableDataCell>
                       <CTableDataCell>{c.ects}</CTableDataCell>
-                      <CTableDataCell className="fw-bold text-primary">{c.grade ?? "-"}</CTableDataCell>
+                      <CTableDataCell className="fw-bold text-primary">
+                        {c.grade ?? "-"}
+                      </CTableDataCell>
                       <CTableDataCell>{formatDate(c.examDate)}</CTableDataCell>
                       <CTableDataCell className="pe-4 text-center">
-                        <span className={`badge ${passed ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"} px-3 py-2`}>
-                          {passed ? "Položeno" : "Nije položeno"}
+                        <span
+                          className={`badge ${
+                            passed
+                              ? "bg-success-subtle text-success"
+                              : "bg-danger-subtle text-danger"
+                          } px-3 py-2`}
+                        >
+                          {passed ? "Pass" : "Fail"}
                         </span>
                       </CTableDataCell>
                     </CTableRow>
@@ -225,9 +257,12 @@ export default function AcademicRecordsPage() {
         <CCol xs={12} lg={4}>
           <CCard className="h-100 border-0 shadow-sm">
             <CCardBody className="d-flex flex-column align-items-center">
-              <h6 className="fw-bold mb-4 align-self-start">Pregled ECTS</h6>
+              <h6 className="fw-bold mb-4 align-self-start">ECTS Overview</h6>
               <div style={{ width: "100%", height: "200px" }}>
-                 <Pie data={semesterPie} options={{ maintainAspectRatio: false }} />
+                <Pie
+                  data={semesterPie}
+                  options={{ maintainAspectRatio: false }}
+                />
               </div>
             </CCardBody>
           </CCard>
@@ -236,14 +271,23 @@ export default function AcademicRecordsPage() {
         <CCol xs={12} lg={4}>
           <CCard className="h-100 border-0 shadow-sm">
             <CCardBody>
-              <h6 className="fw-bold mb-4">Uspjeh po predmetima</h6>
+              <h6 className="fw-bold mb-4">Grade Distribution</h6>
               {gradeDistribution.map((g, i) => (
                 <div key={i} className="mb-3">
                   <div className="d-flex justify-content-between mb-1 small">
-                    <span className="text-truncate" style={{maxWidth: "80%"}}>{g.name}</span>
+                    <span
+                      className="text-truncate"
+                      style={{ maxWidth: "80%" }}
+                    >
+                      {g.name}
+                    </span>
                     <span className="fw-bold">{g.value / 10}</span>
                   </div>
-                  <CProgress value={g.value} height={6} style={{ "--cui-progress-bar-bg": g.color } as any} />
+                  <CProgress
+                    value={g.value}
+                    height={6}
+                    style={{ "--cui-progress-bar-bg": g.color } as any}
+                  />
                 </div>
               ))}
             </CCardBody>
@@ -253,11 +297,11 @@ export default function AcademicRecordsPage() {
         <CCol xs={12} lg={4}>
           <div className="d-flex flex-column gap-3 h-100">
             <CCard className="border-0 shadow-sm text-center p-4 flex-grow-1 d-flex justify-content-center">
-              <div className="text-muted small mb-1">Prosjek (GPA)</div>
+              <div className="text-muted small mb-1">Current GPA</div>
               <div className="display-4 fw-bold text-primary">{gpa}</div>
             </CCard>
             <CCard className="border-0 shadow-sm text-center p-4 flex-grow-1 d-flex justify-content-center bg-primary text-white">
-              <div className="small mb-1 opacity-75">Ukupno ECTS</div>
+              <div className="small mb-1 opacity-75">ECTS Completed</div>
               <div className="display-4 fw-bold">{completedEcts}</div>
             </CCard>
           </div>
