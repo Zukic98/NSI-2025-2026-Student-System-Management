@@ -12,10 +12,33 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Identity.Core.Configuration;
-
+using Identity.Infrastructure.Utilities;
+using Microsoft.AspNetCore.Identity;
+// REMOVED: using Identity.Infrastructure.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Find .env file by searching upwards from the current directory
+var currentDirectory = Directory.GetCurrentDirectory();
+var dotenv = Path.Combine(currentDirectory, ".env");
+
+while (!File.Exists(dotenv))
+{
+    var parent = Directory.GetParent(currentDirectory);
+    if (parent == null) break; // Reached root of drive
+    currentDirectory = parent.FullName;
+    dotenv = Path.Combine(currentDirectory, ".env");
+}
+
+if (File.Exists(dotenv))
+{
+    Console.WriteLine($"Loading .env from: {dotenv}");
+    DotEnv.Load(dotenv);
+}
+else
+{
+    Console.WriteLine("Warning: .env file not found.");
+}
 
 // Add services to the container
 builder.Services.AddControllers(options =>
@@ -79,6 +102,16 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Database"),
         b => b.MigrationsAssembly("Identity.Infrastructure")));
+
+// --- ADDED: Register Data Protection (Required for Token Providers) ---
+builder.Services.AddDataProtection();
+// ---------------------------------------------------------------------
+
+// --- ADDED: Register Identity Core Services (Fixes Dependency Injection Error) ---
+builder.Services.AddIdentityCore<ApplicationUser>()
+    .AddEntityFrameworkStores<AuthDbContext>()
+    .AddDefaultTokenProviders();
+// --------------------------------------------------------------------------------
 
 // JWT Settings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
