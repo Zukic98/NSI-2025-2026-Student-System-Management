@@ -15,6 +15,7 @@ using Support.Infrastructure.Db;
 using University.API.Controllers;
 using University.Infrastructure;
 using University.Infrastructure.Db;
+using Microsoft.AspNetCore.HttpOverrides; // Added for Render
 using FacultyController = Faculty.API.Controllers.FacultyController;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -60,50 +61,62 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Put false if you dont want to apply migrations on start
-var applyMigrations = true;
+// ---------------------------------------------------------
+// FIX 1: Forwarded Headers for Render
+// This allows the app to know it is running behind a proxy (Load Balancer)
+// ---------------------------------------------------------
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+// ---------------------------------------------------------
+// FIX 2: Disable automatic migrations on startup
+// Set this to false to prevent crashes when the database is "sleeping"
+// or when HttpContext is unavailable. You should run migrations manually.
+// ---------------------------------------------------------
+var applyMigrations = false;
 
 if (applyMigrations)
 {
-
     using (var scope = app.Services.CreateScope())
     {
-    var services = scope.ServiceProvider;
+        var services = scope.ServiceProvider;
 
-    // Identity module
-    try
-    {
-        var identityDb = services.GetRequiredService<AuthDbContext>();
-        identityDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
-    }
+        // Identity module
+        try
+        {
+            var identityDb = services.GetRequiredService<AuthDbContext>();
+            identityDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
+        }
 
-    // University module
-    try
-    {
-        var universityDb = services.GetRequiredService<UniversityDbContext>();
-        universityDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
-    }
+        // University module
+        try
+        {
+            var universityDb = services.GetRequiredService<UniversityDbContext>();
+            universityDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
+        }
 
-    // Faculty module
-    try
-    {
-        var facultyDb = services.GetRequiredService<FacultyDbContext>();
-        facultyDb.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
-    }
+        // Faculty module
+        try
+        {
+            var facultyDb = services.GetRequiredService<FacultyDbContext>();
+            facultyDb.Database.Migrate();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
+        }
 
-    // Support module
+        // Support module
         try
         {
             var supportDb = services.GetRequiredService<SupportDbContext>();
@@ -114,11 +127,13 @@ if (applyMigrations)
             Console.WriteLine($"Error migrating SupportDbContext: {ex.Message}");
         }
     }
-
 }
 
-// Middleware
-app.UseHttpsRedirection();
+// ---------------------------------------------------------
+// FIX 3: Disable HTTPS Redirection
+// Render handles SSL/HTTPS externally. The internal container must run on HTTP.
+// ---------------------------------------------------------
+// app.UseHttpsRedirection(); 
 
 app.UseRouting();
 
@@ -131,5 +146,7 @@ app.UseSwaggerUI();
 
 // Map controllers
 app.MapControllers();
+
+Console.WriteLine("Application started successfully on Render.");
 
 app.Run();
