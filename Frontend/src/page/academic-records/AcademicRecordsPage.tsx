@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   CCard,
   CCardBody,
@@ -19,16 +20,27 @@ import {
   CDropdownMenu,
   CDropdownItem,
   CButton,
+  CAlert,
 } from "@coreui/react";
 
 import "@coreui/coreui/dist/css/coreui.min.css";
-
-import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
-
-/* ===================== TYPES ===================== */
+const Pie = dynamic(
+  () =>
+    import("react-chartjs-2").then((mod) => {
+      ChartJS.register(ArcElement, Tooltip, Legend);
+      return mod.Pie;
+    }),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="text-center p-3">
+        <CSpinner size="sm" />
+      </div>
+    ),
+  }
+);
 
 type CourseApiDto = {
   id: string;
@@ -38,15 +50,13 @@ type CourseApiDto = {
   grade?: number;
   examDate?: string;
   professor?: string;
-  semester?: number; // <-- bitno za filter
+  semester?: number;
 };
-
-/* ===================== HELPERS ===================== */
 
 const formatDate = (iso?: string) => {
   if (!iso) return "-";
   const d = new Date(iso);
-  return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+  return `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}.`;
 };
 
 const stringToColor = (str: string): string => {
@@ -57,33 +67,52 @@ const stringToColor = (str: string): string => {
   return `hsl(${Math.abs(hash) % 360}, 65%, 55%)`;
 };
 
-/* ===================== COMPONENT ===================== */
-
 export default function AcademicRecordsPage() {
+  const [isClient, setIsClient] = useState(false);
   const [courses, setCourses] = useState<CourseApiDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSemester, setSelectedSemester] = useState<number | "all">(
-    "all"
-  );
-
-  /* ===================== FETCH ===================== */
+  const [error, setError] = useState<string | null>(null);
+  const [selectedSemester, setSelectedSemester] = useState<number | "all">("all");
 
   useEffect(() => {
-    setLoading(true);
-
-    fetch("https://localhost:5001/api/faculty/courses")
-      .then((res) => res.json())
-      .then((data) => setCourses(data))
-      .catch(() => setCourses([]))
-      .finally(() => setLoading(false));
+    setIsClient(true);
   }, []);
 
-  /* ===================== SEMESTERS ===================== */
+  useEffect(() => {
+    if (!isClient) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch("https://localhost:5283/api/faculty/courses");
+        
+        if (response.status === 401) {
+          throw new Error("Niste autorizovani (401). Provjerite login sesiju.");
+        }
+        
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setCourses(Array.isArray(data) ? data : []);
+      } catch (err: any) {
+        setError(err.message || "Mrežna greška ili CORS problem.");
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isClient]);
 
   const semesters = useMemo(() => {
     const set = new Set<number>();
     courses.forEach((c) => c.semester && set.add(c.semester));
-    return Array.from(set).sort();
+    return Array.from(set).sort((a, b) => a - b);
   }, [courses]);
 
   const filteredCourses = useMemo(() => {
@@ -91,20 +120,15 @@ export default function AcademicRecordsPage() {
     return courses.filter((c) => c.semester === selectedSemester);
   }, [courses, selectedSemester]);
 
-  /* ===================== CALCULATIONS ===================== */
-
-  const completedCourses = filteredCourses.filter(
-    (c) => c.grade !== undefined && c.grade >= 6
-  );
+  const completedCourses = useMemo(() => 
+    filteredCourses.filter((c) => c.grade !== undefined && c.grade >= 6),
+  [filteredCourses]);
 
   const completedEcts = completedCourses.reduce((sum, c) => sum + c.ects, 0);
 
   const gpa = useMemo(() => {
     if (!completedCourses.length) return "0.00";
-    const total = completedCourses.reduce(
-      (s, c) => s + (c.grade ?? 0) * c.ects,
-      0
-    );
+    const total = completedCourses.reduce((s, c) => s + (c.grade ?? 0) * c.ects, 0);
     return (total / completedEcts).toFixed(2);
   }, [completedCourses, completedEcts]);
 
@@ -115,41 +139,35 @@ export default function AcademicRecordsPage() {
   }));
 
   const semesterPie = {
-    labels: ["Completed ECTS", "Remaining"],
+    labels: ["Ostvareni ECTS", "Preostalo"],
     datasets: [
       {
         data: [completedEcts, Math.max(0, 30 - completedEcts)],
         backgroundColor: ["#4f46e5", "#fcd34d"],
+        borderWidth: 0,
       },
     ],
   };
 
-  /* ===================== UI ===================== */
+  if (!isClient) return null;
 
   return (
-    <div className="p-3 p-md-4">
-      {/* HEADER */}
+    <div className="p-3 p-md-4 bg-light min-vh-100">
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-        <h1 className="fw-bold mb-0">Academic Records</h1>
-
+        <h2 className="fw-bold mb-0">Akademski Karton</h2>
         <div className="d-flex gap-2">
-          <CButton color="primary" variant="outline">
-            Detailed Transcript
+          <CButton color="primary" variant="outline" className="shadow-sm">
+            Prepis ocjena
           </CButton>
-
           <CDropdown>
-            <CDropdownToggle color="light">
-              {selectedSemester === "all"
-                ? "All semesters"
-                : `Semester ${selectedSemester}`}
+            <CDropdownToggle color="white" className="border shadow-sm">
+              {selectedSemester === "all" ? "Svi semestri" : `Semestar ${selectedSemester}`}
             </CDropdownToggle>
             <CDropdownMenu>
-              <CDropdownItem onClick={() => setSelectedSemester("all")}>
-                All semesters
-              </CDropdownItem>
+              <CDropdownItem onClick={() => setSelectedSemester("all")}>Svi semestri</CDropdownItem>
               {semesters.map((s) => (
                 <CDropdownItem key={s} onClick={() => setSelectedSemester(s)}>
-                  Semester {s}
+                  Semestar {s}
                 </CDropdownItem>
               ))}
             </CDropdownMenu>
@@ -157,47 +175,41 @@ export default function AcademicRecordsPage() {
         </div>
       </div>
 
-      {/* COURSE HISTORY */}
-      <CCard className="mb-4">
-        <CCardBody>
+      {error && <CAlert color="danger" className="mb-4">{error}</CAlert>}
+
+      <CCard className="mb-4 border-0 shadow-sm">
+        <CCardBody className="p-0">
           {loading ? (
             <div className="text-center py-5">
-              <CSpinner />
+              <CSpinner color="primary" />
             </div>
           ) : filteredCourses.length === 0 ? (
-            <div className="text-center text-muted py-5">
-              No courses available.
-            </div>
+            <div className="text-center text-muted py-5">Nema podataka za prikaz.</div>
           ) : (
-            <CTable hover responsive>
+            <CTable hover responsive align="middle" className="mb-0">
               <CTableHead color="light">
                 <CTableRow>
-                  <CTableHeaderCell>Code</CTableHeaderCell>
-                  <CTableHeaderCell>Name</CTableHeaderCell>
+                  <CTableHeaderCell className="ps-4">Šifra</CTableHeaderCell>
+                  <CTableHeaderCell>Predmet</CTableHeaderCell>
                   <CTableHeaderCell>ECTS</CTableHeaderCell>
-                  <CTableHeaderCell>Grade</CTableHeaderCell>
-                  <CTableHeaderCell>Date</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
+                  <CTableHeaderCell>Ocjena</CTableHeaderCell>
+                  <CTableHeaderCell>Datum</CTableHeaderCell>
+                  <CTableHeaderCell className="pe-4 text-center">Status</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
-
               <CTableBody>
                 {filteredCourses.map((c) => {
-                  const passed = c.grade !== undefined && c.grade >= 6;
+                  const passed = (c.grade ?? 0) >= 6;
                   return (
                     <CTableRow key={c.id}>
-                      <CTableDataCell>{c.code}</CTableDataCell>
-                      <CTableDataCell>{c.name}</CTableDataCell>
+                      <CTableDataCell className="ps-4 text-muted small">{c.code}</CTableDataCell>
+                      <CTableDataCell className="fw-medium">{c.name}</CTableDataCell>
                       <CTableDataCell>{c.ects}</CTableDataCell>
-                      <CTableDataCell>{c.grade ?? "-"}</CTableDataCell>
+                      <CTableDataCell className="fw-bold text-primary">{c.grade ?? "-"}</CTableDataCell>
                       <CTableDataCell>{formatDate(c.examDate)}</CTableDataCell>
-                      <CTableDataCell>
-                        <span
-                          className={`px-2 py-1 rounded text-white ${
-                            passed ? "bg-success" : "bg-danger"
-                          }`}
-                        >
-                          {passed ? "Pass" : "Fail"}
+                      <CTableDataCell className="pe-4 text-center">
+                        <span className={`badge ${passed ? "bg-success-subtle text-success" : "bg-danger-subtle text-danger"} px-3 py-2`}>
+                          {passed ? "Položeno" : "Nije položeno"}
                         </span>
                       </CTableDataCell>
                     </CTableRow>
@@ -209,56 +221,46 @@ export default function AcademicRecordsPage() {
         </CCardBody>
       </CCard>
 
-      {/* STATS */}
       <CRow className="g-4">
-        <CCol xs={12} md={4}>
-          <CCard className="h-100">
-            <CCardBody>
-              <h6 className="fw-semibold mb-3">Semester Overview</h6>
-              <Pie data={semesterPie} />
+        <CCol xs={12} lg={4}>
+          <CCard className="h-100 border-0 shadow-sm">
+            <CCardBody className="d-flex flex-column align-items-center">
+              <h6 className="fw-bold mb-4 align-self-start">Pregled ECTS</h6>
+              <div style={{ width: "100%", height: "200px" }}>
+                 <Pie data={semesterPie} options={{ maintainAspectRatio: false }} />
+              </div>
             </CCardBody>
           </CCard>
         </CCol>
 
-        <CCol xs={12} md={4}>
-          <CCard className="h-100">
+        <CCol xs={12} lg={4}>
+          <CCard className="h-100 border-0 shadow-sm">
             <CCardBody>
-              <h6 className="fw-semibold mb-3">Grade Distribution</h6>
+              <h6 className="fw-bold mb-4">Uspjeh po predmetima</h6>
               {gradeDistribution.map((g, i) => (
                 <div key={i} className="mb-3">
-                  <div className="d-flex justify-content-between mb-1">
-                    <small>{g.name}</small>
-                    <small>{g.value}%</small>
+                  <div className="d-flex justify-content-between mb-1 small">
+                    <span className="text-truncate" style={{maxWidth: "80%"}}>{g.name}</span>
+                    <span className="fw-bold">{g.value / 10}</span>
                   </div>
-                  <CProgress
-                    value={g.value}
-                    height={8}
-                    style={
-                      {
-                        "--cui-progress-bar-bg": g.color,
-                      } as React.CSSProperties
-                    }
-                  />
+                  <CProgress value={g.value} height={6} style={{ "--cui-progress-bar-bg": g.color } as any} />
                 </div>
               ))}
             </CCardBody>
           </CCard>
         </CCol>
 
-        <CCol xs={12} md={4}>
-          <CCard className="mb-3">
-            <CCardBody className="text-center">
-              <div className="fw-semibold">Current GPA</div>
-              <div className="fs-2 fw-bold text-primary">{gpa}</div>
-            </CCardBody>
-          </CCard>
-
-          <CCard>
-            <CCardBody className="text-center">
-              <div className="fw-semibold">ECTS Completed</div>
-              <div className="fs-2 fw-bold text-primary">{completedEcts}</div>
-            </CCardBody>
-          </CCard>
+        <CCol xs={12} lg={4}>
+          <div className="d-flex flex-column gap-3 h-100">
+            <CCard className="border-0 shadow-sm text-center p-4 flex-grow-1 d-flex justify-content-center">
+              <div className="text-muted small mb-1">Prosjek (GPA)</div>
+              <div className="display-4 fw-bold text-primary">{gpa}</div>
+            </CCard>
+            <CCard className="border-0 shadow-sm text-center p-4 flex-grow-1 d-flex justify-content-center bg-primary text-white">
+              <div className="small mb-1 opacity-75">Ukupno ECTS</div>
+              <div className="display-4 fw-bold">{completedEcts}</div>
+            </CCard>
+          </div>
         </CCol>
       </CRow>
     </div>
