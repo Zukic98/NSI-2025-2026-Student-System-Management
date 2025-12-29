@@ -22,17 +22,13 @@ using FacultyController = Faculty.API.Controllers.FacultyController;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------------------------------------
-// FORCE HTTP ONLY (CRITICAL FIX FOR RENDER)
-// This overrides any default settings trying to bind HTTPS
+// CRITICAL FIX FOR RENDER DEPLOYMENT
+// We must explicitly tell ASP.NET Core to use the port provided by Render
+// and STRICTLY use HTTP (not HTTPS).
+// "UseUrls" overrides ASPNETCORE_URLS and appsettings.json.
 // ---------------------------------------------------------
-var portVar = Environment.GetEnvironmentVariable("PORT");
-var port = string.IsNullOrEmpty(portVar) ? 8080 : int.Parse(portVar);
-
-builder.WebHost.ConfigureKestrel(options =>
-{
-    // Listen on Any IP (0.0.0.0) on the port assigned by Render
-    options.Listen(IPAddress.Any, port);
-});
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // ---------------------------------------------------------
 
 // Add services from modules
@@ -72,39 +68,38 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Forwarded Headers (Required for Render)
+// Forwarded Headers are required for Render because it puts the app behind a proxy.
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-// Disable automatic migrations on startup to prevent crashes
+// Disable automatic migrations on startup to prevent crashes if DB is sleeping
 var applyMigrations = false;
 
 if (applyMigrations)
 {
     using (var scope = app.Services.CreateScope())
     {
-        var services = scope.ServiceProvider;
-        // Migration logic omitted to prevent startup crashes
+        // Migrations logic omitted
     }
 }
 
-// DISABLED HTTPS REDIRECTION
-// Render handles SSL termination externally; internal traffic must be HTTP.
-// app.UseHttpsRedirection();
+// STRICTLY DISABLE HTTPS REDIRECTION
+// Render handles SSL termination at the load balancer level.
+// Inside the container, everything must remain HTTP.
+// app.UseHttpsRedirection(); 
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Enable Swagger in production for testing
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.MapControllers();
 
-Console.WriteLine($"Starting web server on port {port} (HTTP)...");
+Console.WriteLine($"Application is running on port {port}...");
 
 app.Run();
