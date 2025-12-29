@@ -19,33 +19,12 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 
-// ---------------------------------------------------------
-// PRE-BUILDER CONFIGURATION
-// Forcefully clear HTTPS environment variables to stop Kestrel 
-// from looking for certificates based on defaults.
-// ---------------------------------------------------------
-var portStr = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-var port = int.Parse(portStr);
-
-// Force the URL environment variable to HTTP only
-Environment.SetEnvironmentVariable("ASPNETCORE_URLS", $"http://0.0.0.0:{port}");
-// Clear the HTTPS port variable to prevent default binding
-Environment.SetEnvironmentVariable("ASPNETCORE_HTTPS_PORT", ""); 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------------------------------------------------------
-// KESTREL MANUAL CONFIGURATION
-// This ignores appsettings.json "Kestrel" section and 
-// forces a single HTTP listener.
-// ---------------------------------------------------------
-builder.WebHost.ConfigureKestrel(options =>
-{
-    // Listen strictly on the Render port (IPv4/IPv6)
-    // This creates an endpoint WITHOUT TLS/SSL.
-    options.ListenAnyIP(port);
-});
-// ---------------------------------------------------------
+// Render environment configuration
+// Render gives us a PORT env var. We must listen on 0.0.0.0:{PORT}
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add services from modules
 builder.Services.AddIdentityModule(builder.Configuration);
@@ -84,24 +63,16 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Forwarded Headers (Required for Render)
+// Configure the HTTP request pipeline.
+
+// 1. Forwarded Headers are CRITICAL for Render
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-var applyMigrations = false;
-
-if (applyMigrations)
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        // Migrations logic omitted
-    }
-}
-
-// DO NOT use HttpsRedirection
-// app.UseHttpsRedirection();
+// 2. Disable HTTPS Redirection in Docker/Render
+// app.UseHttpsRedirection(); 
 
 app.UseRouting();
 
@@ -112,7 +83,5 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.MapControllers();
-
-Console.WriteLine($"Starting server strictly on port {port} (HTTP)...");
 
 app.Run();
