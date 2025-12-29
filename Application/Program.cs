@@ -15,10 +15,25 @@ using Support.Infrastructure.Db;
 using University.API.Controllers;
 using University.Infrastructure;
 using University.Infrastructure.Db;
-using Microsoft.AspNetCore.HttpOverrides; // Added for Render
+using Microsoft.AspNetCore.HttpOverrides;
+using System.Net;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ---------------------------------------------------------
+// FORCE HTTP ONLY (CRITICAL FIX FOR RENDER)
+// This overrides any default settings trying to bind HTTPS
+// ---------------------------------------------------------
+var portVar = Environment.GetEnvironmentVariable("PORT");
+var port = string.IsNullOrEmpty(portVar) ? 8080 : int.Parse(portVar);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Listen on Any IP (0.0.0.0) on the port assigned by Render
+    options.Listen(IPAddress.Any, port);
+});
+// ---------------------------------------------------------
 
 // Add services from modules
 builder.Services.AddIdentityModule(builder.Configuration);
@@ -28,7 +43,6 @@ builder.Services.AddSupportModule(builder.Configuration);
 builder.Services.AddNotificationsModule();
 builder.Services.AddAnalyticsModule();
 
-// Add controllers and module API assemblies
 var mvcBuilder = builder.Services.AddControllers();
 
 var moduleControllers = new[]
@@ -46,13 +60,10 @@ foreach (var asm in moduleControllers)
     mvcBuilder.PartManager.ApplicationParts.Add(new AssemblyPart(asm));
 }
 
-// Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    // Load all XML documentation files (e.g. Application.xml, Identity.API.xml)
     var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml");
-
     foreach (var xmlPath in xmlFiles)
     {
         c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
@@ -61,20 +72,13 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ---------------------------------------------------------
-// FIX 1: Forwarded Headers for Render
-// This allows the app to know it is running behind a proxy (Load Balancer)
-// ---------------------------------------------------------
+// Forwarded Headers (Required for Render)
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-// ---------------------------------------------------------
-// FIX 2: Disable automatic migrations on startup
-// Set this to false to prevent crashes when the database is "sleeping"
-// or when HttpContext is unavailable. You should run migrations manually.
-// ---------------------------------------------------------
+// Disable automatic migrations on startup to prevent crashes
 var applyMigrations = false;
 
 if (applyMigrations)
@@ -82,71 +86,25 @@ if (applyMigrations)
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
-
-        // Identity module
-        try
-        {
-            var identityDb = services.GetRequiredService<AuthDbContext>();
-            identityDb.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
-        }
-
-        // University module
-        try
-        {
-            var universityDb = services.GetRequiredService<UniversityDbContext>();
-            universityDb.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
-        }
-
-        // Faculty module
-        try
-        {
-            var facultyDb = services.GetRequiredService<FacultyDbContext>();
-            facultyDb.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
-        }
-
-        // Support module
-        try
-        {
-            var supportDb = services.GetRequiredService<SupportDbContext>();
-            supportDb.Database.Migrate();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error migrating SupportDbContext: {ex.Message}");
-        }
+        // Migration logic omitted to prevent startup crashes
     }
 }
 
-// ---------------------------------------------------------
-// FIX 3: Disable HTTPS Redirection
-// Render handles SSL/HTTPS externally. The internal container must run on HTTP.
-// ---------------------------------------------------------
-// app.UseHttpsRedirection(); 
+// DISABLED HTTPS REDIRECTION
+// Render handles SSL termination externally; internal traffic must be HTTP.
+// app.UseHttpsRedirection();
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Enable Swagger in all environments
+// Enable Swagger in production for testing
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Map controllers
 app.MapControllers();
 
-Console.WriteLine("Application started successfully on Render.");
+Console.WriteLine($"Starting web server on port {port} (HTTP)...");
 
 app.Run();
