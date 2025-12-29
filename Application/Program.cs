@@ -19,16 +19,32 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 
+// ---------------------------------------------------------
+// PRE-BUILDER CONFIGURATION
+// Forcefully clear HTTPS environment variables to stop Kestrel 
+// from looking for certificates based on defaults.
+// ---------------------------------------------------------
+var portStr = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var port = int.Parse(portStr);
+
+// Force the URL environment variable to HTTP only
+Environment.SetEnvironmentVariable("ASPNETCORE_URLS", $"http://0.0.0.0:{port}");
+// Clear the HTTPS port variable to prevent default binding
+Environment.SetEnvironmentVariable("ASPNETCORE_HTTPS_PORT", ""); 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------------------------------------
-// CRITICAL FIX FOR RENDER DEPLOYMENT
-// We must explicitly tell ASP.NET Core to use the port provided by Render
-// and STRICTLY use HTTP (not HTTPS).
-// "UseUrls" overrides ASPNETCORE_URLS and appsettings.json.
+// KESTREL MANUAL CONFIGURATION
+// This ignores appsettings.json "Kestrel" section and 
+// forces a single HTTP listener.
 // ---------------------------------------------------------
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Listen strictly on the Render port (IPv4/IPv6)
+    // This creates an endpoint WITHOUT TLS/SSL.
+    options.ListenAnyIP(port);
+});
 // ---------------------------------------------------------
 
 // Add services from modules
@@ -68,13 +84,12 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Forwarded Headers are required for Render because it puts the app behind a proxy.
+// Forwarded Headers (Required for Render)
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
 
-// Disable automatic migrations on startup to prevent crashes if DB is sleeping
 var applyMigrations = false;
 
 if (applyMigrations)
@@ -85,10 +100,8 @@ if (applyMigrations)
     }
 }
 
-// STRICTLY DISABLE HTTPS REDIRECTION
-// Render handles SSL termination at the load balancer level.
-// Inside the container, everything must remain HTTP.
-// app.UseHttpsRedirection(); 
+// DO NOT use HttpsRedirection
+// app.UseHttpsRedirection();
 
 app.UseRouting();
 
@@ -100,6 +113,6 @@ app.UseSwaggerUI();
 
 app.MapControllers();
 
-Console.WriteLine($"Application is running on port {port}...");
+Console.WriteLine($"Starting server strictly on port {port} (HTTP)...");
 
 app.Run();
