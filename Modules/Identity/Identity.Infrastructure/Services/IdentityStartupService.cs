@@ -21,7 +21,9 @@ public class IdentityStartupService : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("IdentityStartupService is starting.");
-        try{
+
+        try
+        {
             using var scope = _serviceProvider.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
@@ -74,7 +76,8 @@ public class IdentityStartupService : IHostedService
                     await userManager.UpdateAsync(existingUser);
                 }
             }
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             _logger.LogCritical(ex, "An error occurred during the automatic SuperAdmin creation process. The application will continue to start, but SuperAdmin may not be available.");
         }
