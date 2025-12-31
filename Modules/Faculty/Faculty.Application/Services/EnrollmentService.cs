@@ -23,6 +23,29 @@ public class EnrollmentService : IEnrollmentService
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
+    public async Task<List<StudentEnrollmentItemDto>> GetMyEnrollmentsAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            throw new FacultyApplicationException("Authenticated user identifier was not provided.", HttpStatusCode.BadRequest);
+
+        var student = await _repository.GetStudentByUserIdAsync(userId, cancellationToken);
+        if (student == null)
+            throw new FacultyApplicationException("Student record for the current user was not found.", HttpStatusCode.NotFound);
+
+        var enrollments = await _repository.GetEnrollmentsByStudentIdAsync(student.Id, cancellationToken);
+
+        return enrollments.Select(e => new StudentEnrollmentItemDto
+        {
+            EnrollmentId = e.Id,
+            CourseId = e.CourseId,
+            CourseName = e.Course?.Name ?? "",
+            Status = e.Status,
+            Grade = e.Grade 
+        }).ToList();
+    }
+
+
+
     public async Task<EnrollmentResponseDto> CreateEnrollmentAsync(Guid courseId, string userId, CancellationToken cancellationToken = default)
     {
         if (courseId == Guid.Empty)

@@ -15,5 +15,7 @@ public interface IEnrollmentRepository
     Task<bool> IsAlreadyEnrolledAsync(int studentId, Guid courseId, CancellationToken cancellationToken = default);
 
     Task<Enrollment> CreateEnrollmentAsync(Enrollment enrollment, CancellationToken cancellationToken = default);
+    Task<List<Enrollment>> GetEnrollmentsByStudentIdAsync(int studentId, CancellationToken cancellationToken = default);
+
 }
 

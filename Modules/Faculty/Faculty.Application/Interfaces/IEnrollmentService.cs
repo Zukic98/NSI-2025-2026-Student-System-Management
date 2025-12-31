@@ -13,6 +13,8 @@ namespace Faculty.Application.Interfaces;
 public interface IEnrollmentService
 {
     Task<EnrollmentResponseDto> CreateEnrollmentAsync(Guid courseId, string userId, CancellationToken cancellationToken = default);
+    Task<List<StudentEnrollmentItemDto>> GetMyEnrollmentsAsync(string userId, CancellationToken cancellationToken = default);
+
 }
 
 

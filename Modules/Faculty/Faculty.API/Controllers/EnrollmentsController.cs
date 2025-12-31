@@ -40,18 +40,10 @@ public class EnrollmentsController : ControllerBase
         }
     }
 
-    // get /api/faculty/enrollments/debug-claims
-    // privremeno za debug - poslije obriši
-    [HttpGet("debug-claims")]
-    [Authorize]
-    public IActionResult DebugClaims()
-    {
-        return Ok(User.Claims.Select(c => new { c.Type, c.Value }));
-    }
+ 
 
     private bool TryResolveUserId(out string? userId, out IActionResult? errorResult)
     {
-        // try multiple common claim types
         userId =
             User.FindFirst("userId")?.Value
             ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
@@ -66,4 +58,23 @@ public class EnrollmentsController : ControllerBase
         errorResult = null;
         return true;
     }
+
+    // get /api/faculty/enrollments
+    [HttpGet]
+    public async Task<IActionResult> GetMyEnrollments(CancellationToken cancellationToken)
+    {
+        if (!TryResolveUserId(out var userId, out var errorResult))
+            return errorResult!;
+
+        try
+        {
+            var result = await _service.GetMyEnrollmentsAsync(userId!, cancellationToken);
+            return Ok(result);
+        }
+        catch (FacultyApplicationException ex)
+        {
+            return StatusCode((int)ex.StatusCode, new { error = ex.Message });
+        }
+    }
+
 }

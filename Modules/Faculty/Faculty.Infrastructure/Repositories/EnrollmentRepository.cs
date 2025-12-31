@@ -40,5 +40,14 @@ public class EnrollmentRepository : IEnrollmentRepository
         await _context.SaveChangesAsync(cancellationToken);
         return enrollment;
     }
+
+
+    public Task<List<Enrollment>> GetEnrollmentsByStudentIdAsync(int studentId, CancellationToken cancellationToken = default)
+    => _context.Enrollments
+        .AsNoTracking()
+        .Include(e => e.Course)  
+        .Where(e => e.StudentId == studentId)
+        .ToListAsync(cancellationToken);
+
 }
 
