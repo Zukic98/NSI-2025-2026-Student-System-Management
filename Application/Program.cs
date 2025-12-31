@@ -64,7 +64,7 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization(); // dodaj ovo (dobro je imati)
+builder.Services.AddAuthorization(); 
 
 
 // Add services from modules
