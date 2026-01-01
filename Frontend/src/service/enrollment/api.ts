@@ -1,5 +1,6 @@
 import type { API } from '../../api/api.ts';
 
+
 export async function getCourses(api: API, page = 1, limit = 6, searchQuery = "", filterStatus = "all") {
   try {
     let allCourses = await api.getAllCourses()
@@ -54,4 +55,16 @@ export async function enrollInCourse(courseId: string, courseName: string, cours
       enrolledAt: new Date().toISOString(),
     },
   }
+}
+//show my enrollments in my courses part of dashboard
+export type StudentEnrollmentItemDto = {
+    enrollmentId: string;
+    courseId: string;
+    courseName: string;
+    status: string;
+    grade: number | null;
+};
+
+export async function getMyEnrollments(api: API): Promise<StudentEnrollmentItemDto[]> {
+    return api.get<StudentEnrollmentItemDto[]>("/api/faculty/enrollments");
 }
