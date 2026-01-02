@@ -18,12 +18,6 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const { authInfo } = useAuthContext();
   const location = useLocation();
 
-    // dev bypass of login 
-    const BYPASS_AUTH = true;
-    if (BYPASS_AUTH) return <>{children}</>;
-
-
-
   // Not authenticated, redirect to login
   if (!authInfo) {
     return <Navigate to="/login" replace />;
