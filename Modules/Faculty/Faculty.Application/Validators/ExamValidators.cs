@@ -1,12 +1,12 @@
 using Faculty.Application.DTOs;
+using Faculty.Core.Enums;
 using FluentValidation;
+using System;
 
 namespace Faculty.Application.Validators
 {
     public class CreateExamRequestValidator : AbstractValidator<CreateExamRequestDTO>
     {
-        private static readonly string[] ValidExamTypes = { "Written", "Oral", "Practical", "Online" };
-
         public CreateExamRequestValidator()
         {
             RuleFor(x => x.CourseId)
@@ -21,8 +21,7 @@ namespace Faculty.Application.Validators
                 .MaximumLength(200).WithMessage("Exam location cannot exceed 200 characters.");
 
             RuleFor(x => x.ExamType)
-                .NotEmpty().WithMessage("Exam type is required.")
-                .Must(type => ValidExamTypes.Contains(type)).WithMessage($"Exam type must be one of: {string.Join(", ", ValidExamTypes)}.");
+                .IsInEnum().WithMessage($"Exam type must be one of: {string.Join(", ", Enum.GetNames<ExamType>())}.");
 
             RuleFor(x => x.ExamDate)
                 .NotEmpty().WithMessage("Exam date is required.")
@@ -36,8 +35,6 @@ namespace Faculty.Application.Validators
 
     public class UpdateExamRequestValidator : AbstractValidator<UpdateExamRequestDTO>
     {
-        private static readonly string[] ValidExamTypes = { "Written", "Oral", "Practical", "Online" };
-
         public UpdateExamRequestValidator()
         {
             RuleFor(x => x.CourseId)
@@ -52,8 +49,7 @@ namespace Faculty.Application.Validators
                 .MaximumLength(200).WithMessage("Exam location cannot exceed 200 characters.");
 
             RuleFor(x => x.ExamType)
-                .NotEmpty().WithMessage("Exam type is required.")
-                .Must(type => ValidExamTypes.Contains(type)).WithMessage($"Exam type must be one of: {string.Join(", ", ValidExamTypes)}.");
+                .IsInEnum().WithMessage($"Exam type must be one of: {string.Join(", ", Enum.GetNames<ExamType>())}.");
 
             RuleFor(x => x.ExamDate)
                 .NotEmpty().WithMessage("Exam date is required.")

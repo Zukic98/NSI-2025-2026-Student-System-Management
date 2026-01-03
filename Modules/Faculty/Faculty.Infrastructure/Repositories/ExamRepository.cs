@@ -29,13 +29,6 @@ namespace Faculty.Infrastructure.Repositories
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task<List<Exam>> GetAllAsync()
-        {
-            return await _context.Exams
-                .Include(e => e.Course)
-                .ToListAsync();
-        }
-
         public async Task<List<Exam>> GetExamsByTeacherAsync(int teacherId)
         {
             return await _context.Exams

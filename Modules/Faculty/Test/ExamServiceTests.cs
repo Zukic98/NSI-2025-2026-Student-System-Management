@@ -1,6 +1,7 @@
 using Faculty.Application.DTOs;
 using Faculty.Application.Services;
 using Faculty.Core.Entities;
+using Faculty.Core.Enums;
 using Faculty.Core.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -35,7 +36,7 @@ public class ExamServiceTests
             CourseId = courseId,
             Name = "Final Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -49,6 +50,7 @@ public class ExamServiceTests
             FacultyId = facultyId,
             CourseId = courseId,
             Name = request.Name,
+            ExamType = ExamType.Written,
             ExamDate = request.ExamDate,
             RegDeadline = request.RegDeadline,
             CreatedAt = DateTime.UtcNow
@@ -79,7 +81,7 @@ public class ExamServiceTests
             CourseId = courseId,
             Name = "Final Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -104,6 +106,7 @@ public class ExamServiceTests
             Id = examId,
             CourseId = courseId,
             Name = "Final Exam",
+            ExamType = ExamType.Written,
             Course = new Course { Name = "Math 101" }
         };
 
@@ -131,7 +134,8 @@ public class ExamServiceTests
         {
             Id = examId,
             CourseId = courseId,
-            Name = "Final Exam"
+            Name = "Final Exam",
+            ExamType = ExamType.Written
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(exam);
@@ -155,6 +159,7 @@ public class ExamServiceTests
                 Id = 1,
                 CourseId = Guid.NewGuid(),
                 Name = "Exam 1",
+                ExamType = ExamType.Written,
                 Course = new Course { Name = "Math 101" }
             },
             new Exam
@@ -162,6 +167,7 @@ public class ExamServiceTests
                 Id = 2,
                 CourseId = Guid.NewGuid(),
                 Name = "Exam 2",
+                ExamType = ExamType.Written,
                 Course = new Course { Name = "Physics 101" }
             }
         };
@@ -191,7 +197,7 @@ public class ExamServiceTests
             CourseId = courseId,
             Name = "Old Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -201,7 +207,7 @@ public class ExamServiceTests
             CourseId = courseId,
             Name = "Updated Exam",
             Location = "Room 202",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -234,7 +240,8 @@ public class ExamServiceTests
         {
             Id = examId,
             CourseId = courseId,
-            Name = "Exam to Delete"
+            Name = "Exam to Delete",
+            ExamType = ExamType.Written
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(exam);
@@ -261,7 +268,8 @@ public class ExamServiceTests
         {
             Id = examId,
             CourseId = courseId,
-            Name = "Exam to Delete"
+            Name = "Exam to Delete",
+            ExamType = ExamType.Written
         };
 
         _examRepositoryMock.Setup(x => x.GetByIdAsync(examId)).ReturnsAsync(exam);
@@ -288,7 +296,7 @@ public class ExamServiceTests
             CourseId = courseId,
             Name = "Final Exam",
             Location = location,
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = examDate,
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -319,7 +327,7 @@ public class ExamServiceTests
             CourseId = courseId,
             Name = "Old Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -329,7 +337,7 @@ public class ExamServiceTests
             CourseId = courseId,
             Name = "Updated Exam",
             Location = location,
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = examDate,
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -356,7 +364,7 @@ public class ExamServiceTests
             CourseId = Guid.NewGuid(),
             Name = "Updated Exam",
             Location = "Room 202",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };

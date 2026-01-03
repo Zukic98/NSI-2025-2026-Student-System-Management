@@ -19,7 +19,6 @@ using FluentValidation.AspNetCore;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 
 var builder = WebApplication.CreateBuilder(args);
-const string CorsPolicyName = "ReactDevClient";
 
 // Add services from modules
 builder.Services.AddIdentityModule(builder.Configuration);

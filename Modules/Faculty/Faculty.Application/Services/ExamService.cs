@@ -95,15 +95,20 @@ namespace Faculty.Application.Services
                 throw new UnauthorizedAccessException("You are not authorized to update this exam.");
             }
 
+            if (request.CourseId != existingExam.CourseId)
+            {
+                _logger.LogWarning("Teacher {TeacherId} attempted to change course for exam {ExamId}", teacherId, id);
+                throw new InvalidOperationException("You cannot change the course of an existing exam.");
+            }
+
             // Check for date conflicts (exclude current exam)
-            var hasConflict = await _examRepository.HasDateConflictAsync(request.CourseId, id, request.ExamDate, request.Location);
+            var hasConflict = await _examRepository.HasDateConflictAsync(existingExam.CourseId, id, request.ExamDate, request.Location);
             if (hasConflict)
             {
-                _logger.LogWarning("Date conflict detected for course {CourseId} at {Location} on {ExamDate} (excluding exam {ExamId})", request.CourseId, request.Location, request.ExamDate, id);
+                _logger.LogWarning("Date conflict detected for course {CourseId} at {Location} on {ExamDate} (excluding exam {ExamId})", existingExam.CourseId, request.Location, request.ExamDate, id);
                 throw new InvalidOperationException("There is already an exam scheduled for this course at the same location and date.");
             }
 
-            existingExam.CourseId = request.CourseId;
             existingExam.Name = request.Name;
             existingExam.Location = request.Location;
             existingExam.ExamType = request.ExamType;

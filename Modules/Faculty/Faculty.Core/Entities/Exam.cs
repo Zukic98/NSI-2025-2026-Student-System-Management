@@ -1,3 +1,4 @@
+using Faculty.Core.Enums;
 using Faculty.Core.Interfaces;
 
 namespace Faculty.Core.Entities;
@@ -12,7 +13,7 @@ public class Exam : ITenantAware
     public Guid CourseId { get; set; }
     public string? Name { get; set; }
     public string? Location { get; set; }
-    public string? ExamType { get; set; }
+    public ExamType ExamType { get; set; }
     public DateTime? ExamDate { get; set; }
     public DateTime? RegDeadline { get; set; }
     public DateTime CreatedAt { get; set; }

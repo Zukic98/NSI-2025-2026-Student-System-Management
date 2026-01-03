@@ -1,5 +1,6 @@
 using Faculty.Application.DTOs;
 using Faculty.Application.Validators;
+using Faculty.Core.Enums;
 using FluentValidation.TestHelper;
 using Xunit;
 
@@ -25,7 +26,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Final Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -46,7 +47,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -68,7 +69,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = new string('A', 201), // 201 characters
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -90,7 +91,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Final Exam",
             Location = "",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -104,7 +105,7 @@ public class ExamValidatorsTests
     }
 
     [Fact]
-    public void CreateExamRequestValidator_EmptyExamType_ShouldFailValidation()
+    public void CreateExamRequestValidator_InvalidExamType_ShouldFailValidation()
     {
         // Arrange
         var request = new CreateExamRequestDTO
@@ -112,7 +113,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Final Exam",
             Location = "Room 101",
-            ExamType = "",
+            ExamType = (ExamType)0,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -122,7 +123,7 @@ public class ExamValidatorsTests
 
         // Assert
         result.ShouldHaveValidationErrorFor(x => x.ExamType)
-              .WithErrorMessage("Exam type is required.");
+              .WithErrorMessage("Exam type must be one of: Written, Oral, Practical, Online.");
     }
 
     [Fact]
@@ -134,7 +135,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Final Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(-1), // Past date
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -156,7 +157,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Final Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(5),
             RegDeadline = DateTime.UtcNow.AddDays(7) // After exam date
         };
@@ -178,7 +179,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Updated Exam",
             Location = "Room 202",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -199,7 +200,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "",
             Location = "Room 202",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -221,7 +222,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Updated Exam",
             Location = "",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -235,7 +236,7 @@ public class ExamValidatorsTests
     }
 
     [Fact]
-    public void UpdateExamRequestValidator_EmptyExamType_ShouldFailValidation()
+    public void UpdateExamRequestValidator_InvalidExamType_ShouldFailValidation()
     {
         // Arrange
         var request = new UpdateExamRequestDTO
@@ -243,7 +244,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Updated Exam",
             Location = "Room 202",
-            ExamType = "",
+            ExamType = (ExamType)0,
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -252,8 +253,8 @@ public class ExamValidatorsTests
         var result = _updateValidator.TestValidate(request);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(x => x.ExamType)
-              .WithErrorMessage("Exam type is required.");
+          result.ShouldHaveValidationErrorFor(x => x.ExamType)
+              .WithErrorMessage("Exam type must be one of: Written, Oral, Practical, Online.");
     }
 
     [Fact]
@@ -265,7 +266,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Updated Exam",
             Location = "Room 202",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(-1), // Past date
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };
@@ -287,7 +288,7 @@ public class ExamValidatorsTests
             CourseId = Guid.NewGuid(),
             Name = "Updated Exam",
             Location = "Room 202",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(5),
             RegDeadline = DateTime.UtcNow.AddDays(7) // After exam date
         };

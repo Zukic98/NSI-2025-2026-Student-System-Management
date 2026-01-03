@@ -1,4 +1,5 @@
 ﻿using Faculty.Core.Entities;
+using Faculty.Core.Enums;
 using Faculty.Infrastructure.Http;
 using Microsoft.EntityFrameworkCore;
 
@@ -292,6 +293,11 @@ public class FacultyDbContext : DbContext
             entity.Property(e => e.FacultyId).IsRequired();
             entity.Property(e => e.CourseId).IsRequired();
             entity.Property(e => e.Name).HasMaxLength(200);
+            entity.Property(e => e.Location).HasMaxLength(200);
+            entity.Property(e => e.ExamType)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(50);
             entity.Property(e => e.ExamDate);
             entity.Property(e => e.RegDeadline);
             entity.Property(e => e.CreatedAt).IsRequired();
@@ -341,7 +347,7 @@ public class FacultyDbContext : DbContext
             entity.HasOne(e => e.Exam)
                 .WithMany(ex => ex.ExamRegistrations)
                 .HasForeignKey(e => e.ExamId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Indexes
             entity.HasIndex(e => e.FacultyId);
@@ -379,7 +385,7 @@ public class FacultyDbContext : DbContext
             entity.HasOne(e => e.Exam)
                 .WithMany(ex => ex.StudentExamGrades)
                 .HasForeignKey(e => e.ExamId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Indexes
             entity.HasIndex(e => e.FacultyId);

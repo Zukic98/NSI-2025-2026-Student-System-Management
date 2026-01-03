@@ -2,6 +2,7 @@ using Faculty.API.Controllers;
 using Faculty.Application.DTOs;
 using Faculty.Application.Interfaces;
 using Faculty.Core.Entities;
+using Faculty.Core.Enums;
 using Faculty.Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -54,7 +55,7 @@ public class ExamControllerTests
             CourseId = Guid.NewGuid(),
             Name = "Final Exam",
             Location = "Room 101",
-            ExamType = "Written",
+            ExamType = ExamType.Written,
             ExamDate = DateTime.UtcNow.AddDays(7),
             RegDeadline = DateTime.UtcNow.AddDays(5)
         };
@@ -258,7 +259,7 @@ public class ExamControllerTests
             CourseId = Guid.NewGuid(),
             Name = "Updated Exam",
             Location = "Room 202",
-            ExamType = "Oral",
+            ExamType = ExamType.Oral,
             ExamDate = DateTime.UtcNow.AddDays(10),
             RegDeadline = DateTime.UtcNow.AddDays(8)
         };

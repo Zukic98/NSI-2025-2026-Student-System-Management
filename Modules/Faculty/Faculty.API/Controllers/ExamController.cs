@@ -10,7 +10,7 @@ namespace Faculty.API.Controllers
 {
     [ApiController]
     [Route("api/exams")]
-    [Authorize]
+    [Authorize(Roles = "Teacher")]
     public class ExamController : ControllerBase
     {
         private readonly IExamService _examService;
@@ -29,13 +29,6 @@ namespace Faculty.API.Controllers
 
         private async Task<Teacher> GetCurrentTeacherAsync()
         {
-            // Check if user has Teacher role
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role != "Teacher")
-            {
-                throw new UnauthorizedAccessException("Only teachers can access exam management.");
-            }
-
             var userId = User.FindFirst("userId")?.Value;
             if (string.IsNullOrEmpty(userId))
             {

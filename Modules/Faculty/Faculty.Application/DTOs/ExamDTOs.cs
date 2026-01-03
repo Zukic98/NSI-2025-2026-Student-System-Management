@@ -1,8 +1,10 @@
+using Faculty.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Faculty.Application.DTOs
@@ -13,7 +15,8 @@ namespace Faculty.Application.DTOs
         public Guid CourseId { get; set; }
         public string? Name { get; set; }
         public string? Location { get; set; }
-        public string? ExamType { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ExamType ExamType { get; set; }
         public DateTime? ExamDate { get; set; }
         public DateTime? RegDeadline { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -34,7 +37,8 @@ namespace Faculty.Application.DTOs
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string ExamType { get; set; } = string.Empty;
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ExamType ExamType { get; set; }
 
         [Required]
         public DateTime ExamDate { get; set; }
@@ -57,7 +61,8 @@ namespace Faculty.Application.DTOs
         public string Location { get; set; } = string.Empty;
 
         [Required]
-        public string ExamType { get; set; } = string.Empty;
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ExamType ExamType { get; set; }
 
         [Required]
         public DateTime ExamDate { get; set; }
@@ -73,7 +78,8 @@ namespace Faculty.Application.DTOs
         public string? CourseName { get; set; }
         public string? Name { get; set; }
         public string? Location { get; set; }
-        public string? ExamType { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ExamType ExamType { get; set; }
         public DateTime? ExamDate { get; set; }
         public DateTime? RegDeadline { get; set; }
         public DateTime CreatedAt { get; set; }
