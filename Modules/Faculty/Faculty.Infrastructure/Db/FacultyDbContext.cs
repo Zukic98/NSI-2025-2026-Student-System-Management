@@ -12,16 +12,14 @@ namespace Faculty.Infrastructure.Db;
 public class FacultyDbContext : DbContext
 {
     private readonly ITenantService _tenantService;
-    private readonly Guid _currentFacultyId;
 
     public FacultyDbContext(DbContextOptions<FacultyDbContext> options, ITenantService tenantService)
         : base(options)
     {
         _tenantService = tenantService ?? throw new ArgumentNullException(nameof(tenantService));
-        _currentFacultyId = _tenantService.GetCurrentFacultyId();
     }
 
-    private Guid CurrentFacultyId => _currentFacultyId;
+    private Guid CurrentFacultyId => _tenantService.GetCurrentFacultyId();
 
     // DbSets
     public DbSet<Teacher> Teachers { get; set; } = null!;
