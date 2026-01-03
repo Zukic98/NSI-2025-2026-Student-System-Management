@@ -326,59 +326,6 @@ export default function AttendancePage() {
                     </CRow>
                 </CCardBody>
             </CCard>
-            <CCard className="mb-4">
-                <CCardHeader>
-                    <strong>Attendance Statistics</strong>
-                </CCardHeader>
-                <CCardBody>
-                    <CRow className="mb-4">
-                        <CCol md={4}>
-                            <CFormSelect
-                                label="Course for Stats"
-                                value={chartCourse}
-                                onChange={(e) => setChartCourse(e.target.value)}
-                            >
-                                <option value="">Select Course</option>
-                                {courseOptions}
-                            </CFormSelect>
-                        </CCol>
-                        <CCol md={4}>
-                            <CFormInput
-                                type="month"
-                                label="Month"
-                                value={chartMonth}
-                                onChange={(e) => setChartMonth(e.target.value)}
-                            />
-                        </CCol>
-                    </CRow>
-
-                    <CRow className="justify-content-center">
-                        <CCol md={6} lg={4}>
-                            {loadingStats ? (
-                                <div className="text-center p-5">
-                                    <CSpinner />
-                                </div>
-                            ) : attendanceStats ? (
-                                <div style={doughnutContainerStyle}>
-                                    <CChart
-                                        type="doughnut"
-                                        customTooltips={false}
-                                        height={DOUGHNUT_CANVAS_SIZE}
-                                        width={DOUGHNUT_CANVAS_SIZE}
-                                        style={{ height: `${DOUGHNUT_CANVAS_SIZE}px`, width: `${DOUGHNUT_CANVAS_SIZE}px` }}
-                                        data={doughnutData ?? { labels: [], datasets: [] }}
-                                        options={doughnutOptions}
-                                    />
-                                </div>
-                            ) : (
-                                <div className="text-center text-muted p-5">
-                                    Select a course and month to view statistics
-                                </div>
-                            )}
-                        </CCol>
-                    </CRow>
-                </CCardBody>
-            </CCard>
             {attendanceRecords.length > 0 && (
                 <CCard>
                     <CCardHeader className="d-flex justify-content-between align-items-center">
