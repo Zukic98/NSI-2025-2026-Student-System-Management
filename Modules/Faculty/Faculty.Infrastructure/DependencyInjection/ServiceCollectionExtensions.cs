@@ -3,6 +3,7 @@ using Faculty.Application.Services;
 using Faculty.Application.Validators;
 using Faculty.Core.Interfaces;
 using Faculty.Infrastructure.Db;
+using Faculty.Infrastructure.EventHandler;
 using Faculty.Infrastructure.Http;
 using Faculty.Infrastructure.Repositories;
 using FluentValidation;
@@ -21,9 +22,16 @@ namespace Faculty.Infrastructure.DependencyInjection
             services.AddScoped<IExamRepository, ExamRepository>();
             services.AddScoped<IExamService, ExamService>();
             services.AddScoped<ITeacherRepository, TeacherRepository>();
+            services.AddScoped<IStudentExamRegistrationRepository, StudentExamRegistrationRepository>();
+            services.AddScoped<IStudentExamRegistrationService, StudentExamRegistrationService>();
+            services.AddScoped<StudentService>();
+            services.AddScoped<IStudentRepository, StudentRepository>();
 
             services.AddHttpContextAccessor();
             services.AddScoped<ITenantService, HttpTenantService>();
+
+            // Event handlers
+            services.AddScoped<UserCreatedEventHandler>();
 
             services.AddDbContext<FacultyDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("Database")));
