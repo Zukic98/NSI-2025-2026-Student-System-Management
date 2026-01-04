@@ -3,6 +3,7 @@ using System;
 using Faculty.Infrastructure.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Faculty.Infrastructure.Migrations
 {
     [DbContext(typeof(FacultyDbContext))]
-    partial class FacultyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217222702_AttendanceChanges")]
+    partial class AttendanceChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -256,17 +259,8 @@ namespace Faculty.Infrastructure.Migrations
                     b.Property<DateTime?>("ExamDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ExamType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<Guid>("FacultyId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(200)
@@ -610,7 +604,7 @@ namespace Faculty.Infrastructure.Migrations
                     b.HasOne("Faculty.Core.Entities.Exam", "Exam")
                         .WithMany("ExamRegistrations")
                         .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Faculty.Core.Entities.Student", "Student")
@@ -648,7 +642,7 @@ namespace Faculty.Infrastructure.Migrations
                     b.HasOne("Faculty.Core.Entities.Exam", "Exam")
                         .WithMany("StudentExamGrades")
                         .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Faculty.Core.Entities.Student", "Student")
