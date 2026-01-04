@@ -7,6 +7,7 @@ using Identity.Core.Services;
 using Identity.Infrastructure.Db;
 using Identity.Infrastructure.Repositories;
 using Identity.Infrastructure.Services;
+using Identity.Infrastructure.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -22,6 +23,8 @@ builder.Services.AddControllers(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddIdentityModule(builder.Configuration);
 
 // Configure Swagger/OpenAPI with JWT support
 builder.Services.AddSwaggerGen(options =>
@@ -71,40 +74,6 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlComments(xmlPath);
     }
 });
-
-// Database Configuration
-builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("Database"),
-        b => b.MigrationsAssembly("Identity.Infrastructure")));
-
-// --- ADDED: Register Data Protection (Required for Token Providers) ---
-builder.Services.AddDataProtection();
-// ---------------------------------------------------------------------
-
-// --- ADDED: Register Identity Core Services (Fixes Dependency Injection Error) ---
-builder.Services.AddIdentityCore<ApplicationUser>()
-    .AddEntityFrameworkStores<AuthDbContext>()
-    .AddDefaultTokenProviders();
-// --------------------------------------------------------------------------------
-
-// JWT Settings
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-
-// Register Services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<IIdentityHasherService, IdentityHasherService>();
-builder.Services.AddScoped<IEventPublisher, EventPublisher>();
-builder.Services.AddScoped<IUserService, UserService>();
-
-// Register Repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
-// Register Startup Services
-builder.Services.AddHostedService<IdentityStartupService>();
-
 
 // Health Checks
 //builder.Services.AddHealthChecks()

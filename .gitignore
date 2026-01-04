@@ -139,5 +139,3 @@ Deployment/local/.pgdata/
 Frontend/certs/
 
 certs/
-
-.env
