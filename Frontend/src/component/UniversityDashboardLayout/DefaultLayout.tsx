@@ -11,9 +11,9 @@ const DefaultLayout: React.FC<PropsWithChildren<object>> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile only
 
   const showText = useMemo(() => {
-    // Na mobile uvijek prikazuj tekst (jer sidebar je drawer)
+    // On mobile, always show text (the sidebar is a drawer)
     if (isMobile) return true;
-    // Na desktop sakrij tekst kad je collapsed
+    // On desktop, hide text when collapsed
     return !isCollapsed;
   }, [isCollapsed, isMobile]);
 
@@ -24,7 +24,7 @@ const DefaultLayout: React.FC<PropsWithChildren<object>> = ({ children }) => {
   const getLinkStyle = (path: string): CSSProperties => {
     const isActive = location.pathname === path;
 
-    // Kada je collapsed (desktop), ne prikazuj "active" highlight (kako si htjela)
+    // When collapsed (desktop), do not show the "active" highlight
     if (!isMobile && isCollapsed) {
       return {
         padding: "10px 20px",
