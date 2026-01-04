@@ -10,20 +10,20 @@ export class API {
         this.#restClient = restClient
     }
 
-    get<T>(url: string): Promise<T> {
-        return this.#restClient.get<T>(url)
+    get<TResponse>(url: string): Promise<TResponse> {
+        return this.#restClient.get<TResponse>(url)
     }
 
-    post<TResponse, TBody = unknown>(url: string, body?: TBody): Promise<TResponse> {
+    post<TResponse>(url: string, body?: unknown): Promise<TResponse> {
         return this.#restClient.post<TResponse>(url, body)
     }
 
-    put<TResponse, TBody = unknown>(url: string, body?: TBody): Promise<TResponse> {
+    put<TResponse>(url: string, body?: unknown): Promise<TResponse> {
         return this.#restClient.put<TResponse>(url, body)
     }
 
-    delete<T>(url: string): Promise<T> {
-        return this.#restClient.delete<T>(url)
+    delete<TResponse>(url: string): Promise<TResponse> {
+        return this.#restClient.delete<TResponse>(url)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,20 +31,18 @@ export class API {
         return this.#restClient.get("/api/University")
     }
 
-
     async enableTwoFactor(): Promise<TwoFASetupResponse> {
-        return this.#restClient.post("/api/auth/enable-2fa")
+        return this.post<TwoFASetupResponse>("/api/auth/enable-2fa")
     }
 
     async verifyTwoFactorSetup(code: string): Promise<TwoFAConfirmResponse> {
-        return this.#restClient.post("/api/auth/verify-2fa-setup", { code })
+        return this.post<TwoFAConfirmResponse>("/api/auth/verify-2fa-setup", { code })
     }
 
     async verifyTwoFactorLogin(code: string): Promise<TwoFAConfirmResponse> {
-        return this.#restClient.post("/api/auth/verify-2fa", { code })
+        return this.post<TwoFAConfirmResponse>("/api/auth/verify-2fa", { code })
     }
 
-    // Course management methods
     async getAllCourses(): Promise<Course[]> {
         return this.get<Course[]>("/api/faculty/courses")
     }
@@ -54,11 +52,11 @@ export class API {
     }
 
     async createCourse(dto: CourseDTO): Promise<Course> {
-        return this.post<Course, CourseDTO>("/api/faculty/courses", dto)
+        return this.post<Course>("/api/faculty/courses", dto)
     }
 
     async updateCourse(id: string, dto: CourseDTO): Promise<Course> {
-        return this.put<Course, CourseDTO>(`/api/faculty/courses/${id}`, dto)
+        return this.put<Course>(`/api/faculty/courses/${id}`, dto)
     }
 
     async deleteCourse(id: string): Promise<void> {

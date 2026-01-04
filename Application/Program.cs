@@ -32,39 +32,6 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
-var jwt = builder.Configuration.GetSection("JwtSettings");
-var signingKey = jwt["SigningKey"]!;
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = jwt["Issuer"],
-
-            ValidateAudience = true,
-            ValidAudience = jwt["Audience"],
-
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(signingKey)),
-
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
-        };
-
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = ctx =>
-            {
-                Console.WriteLine("JWT AUTH FAILED: " + ctx.Exception);
-                return Task.CompletedTask;
-            }
-        };
-    });
-
-builder.Services.AddAuthorization(); 
 
 
 // Add services from modules
@@ -74,6 +41,9 @@ builder.Services.AddFacultyModule(builder.Configuration);
 builder.Services.AddSupportModule(builder.Configuration);
 builder.Services.AddNotificationsModule();
 builder.Services.AddAnalyticsModule();
+
+
+
 
 // Add controllers and module API assemblies
 var mvcBuilder = builder.Services.AddControllers();
