@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { CAlert, CCard, CCardBody, CCol, CRow } from '@coreui/react';
 
 import { ExamForm, type ExamFormValues } from './ExamForm';
-import { createExam } from '../../service/examsApi';
-import { courseService } from '../../service/courseService';
+import { useAPI } from '../../context/services.tsx';
 
 type Course = {
-  id: string | number;
+  id: string;
   name: string;
 };
 
 export function CreateExamPage() {
   const navigate = useNavigate();
+  const api = useAPI();
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,8 +27,8 @@ export function CreateExamPage() {
       setCoursesError(null);
 
       try {
-        const data = await courseService.getAll();
-        const list = (data ?? []) as Course[];
+        const data = await api.getAllCourses();
+        const list = (data ?? []).map((c) => ({ id: c.id, name: c.name })) as Course[];
         setCourses(list);
 
         if (list.length === 0) {
@@ -44,7 +44,7 @@ export function CreateExamPage() {
     };
 
     loadCourses();
-  }, []);
+  }, [api]);
 
   const courseNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -59,15 +59,15 @@ export function CreateExamPage() {
     setError(null);
 
     try {
-      // values.courseId is the selected course id from dropdown
-      // Always send courseName as real name when we have it (works for mock + real)
-      const courseName =
-        courseNameById.get(String(values.courseId)) ?? values.courseName ?? values.courseId;
+      const courseName = courseNameById.get(String(values.courseId)) ?? '';
 
-      await createExam({
-        courseName,
-        dateTime: values.dateTime,
+      await api.createExam({
+        courseId: values.courseId,
+        name: courseName || 'Exam',
         location: values.location,
+        examType: values.examType,
+        examDate: values.examDate,
+        regDeadline: values.regDeadline,
       });
 
       sessionStorage.setItem('exams.toast', 'created');

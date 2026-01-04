@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CButton, CCol, CForm, CFormInput, CFormLabel, CFormSelect, CRow } from '@coreui/react';
 
+import type { ExamType } from '../../dto/ExamDTO';
+
 export type ExamFormValues = {
-  courseId: string;    // selected course id
-  courseName?: string; // optional (kept for compatibility)
-  dateTime: string;    // "YYYY-MM-DDTHH:mm" from datetime-local
+  courseId: string;      // selected course guid
+  examDate: string;      // "YYYY-MM-DDTHH:mm" from datetime-local
+  regDeadline: string;   // "YYYY-MM-DDTHH:mm" from datetime-local
   location: string;
+  examType: ExamType;
 };
 
 type Course = {
@@ -32,6 +35,22 @@ export function ExamForm({
   courses = [],
   coursesLoading = false,
 }: Props) {
+  const parseDateTimeLocal = (value: string) => {
+    if (!value || value.trim().length === 0) return null;
+
+    const [datePart, timePart] = value.split('T');
+    if (!datePart || !timePart) return null;
+
+    const [year, month, day] = datePart.split('-').map((n) => Number(n));
+    const [hour, minute] = timePart.split(':').map((n) => Number(n));
+
+    if ([year, month, day, hour, minute].some((n) => Number.isNaN(n))) return null;
+
+    const dt = new Date(year, month - 1, day, hour, minute, 0, 0);
+    if (Number.isNaN(dt.getTime())) return null;
+    return dt;
+  };
+
   const courseOptions = useMemo(
     () =>
       courses.map((c) => ({
@@ -43,11 +62,13 @@ export function ExamForm({
 
   const [values, setValues] = useState<ExamFormValues>({
     courseId: '',
-    dateTime: '',
+    examDate: '',
+    regDeadline: '',
     location: '',
+    examType: 'Written',
   });
 
-  type FieldKey = 'courseId' | 'dateTime' | 'location';
+  type FieldKey = 'courseId' | 'examDate' | 'regDeadline' | 'location' | 'examType';
   const [errors, setErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [initialized, setInitialized] = useState(false);
 
@@ -62,14 +83,37 @@ export function ExamForm({
       nextErrors.location = 'Location is required.';
     }
 
-    if (!v.dateTime || v.dateTime.trim().length === 0) {
-      nextErrors.dateTime = 'Date & time is required.';
+    if (!v.examType || String(v.examType).trim().length === 0) {
+      nextErrors.examType = 'Type is required.';
+    }
+
+    if (!v.examDate || v.examDate.trim().length === 0) {
+      nextErrors.examDate = 'Date & time is required.';
     } else {
-      const parsed = new Date(v.dateTime);
-      if (Number.isNaN(parsed.getTime())) {
-        nextErrors.dateTime = 'Date & time is invalid.';
+      const parsed = parseDateTimeLocal(v.examDate);
+      if (!parsed) {
+        nextErrors.examDate = 'Date & time is invalid.';
       } else if (parsed.getTime() <= Date.now()) {
-        nextErrors.dateTime = 'Date & time must be in the future.';
+        nextErrors.examDate = 'Date & time must be in the future.';
+      }
+    }
+
+    if (!v.regDeadline || v.regDeadline.trim().length === 0) {
+      nextErrors.regDeadline = 'Registration deadline is required.';
+    } else {
+      const parsed = parseDateTimeLocal(v.regDeadline);
+      if (!parsed) {
+        nextErrors.regDeadline = 'Registration deadline is invalid.';
+      } else if (parsed.getTime() <= Date.now()) {
+        nextErrors.regDeadline = 'Registration deadline must be in the future.';
+      }
+    }
+
+    if (!nextErrors.examDate && !nextErrors.regDeadline) {
+      const exam = parseDateTimeLocal(v.examDate)?.getTime();
+      const deadline = parseDateTimeLocal(v.regDeadline)?.getTime();
+      if (typeof exam === 'number' && typeof deadline === 'number' && deadline >= exam) {
+        nextErrors.regDeadline = 'Registration deadline must be before the exam date.';
       }
     }
 
@@ -91,9 +135,10 @@ export function ExamForm({
       ...prev,
       ...initialValues,
       courseId: initialValues.courseId ?? prev.courseId,
-      dateTime: initialValues.dateTime ?? prev.dateTime,
+      examDate: initialValues.examDate ?? prev.examDate,
+      regDeadline: initialValues.regDeadline ?? prev.regDeadline,
       location: initialValues.location ?? prev.location,
-      courseName: initialValues.courseName ?? prev.courseName,
+      examType: initialValues.examType ?? prev.examType,
     }));
 
     setInitialized(true);
@@ -102,13 +147,24 @@ export function ExamForm({
   const update = (key: keyof ExamFormValues, value: string) => {
     setValues((prev) => ({ ...prev, [key]: value }));
 
-    if (key === 'courseId' || key === 'dateTime' || key === 'location') {
+    if (key === 'courseId' || key === 'examDate' || key === 'regDeadline' || key === 'location' || key === 'examType') {
       setErrors((prev) => ({ ...prev, [key]: undefined }));
     }
   };
 
   const canSubmit =
     Object.keys(currentValidation).length === 0 && !submitting;
+
+  const getFieldError = (key: FieldKey) => {
+    const submitError = errors[key];
+    if (submitError) return submitError;
+
+    const value = values[key];
+    const shouldShowLive = typeof value === 'string' ? value.trim().length > 0 : Boolean(value);
+    if (!shouldShowLive) return undefined;
+
+    return currentValidation[key];
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,18 +195,44 @@ export function ExamForm({
               </option>
             ))}
           </CFormSelect>
-          {errors.courseId && <div className="text-danger small mt-1">{errors.courseId}</div>}
+          {getFieldError('courseId') && <div className="text-danger small mt-1">{getFieldError('courseId')}</div>}
         </CCol>
 
         <CCol md={6}>
           <CFormLabel>Date &amp; Time</CFormLabel>
           <CFormInput
             type="datetime-local"
-            value={values.dateTime}
-            onChange={(e) => update('dateTime', e.target.value)}
+            value={values.examDate}
+            onChange={(e) => update('examDate', e.target.value)}
             disabled={submitting}
           />
-          {errors.dateTime && <div className="text-danger small mt-1">{errors.dateTime}</div>}
+          {getFieldError('examDate') && <div className="text-danger small mt-1">{getFieldError('examDate')}</div>}
+        </CCol>
+
+        <CCol md={6}>
+          <CFormLabel>Registration deadline</CFormLabel>
+          <CFormInput
+            type="datetime-local"
+            value={values.regDeadline}
+            onChange={(e) => update('regDeadline', e.target.value)}
+            disabled={submitting}
+          />
+          {getFieldError('regDeadline') && <div className="text-danger small mt-1">{getFieldError('regDeadline')}</div>}
+        </CCol>
+
+        <CCol md={6}>
+          <CFormLabel>Type</CFormLabel>
+          <CFormSelect
+            value={values.examType}
+            onChange={(e) => update('examType', e.target.value)}
+            disabled={submitting}
+          >
+            <option value="Written">Written</option>
+            <option value="Oral">Oral</option>
+            <option value="Practical">Practical</option>
+            <option value="Online">Online</option>
+          </CFormSelect>
+          {getFieldError('examType') && <div className="text-danger small mt-1">{getFieldError('examType')}</div>}
         </CCol>
 
         <CCol md={12}>
@@ -161,7 +243,7 @@ export function ExamForm({
             onChange={(e) => update('location', e.target.value)}
             disabled={submitting}
           />
-          {errors.location && <div className="text-danger small mt-1">{errors.location}</div>}
+          {getFieldError('location') && <div className="text-danger small mt-1">{getFieldError('location')}</div>}
         </CCol>
 
         <CCol xs={12} className="d-flex justify-content-center gap-2 mt-2">

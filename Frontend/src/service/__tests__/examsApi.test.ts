@@ -1,60 +1,102 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../api/rest', () => {
-  return {
-    api: {
-      get: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-    },
-  };
+const fetchMock = vi.fn();
+vi.stubGlobal('fetch', fetchMock);
+
+const examsApi = await import('../examsApi');
+
+beforeEach(() => {
+  fetchMock.mockReset();
 });
 
-const { api } = await import('../../api/rest');
-const examsApi = await import('../examsApi');
+function mockOkJson(data: unknown) {
+  fetchMock.mockResolvedValueOnce({
+    ok: true,
+    status: 200,
+    text: async () => JSON.stringify(data),
+  });
+}
+
+function mockOkEmpty() {
+  fetchMock.mockResolvedValueOnce({
+    ok: true,
+    status: 204,
+    text: async () => '',
+  });
+}
 
 describe('examsApi service', () => {
   it('fetchExams calls GET /api/exams', async () => {
-    (api.get as any).mockResolvedValue([{ id: 'e1', courseName: 'Math', dateTime: 'x', location: 'y' }]);
+    mockOkJson([{ id: 'e1', courseName: 'Math', dateTime: 'x', location: 'y' }]);
 
     const result = await examsApi.fetchExams();
 
-    expect(api.get).toHaveBeenCalledWith('/api/exams');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/exams',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        }),
+      }),
+    );
     expect(result).toHaveLength(1);
   });
 
   it('getExam calls GET /api/exams/:id', async () => {
-    (api.get as any).mockResolvedValue({ id: 'e1', courseName: 'Math', dateTime: 'x', location: 'y' });
+    mockOkJson({ id: 'e1', courseName: 'Math', dateTime: 'x', location: 'y' });
 
     await examsApi.getExam('e1');
 
-    expect(api.get).toHaveBeenCalledWith('/api/exams/e1');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/exams/e1',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        }),
+      }),
+    );
   });
 
   it('createExam calls POST /api/exams', async () => {
-    (api.post as any).mockResolvedValue(undefined);
+    mockOkEmpty();
 
     const payload = { courseName: 'Math', dateTime: '2999-01-01T10:00', location: 'Room 101' };
     await examsApi.createExam(payload);
 
-    expect(api.post).toHaveBeenCalledWith('/api/exams', payload);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/exams',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    );
   });
 
   it('updateExam calls PUT /api/exams/:id', async () => {
-    (api.put as any).mockResolvedValue(undefined);
+    mockOkEmpty();
 
     const payload = { courseName: 'Math', dateTime: '2999-01-01T10:00', location: 'Room 202' };
     await examsApi.updateExam('e1', payload);
 
-    expect(api.put).toHaveBeenCalledWith('/api/exams/e1', payload);
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/exams/e1',
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      }),
+    );
   });
 
   it('deleteExam calls DELETE /api/exams/:id', async () => {
-    (api.delete as any).mockResolvedValue(undefined);
+    mockOkEmpty();
 
     await examsApi.deleteExam('e1');
 
-    expect(api.delete).toHaveBeenCalledWith('/api/exams/e1');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/exams/e1',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
   });
 });

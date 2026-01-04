@@ -5,32 +5,32 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { EditExamPage } from '../EditExamPage';
 
-vi.mock('../../../service/examsApi', () => ({
+const apiMock = {
+  getAllCourses: vi.fn(),
   getExam: vi.fn(),
   updateExam: vi.fn(),
-}));
+};
 
-vi.mock('../../../service/courseService', () => ({
-  courseService: {
-    getAll: vi.fn(),
-  },
+vi.mock('../../../context/services.tsx', () => ({
+  useAPI: () => apiMock,
 }));
-
-const { getExam, updateExam } = await import('../../../service/examsApi');
-const { courseService } = await import('../../../service/courseService');
 
 describe('EditExamPage', () => {
   it('preloads exam, updates via PUT, and redirects', async () => {
     const user = userEvent.setup();
 
-    (courseService.getAll as any).mockResolvedValue([{ id: 'c1', name: 'Math' }]);
-    (getExam as any).mockResolvedValue({
-      id: 'e1',
+    apiMock.getAllCourses.mockResolvedValue([{ id: 'c1', name: 'Math' }]);
+    apiMock.getExam.mockResolvedValue({
+      id: 1,
+      courseId: 'c1',
       courseName: 'Math',
-      dateTime: '2999-01-01T10:00',
+      examType: 'Written',
+      examDate: '2999-01-01T10:00',
+      regDeadline: '2999-01-01T09:00',
       location: 'Room 101',
+      createdAt: '2026-01-01T00:00:00Z',
     });
-    (updateExam as any).mockResolvedValue(undefined);
+    apiMock.updateExam.mockResolvedValue({ id: 1 });
 
     sessionStorage.clear();
 
@@ -44,8 +44,8 @@ describe('EditExamPage', () => {
 
     render(<RouterProvider router={router} />);
 
-    await waitFor(() => expect(getExam).toHaveBeenCalledWith('e1'));
-    await waitFor(() => expect(courseService.getAll).toHaveBeenCalled());
+    await waitFor(() => expect(apiMock.getExam).toHaveBeenCalledWith('e1'));
+    await waitFor(() => expect(apiMock.getAllCourses).toHaveBeenCalled());
 
     const locationInput = await screen.findByDisplayValue('Room 101');
     expect(locationInput).toBeInTheDocument();
@@ -55,11 +55,14 @@ describe('EditExamPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    await waitFor(() => expect(updateExam).toHaveBeenCalledTimes(1));
-    expect(updateExam).toHaveBeenCalledWith('e1', {
-      courseName: 'Math',
-      dateTime: '2999-01-01T10:00',
+    await waitFor(() => expect(apiMock.updateExam).toHaveBeenCalledTimes(1));
+    expect(apiMock.updateExam).toHaveBeenCalledWith('e1', {
+      courseId: 'c1',
+      name: 'Math',
       location: 'Room 202',
+      examType: 'Written',
+      examDate: '2999-01-01T10:00',
+      regDeadline: '2999-01-01T09:00',
     });
 
     await waitFor(() => expect(screen.getByText('Exams list')).toBeInTheDocument());
@@ -67,12 +70,16 @@ describe('EditExamPage', () => {
   });
 
   it('shows warning when no courses exist', async () => {
-    (courseService.getAll as any).mockResolvedValue([]);
-    (getExam as any).mockResolvedValue({
-      id: 'e1',
+    apiMock.getAllCourses.mockResolvedValue([]);
+    apiMock.getExam.mockResolvedValue({
+      id: 1,
+      courseId: 'c1',
       courseName: 'Math',
-      dateTime: '2999-01-01T10:00',
+      examType: 'Written',
+      examDate: '2999-01-01T10:00',
+      regDeadline: '2999-01-01T09:00',
       location: 'Room 101',
+      createdAt: '2026-01-01T00:00:00Z',
     });
 
     const router = createMemoryRouter(
@@ -89,14 +96,18 @@ describe('EditExamPage', () => {
   it('shows API error when update fails (no redirect)', async () => {
     const user = userEvent.setup();
 
-    (courseService.getAll as any).mockResolvedValue([{ id: 'c1', name: 'Math' }]);
-    (getExam as any).mockResolvedValue({
-      id: 'e1',
+    apiMock.getAllCourses.mockResolvedValue([{ id: 'c1', name: 'Math' }]);
+    apiMock.getExam.mockResolvedValue({
+      id: 1,
+      courseId: 'c1',
       courseName: 'Math',
-      dateTime: '2999-01-01T10:00',
+      examType: 'Written',
+      examDate: '2999-01-01T10:00',
+      regDeadline: '2999-01-01T09:00',
       location: 'Room 101',
+      createdAt: '2026-01-01T00:00:00Z',
     });
-    (updateExam as any).mockRejectedValue(new Error('update boom'));
+    apiMock.updateExam.mockRejectedValue(new Error('update boom'));
 
     const router = createMemoryRouter(
       [
@@ -119,8 +130,8 @@ describe('EditExamPage', () => {
   });
 
   it('shows error when preload fails', async () => {
-    (courseService.getAll as any).mockResolvedValue([{ id: 'c1', name: 'Math' }]);
-    (getExam as any).mockRejectedValue(new Error('nope'));
+    apiMock.getAllCourses.mockResolvedValue([{ id: 'c1', name: 'Math' }]);
+    apiMock.getExam.mockRejectedValue(new Error('nope'));
 
     const router = createMemoryRouter(
       [{ path: '/faculty/exams/:id/edit', element: <EditExamPage /> }],

@@ -21,17 +21,18 @@ import {
 } from '@coreui/react';
 
 import '../../styles/coreui-custom.css';
-// import { deleteExam, fetchExams } from '../../service/examsApi';
+import { useAPI } from '../../context/services.tsx';
 
 type Exam = {
-  id: string;
-  courseName: string;
-  dateTime: string;
-  location: string;
+  id: number;
+  courseName?: string;
+  examDate?: string;
+  location?: string;
 };
 
 export function ExamPage() {
   const navigate = useNavigate();
+  const api = useAPI();
 
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,11 +55,14 @@ export function ExamPage() {
       setLoading(true);
       setError('');
 
-      // TODO: ubaci svoj real fetch
-      // const data = await fetchExams();
-      // setExams(data ?? []);
-      // privremeno:
-      // setExams([]);
+      const data = await api.getExams();
+      const normalized: Exam[] = (data ?? []).map((e) => ({
+        id: e.id,
+        courseName: e.courseName ?? '',
+        examDate: e.examDate ?? '',
+        location: e.location ?? '',
+      }));
+      setExams(normalized);
 
     } catch (e) {
       console.error(e);
@@ -100,12 +104,9 @@ export function ExamPage() {
       setDeleting(true);
       setDeleteError(null);
 
-      // TODO: ubaci svoj real delete
-      // await deleteExam(deleteTarget.id);
-      // await loadExams();
-
-      // privremeno (UI optimistic):
+      await api.deleteExam(deleteTarget.id);
       setExams((prev) => prev.filter((e) => e.id !== deleteTarget.id));
+      setSuccessMsg('Exam deleted successfully.');
 
       closeDeleteModal();
     } catch (e: any) {
@@ -170,7 +171,7 @@ export function ExamPage() {
                   {exams.map((exam) => (
                     <CTableRow key={exam.id}>
                       <CTableDataCell>{exam.courseName}</CTableDataCell>
-                      <CTableDataCell>{displayDateTime(exam.dateTime)}</CTableDataCell>
+                      <CTableDataCell>{displayDateTime(exam.examDate ?? '')}</CTableDataCell>
                       <CTableDataCell>{exam.location}</CTableDataCell>
 
                       <CTableDataCell className="text-end">

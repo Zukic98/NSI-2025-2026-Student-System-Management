@@ -1,31 +1,30 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { CreateExamPage } from '../CreateExamPage';
 
-vi.mock('../../../service/examsApi', () => ({
+const apiMock = {
+  getAllCourses: vi.fn(),
   createExam: vi.fn(),
-}));
+};
 
-vi.mock('../../../service/courseService', () => ({
-  courseService: {
-    getAll: vi.fn(),
-  },
+vi.mock('../../../context/services.tsx', () => ({
+  useAPI: () => apiMock,
 }));
-
-const { createExam } = await import('../../../service/examsApi');
-const { courseService } = await import('../../../service/courseService');
 
 describe('CreateExamPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sessionStorage.clear();
+  });
+
   it('loads courses and creates an exam (happy path)', async () => {
     const user = userEvent.setup();
 
-    (courseService.getAll as any).mockResolvedValue([{ id: 'c1', name: 'Math' }]);
-    (createExam as any).mockResolvedValue(undefined);
-
-    sessionStorage.clear();
+    apiMock.getAllCourses.mockResolvedValue([{ id: 'c1', name: 'Math' }]);
+    apiMock.createExam.mockResolvedValue({ id: 1 });
 
     const router = createMemoryRouter(
       [
@@ -37,22 +36,28 @@ describe('CreateExamPage', () => {
 
     render(<RouterProvider router={router} />);
 
-    await waitFor(() => expect(courseService.getAll).toHaveBeenCalled());
+    await waitFor(() => expect(apiMock.getAllCourses).toHaveBeenCalled());
 
-    await user.selectOptions(screen.getByRole('combobox'), 'c1');
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'c1');
 
-    const dateInput = document.querySelector('input[type="datetime-local"]') as HTMLInputElement;
-    await user.type(dateInput, '2999-01-01T10:00');
+    const dateInputs = Array.from(document.querySelectorAll('input[type="datetime-local"]')) as HTMLInputElement[];
+    const examDateInput = dateInputs[0];
+    const deadlineInput = dateInputs[1];
+    await user.type(examDateInput, '2999-01-01T10:00');
+    await user.type(deadlineInput, '2999-01-01T09:00');
 
     await user.type(screen.getByPlaceholderText('e.g., Room 101'), 'Room 101');
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    await waitFor(() => expect(createExam).toHaveBeenCalledTimes(1));
-    expect(createExam).toHaveBeenCalledWith({
-      courseName: 'Math',
-      dateTime: '2999-01-01T10:00',
+    await waitFor(() => expect(apiMock.createExam).toHaveBeenCalledTimes(1));
+    expect(apiMock.createExam).toHaveBeenCalledWith({
+      courseId: 'c1',
+      name: 'Math',
       location: 'Room 101',
+      examType: 'Written',
+      examDate: '2999-01-01T10:00',
+      regDeadline: '2999-01-01T09:00',
     });
 
     await waitFor(() => expect(screen.getByText('Exams list')).toBeInTheDocument());
@@ -60,7 +65,7 @@ describe('CreateExamPage', () => {
   });
 
   it('shows warning when courses fail to load', async () => {
-    (courseService.getAll as any).mockRejectedValue(new Error('courses down'));
+    apiMock.getAllCourses.mockRejectedValue(new Error('courses down'));
 
     const router = createMemoryRouter(
       [{ path: '/faculty/exams/create', element: <CreateExamPage /> }],
@@ -75,8 +80,8 @@ describe('CreateExamPage', () => {
   it('shows API error when create fails', async () => {
     const user = userEvent.setup();
 
-    (courseService.getAll as any).mockResolvedValue([{ id: 'c1', name: 'Math' }]);
-    (createExam as any).mockRejectedValue(new Error('boom'));
+    apiMock.getAllCourses.mockResolvedValue([{ id: 'c1', name: 'Math' }]);
+    apiMock.createExam.mockRejectedValue(new Error('boom'));
 
     const router = createMemoryRouter(
       [
@@ -88,23 +93,26 @@ describe('CreateExamPage', () => {
 
     render(<RouterProvider router={router} />);
 
-    await waitFor(() => expect(courseService.getAll).toHaveBeenCalled());
+    await waitFor(() => expect(apiMock.getAllCourses).toHaveBeenCalled());
 
-    await user.selectOptions(screen.getByRole('combobox'), 'c1');
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'c1');
 
-    const dateInput = document.querySelector('input[type="datetime-local"]') as HTMLInputElement;
-    await user.type(dateInput, '2999-01-01T10:00');
+    const dateInputs = Array.from(document.querySelectorAll('input[type="datetime-local"]')) as HTMLInputElement[];
+    const examDateInput = dateInputs[0];
+    const deadlineInput = dateInputs[1];
+    await user.type(examDateInput, '2999-01-01T10:00');
+    await user.type(deadlineInput, '2999-01-01T09:00');
 
     await user.type(screen.getByPlaceholderText('e.g., Room 101'), 'Room 101');
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
 
-    await waitFor(() => expect(createExam).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(apiMock.createExam).toHaveBeenCalledTimes(1));
     expect(await screen.findByText('boom')).toBeInTheDocument();
   });
 
   it('shows warning when no courses exist', async () => {
-    (courseService.getAll as any).mockResolvedValue([]);
+    apiMock.getAllCourses.mockResolvedValue([]);
 
     const router = createMemoryRouter(
       [{ path: '/faculty/exams/create', element: <CreateExamPage /> }],

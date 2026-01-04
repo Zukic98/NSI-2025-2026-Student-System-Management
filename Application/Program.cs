@@ -20,6 +20,10 @@ using University.Infrastructure.Db;
 using FluentValidation.AspNetCore;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 
+// Npgsql/Postgres timestamp compatibility for local dev.
+// Prevents failures when DateTime.Kind is Unspecified but the DB column is timestamptz.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services from modules

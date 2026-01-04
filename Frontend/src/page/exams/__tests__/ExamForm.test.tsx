@@ -22,18 +22,24 @@ describe('ExamForm', () => {
     expect(saveButton).toBeDisabled();
     expect(onSubmit).not.toHaveBeenCalled();
 
-    await user.selectOptions(screen.getByRole('combobox'), 'c1');
+    await user.selectOptions(screen.getAllByRole('combobox')[0], 'c1');
     await user.type(screen.getByPlaceholderText('e.g., Room 101'), 'Room 101');
 
-    const dateInput = document.querySelector('input[type="datetime-local"]') as HTMLInputElement;
-    await user.type(dateInput, '2000-01-01T10:00');
+    const dateInputs = Array.from(document.querySelectorAll('input[type="datetime-local"]')) as HTMLInputElement[];
+    const examDateInput = dateInputs[0];
+    const deadlineInput = dateInputs[1];
+
+    await user.type(examDateInput, '2000-01-01T10:00');
+    await user.type(deadlineInput, '1999-12-31T10:00');
 
     // Past date keeps Save disabled
     expect(saveButton).toBeDisabled();
     expect(onSubmit).not.toHaveBeenCalled();
 
-    await user.clear(dateInput);
-    await user.type(dateInput, '2999-01-01T10:00');
+    await user.clear(examDateInput);
+    await user.clear(deadlineInput);
+    await user.type(examDateInput, '2999-01-01T10:00');
+    await user.type(deadlineInput, '2999-01-01T09:00');
 
     expect(saveButton).not.toBeDisabled();
 
@@ -42,8 +48,10 @@ describe('ExamForm', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit).toHaveBeenCalledWith({
       courseId: 'c1',
-      dateTime: '2999-01-01T10:00',
+      examDate: '2999-01-01T10:00',
+      regDeadline: '2999-01-01T09:00',
       location: 'Room 101',
+      examType: 'Written',
     });
   });
 
@@ -58,14 +66,16 @@ describe('ExamForm', () => {
         courses={[{ id: 'c1', name: 'Math' }]}
         initialValues={{
           courseId: 'c1',
-          dateTime: '2999-01-01T10:00',
+          examDate: '2999-01-01T10:00',
+          regDeadline: '2999-01-01T09:00',
           location: 'Room 101',
+          examType: 'Written',
         }}
       />,
     );
 
     expect(await screen.findByDisplayValue('Room 101')).toBeInTheDocument();
-    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('c1');
+  expect((screen.getAllByRole('combobox')[0] as HTMLSelectElement).value).toBe('c1');
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onCancel).toHaveBeenCalledTimes(1);
@@ -81,6 +91,6 @@ describe('ExamForm', () => {
       />,
     );
 
-    expect(screen.getByRole('combobox')).toBeDisabled();
+    expect(screen.getAllByRole('combobox')[0]).toBeDisabled();
   });
 });

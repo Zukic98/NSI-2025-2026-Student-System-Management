@@ -3,11 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { CAlert, CCard, CCardBody, CCol, CRow } from '@coreui/react';
 
 import { ExamForm, type ExamFormValues } from './ExamForm';
-import { getExam, updateExam } from '../../service/examsApi';
-import { courseService } from '../../service/courseService';
+import { useAPI } from '../../context/services.tsx';
 
 type Course = {
-  id: string | number;
+  id: string;
   name: string;
 };
 
@@ -32,6 +31,7 @@ function toDateTimeLocal(value: string): string {
 export function EditExamPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const api = useAPI();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -65,8 +65,8 @@ export function EditExamPage() {
         setCoursesError(null);
 
         try {
-          const data = await courseService.getAll();
-          const list = (data ?? []) as Course[];
+          const data = await api.getAllCourses();
+          const list = (data ?? []).map((c) => ({ id: c.id, name: c.name })) as Course[];
           if (list.length === 0) {
             setCoursesError('No courses available.');
           }
@@ -81,17 +81,17 @@ export function EditExamPage() {
       };
 
       try {
-        const [exam, courseList] = await Promise.all([getExam(id), loadCourses()]);
+        const [exam, courseList] = await Promise.all([api.getExam(id), loadCourses()]);
         setCourses(courseList);
 
-        const matchedCourse = courseList.find((c) => c.name === exam.courseName);
-        const courseId = matchedCourse ? String(matchedCourse.id) : '';
+        const courseId = exam.courseId ? String(exam.courseId) : '';
 
         setInitialValues({
           courseId,
-          courseName: exam.courseName,
-          dateTime: toDateTimeLocal(exam.dateTime),
+          examDate: toDateTimeLocal(exam.examDate ?? ''),
+          regDeadline: toDateTimeLocal(exam.regDeadline ?? ''),
           location: exam.location,
+          examType: exam.examType,
         });
       } catch (e: unknown) {
         console.error('Failed to load exam for edit', e);
@@ -102,7 +102,7 @@ export function EditExamPage() {
     };
 
     load();
-  }, [id]);
+  }, [api, id]);
 
   const handleCancel = () => navigate('/faculty/exams');
 
@@ -113,12 +113,15 @@ export function EditExamPage() {
     setError(null);
 
     try {
-      const courseName = courseNameById.get(String(values.courseId)) ?? values.courseName ?? values.courseId;
+      const courseName = courseNameById.get(String(values.courseId)) ?? '';
 
-      await updateExam(id, {
-        courseName,
-        dateTime: values.dateTime,
+      await api.updateExam(id, {
+        courseId: values.courseId,
+        name: courseName || 'Exam',
         location: values.location,
+        examType: values.examType,
+        examDate: values.examDate,
+        regDeadline: values.regDeadline,
       });
 
       sessionStorage.setItem('exams.toast', 'updated');

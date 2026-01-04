@@ -5,17 +5,28 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 import { ExamPage } from '../ExamPage';
 
-vi.mock('../../../service/examsApi', () => ({
-  fetchExams: vi.fn(),
+const apiMock = {
+  getExams: vi.fn(),
   deleteExam: vi.fn(),
-}));
+};
 
-const { fetchExams, deleteExam } = await import('../../../service/examsApi');
+vi.mock('../../../context/services.tsx', () => ({
+  useAPI: () => apiMock,
+}));
 
 describe('ExamPage', () => {
   it('loads and renders exams from API', async () => {
-    (fetchExams as any).mockResolvedValue([
-      { id: 'e1', courseName: 'Math', dateTime: '2999-01-01T10:00', location: 'Room 101' },
+    apiMock.getExams.mockResolvedValue([
+      {
+        id: 1,
+        courseId: 'c1',
+        courseName: 'Math',
+        examType: 'Written',
+        examDate: '2999-01-01T10:00',
+        regDeadline: '2999-01-01T09:00',
+        location: 'Room 101',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
     ]);
 
     const router = createMemoryRouter([{ path: '/faculty/exams', element: <ExamPage /> }], {
@@ -24,7 +35,7 @@ describe('ExamPage', () => {
 
     render(<RouterProvider router={router} />);
 
-    await waitFor(() => expect(fetchExams).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(apiMock.getExams).toHaveBeenCalledTimes(1));
 
     expect(await screen.findByText('Math')).toBeInTheDocument();
     expect(screen.getByText('Room 101')).toBeInTheDocument();
@@ -32,7 +43,7 @@ describe('ExamPage', () => {
   });
 
   it('shows success message from sessionStorage toast flag', async () => {
-    (fetchExams as any).mockResolvedValue([]);
+    apiMock.getExams.mockResolvedValue([]);
 
     sessionStorage.setItem('exams.toast', 'created');
 
@@ -47,7 +58,7 @@ describe('ExamPage', () => {
   });
 
   it('shows updated success message from sessionStorage toast flag', async () => {
-    (fetchExams as any).mockResolvedValue([]);
+    apiMock.getExams.mockResolvedValue([]);
 
     sessionStorage.setItem('exams.toast', 'updated');
 
@@ -64,7 +75,7 @@ describe('ExamPage', () => {
   it('navigates to create page when clicking "+ Create exam"', async () => {
     const user = userEvent.setup();
 
-    (fetchExams as any).mockResolvedValue([]);
+    apiMock.getExams.mockResolvedValue([]);
 
     const router = createMemoryRouter(
       [
@@ -83,8 +94,17 @@ describe('ExamPage', () => {
   it('navigates to edit page when clicking Edit', async () => {
     const user = userEvent.setup();
 
-    (fetchExams as any).mockResolvedValue([
-      { id: 'e1', courseName: 'Math', dateTime: '2999-01-01T10:00', location: 'Room 101' },
+    apiMock.getExams.mockResolvedValue([
+      {
+        id: 1,
+        courseId: 'c1',
+        courseName: 'Math',
+        examType: 'Written',
+        examDate: '2999-01-01T10:00',
+        regDeadline: '2999-01-01T09:00',
+        location: 'Room 101',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
     ]);
 
     const router = createMemoryRouter(
@@ -106,8 +126,17 @@ describe('ExamPage', () => {
   it('closes delete modal when clicking Cancel', async () => {
     const user = userEvent.setup();
 
-    (fetchExams as any).mockResolvedValue([
-      { id: 'e1', courseName: 'Math', dateTime: '2999-01-01T10:00', location: 'Room 101' },
+    apiMock.getExams.mockResolvedValue([
+      {
+        id: 1,
+        courseId: 'c1',
+        courseName: 'Math',
+        examType: 'Written',
+        examDate: '2999-01-01T10:00',
+        regDeadline: '2999-01-01T09:00',
+        location: 'Room 101',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
     ]);
 
     const router = createMemoryRouter([{ path: '/faculty/exams', element: <ExamPage /> }], {
@@ -126,7 +155,7 @@ describe('ExamPage', () => {
   });
 
   it('shows error when API load fails', async () => {
-    (fetchExams as any).mockRejectedValue(new Error('fail'));
+    apiMock.getExams.mockRejectedValue(new Error('fail'));
 
     const router = createMemoryRouter([{ path: '/faculty/exams', element: <ExamPage /> }], {
       initialEntries: ['/faculty/exams'],
@@ -140,13 +169,20 @@ describe('ExamPage', () => {
   it('deletes an exam via API and reloads list', async () => {
     const user = userEvent.setup();
 
-    (fetchExams as any)
-      .mockResolvedValueOnce([
-        { id: 'e1', courseName: 'Math', dateTime: '2999-01-01T10:00', location: 'Room 101' },
-      ])
-      .mockResolvedValueOnce([]);
+    apiMock.getExams.mockResolvedValue([
+      {
+        id: 1,
+        courseId: 'c1',
+        courseName: 'Math',
+        examType: 'Written',
+        examDate: '2999-01-01T10:00',
+        regDeadline: '2999-01-01T09:00',
+        location: 'Room 101',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+    ]);
 
-    (deleteExam as any).mockResolvedValue(undefined);
+    apiMock.deleteExam.mockResolvedValue(undefined);
 
     const router = createMemoryRouter([{ path: '/faculty/exams', element: <ExamPage /> }], {
       initialEntries: ['/faculty/exams'],
@@ -164,8 +200,7 @@ describe('ExamPage', () => {
     const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[deleteButtons.length - 1]);
 
-    await waitFor(() => expect(deleteExam).toHaveBeenCalledWith('e1'));
-    await waitFor(() => expect(fetchExams).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(apiMock.deleteExam).toHaveBeenCalledWith(1));
 
     expect(await screen.findByText('No exams found.')).toBeInTheDocument();
   });
@@ -173,11 +208,20 @@ describe('ExamPage', () => {
   it('shows error when delete fails', async () => {
     const user = userEvent.setup();
 
-    (fetchExams as any).mockResolvedValue([
-      { id: 'e1', courseName: 'Math', dateTime: '2999-01-01T10:00', location: 'Room 101' },
+    apiMock.getExams.mockResolvedValue([
+      {
+        id: 1,
+        courseId: 'c1',
+        courseName: 'Math',
+        examType: 'Written',
+        examDate: '2999-01-01T10:00',
+        regDeadline: '2999-01-01T09:00',
+        location: 'Room 101',
+        createdAt: '2026-01-01T00:00:00Z',
+      },
     ]);
 
-    (deleteExam as any).mockRejectedValue(new Error('delete failed'));
+    apiMock.deleteExam.mockRejectedValue(new Error('delete failed'));
 
     const router = createMemoryRouter([{ path: '/faculty/exams', element: <ExamPage /> }], {
       initialEntries: ['/faculty/exams'],
