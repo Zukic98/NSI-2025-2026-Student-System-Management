@@ -27,6 +27,7 @@ import AppLayout from '../component/AppLayout/AppLayout.tsx';
 import DefaultLayout from '../component/UniversityDashboardLayout/DefaultLayout.tsx';
 import UniversityDashboard from "../page/university-dashboard/UniversityDashboard.tsx";
 import AcademicRecordsPage from '../page/academic-records/AcademicRecordsPage.tsx';
+import AssignmentManagement from '../page/assignment-management/AssignmentManagementPage.tsx';
 
 
 
@@ -93,6 +94,9 @@ export function Router(): React.ReactNode {
       <Route path="/profile" element={<DefaultLayout><SettingsPage /></DefaultLayout>} />
       <Route path="/support" element={<DefaultLayout><StudentSupport /></DefaultLayout>} />
       <Route path="/help" element={<DefaultLayout><HelpPage /></DefaultLayout>} />
+
+      
+      <Route path="/assignment-management" element={<DefaultLayout><AssignmentManagement /></DefaultLayout>} />
 
 
       {/* error pages */}
