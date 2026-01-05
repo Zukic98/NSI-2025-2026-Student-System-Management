@@ -24,13 +24,10 @@ public class StudentRepository : IStudentRepository
         string includeProperties = "",
         CancellationToken cancellationToken = default)
     {
-        // Convert domain filter to schema filter
         IQueryable<StudentSchema> query = _context.Students;
 
         if (filter != null)
         {
-            // Note: This is a simplified approach. For complex filters, you may need a more sophisticated mapping
-            // For now, we'll apply the filter after mapping, which is less efficient but works
             var allSchemas = await query.ToListAsync(cancellationToken);
             var allDomains = StudentMapper.ToDomainCollection(allSchemas, includeRelationships: !string.IsNullOrEmpty(includeProperties)).ToList();
             var filtered = filter != null ? allDomains.AsQueryable().Where(filter) : allDomains.AsQueryable();
@@ -69,7 +66,6 @@ public class StudentRepository : IStudentRepository
         Expression<Func<Student, bool>> predicate,
         CancellationToken cancellationToken = default)
     {
-        // For complex predicates, we need to map and filter
         var schemas = await _context.Students.ToListAsync(cancellationToken);
         var domains = StudentMapper.ToDomainCollection(schemas, includeRelationships: false);
         return domains.FirstOrDefault(predicate.Compile());
