@@ -27,6 +27,9 @@ import AppLayout from '../component/AppLayout/AppLayout.tsx';
 import DefaultLayout from '../component/UniversityDashboardLayout/DefaultLayout.tsx';
 import UniversityDashboard from "../page/university-dashboard/UniversityDashboard.tsx";
 import RequestManagement from '../page/requests/RequestManagement';
+import AcademicRecordsPage from '../page/academic-records/AcademicRecordsPage.tsx';
+
+
 
 export function Router(): React.ReactNode {
   return (
@@ -62,6 +65,7 @@ export function Router(): React.ReactNode {
         <Route path="support" element={<StudentSupportPage />} />
         <Route path="student-enrollment" element={<EnrollmentStudentPage />} />
         <Route index element={<StudentDashboardPage />} />
+        <Route path="academic-records" element={<AcademicRecordsPage />} />
       </Route>
 
       <Route path="/document-center" element={
