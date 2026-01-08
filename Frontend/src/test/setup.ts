@@ -1,10 +1,8 @@
 import '@testing-library/jest-dom/vitest';
-
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 beforeAll(() => {
-  // Many tests intentionally hit error branches; keep output clean unless explicitly enabled.
   if (process.env.VITEST_SHOW_CONSOLE === '1') return;
 
   vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -20,6 +18,7 @@ afterAll(() => {
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.clearAllMocks();
   sessionStorage.clear();
 });

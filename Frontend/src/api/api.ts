@@ -1,8 +1,15 @@
 import type { Course } from '../component/faculty/courses/types/Course';
 import type { CourseDTO } from '../dto/CourseDTO';
+import type {
+    AvailableStudentExamDto,
+    ExamRegistrationRequestDto,
+    ExamRegistrationResponseDto,
+    RegisteredStudentExamDto,
+} from '../dto/StudentExamsDTO';
 import type { CreateExamRequestDTO, ExamResponseDTO, UpdateExamRequestDTO } from '../dto/ExamDTO';
 
 import type { TwoFAConfirmResponse, TwoFASetupResponse } from '../models/2fa/TwoFA.types';
+import type { StudentRequestDto } from '../page/requests/RequestTypes';
 import type { RestClient } from './rest';
 
 export class API {
@@ -65,6 +72,30 @@ export class API {
 
     async deleteCourse(id: string): Promise<void> {
         return this.delete<void>(`/api/faculty/courses/${id}`);
+    }
+
+    // Student exam registration
+    async getAvailableStudentExams(): Promise<AvailableStudentExamDto[]> {
+        return this.get<AvailableStudentExamDto[]>("/api/faculty/student-exams/available");
+    }
+
+    async getRegisteredStudentExams(): Promise<RegisteredStudentExamDto[]> {
+        return this.get<RegisteredStudentExamDto[]>("/api/faculty/student-exams/registrations");
+    }
+
+    async registerForStudentExam(examId: number): Promise<ExamRegistrationResponseDto> {
+        const body: ExamRegistrationRequestDto = { examId };
+        return this.post<ExamRegistrationResponseDto>("/api/faculty/student-exams/registrations", body);
+    }
+
+    //request management 
+    async getAllRequests(): Promise<StudentRequestDto[]> {
+        return this.get<StudentRequestDto[]>(`/api/Support/requests`);
+    }
+
+    async updateStatus(id: string | number, status: string): Promise<{ message: string }> {
+        const dto = { status };
+        return this.put<{ message: string }>(`/api/Support/requests/${id}/status`, dto);
     }
 
     // Exam management methods
