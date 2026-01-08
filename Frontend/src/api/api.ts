@@ -8,6 +8,7 @@ import type {
 } from '../dto/StudentExamsDTO';
 
 import type { TwoFAConfirmResponse, TwoFASetupResponse } from '../models/2fa/TwoFA.types';
+import type { StudentRequestDto } from '../page/requests/RequestTypes';
 import type { RestClient } from './rest';
 
 export class API {
@@ -84,5 +85,15 @@ export class API {
     async registerForStudentExam(examId: number): Promise<ExamRegistrationResponseDto> {
         const body: ExamRegistrationRequestDto = { examId };
         return this.post<ExamRegistrationResponseDto>("/api/faculty/student-exams/registrations", body);
+    }
+
+    //request management 
+    async getAllRequests(): Promise<StudentRequestDto[]> {
+        return this.get<StudentRequestDto[]>(`/api/Support/requests`);
+    }
+
+    async updateStatus(id: string | number, status: string): Promise<{ message: string }> {
+        const dto = { status };
+        return this.put<{ message: string }>(`/api/Support/requests/${id}/status`, dto);
     }
 }
