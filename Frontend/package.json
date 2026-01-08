@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "preview": "vite preview",
     "test": "vitest",
-    "preview": "vite preview"
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@coreui/coreui": "^5.4.3",

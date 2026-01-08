@@ -1,9 +1,7 @@
 import React from 'react';
 import { Route, Routes } from 'react-router';
-
-//////////// VERSION FROM feature/PBI_258 ////////////
 import { Home } from '../page/home/home.tsx';
-import { Page1 } from '../page/page1/page1.tsx';
+
 import UserManagementPage from '../page/user-management/UserManagementPage.tsx';
 import DashboardPage from '../page/dashboard/DashboardPage.tsx';
 import CourseManagementPage from '../page/course-management/CourseManagementPage.tsx';
@@ -12,12 +10,11 @@ import StudentSupportPage from '../page/student-support/StudentSupportPage.tsx';
 import SettingsPage from '../page/settings/SettingsPage.tsx';
 import HelpPage from '../page/help/HelpPage.tsx';
 import AttendancePage from '../page/attendance/AttendancePage.tsx';
-
-//////////// VERSION FROM master ////////////
 import CourseListPage from '../page/university/courses/CourseListPage';
 import TwoFASetupPage from "../page/identity/2FASetupPage";
 import { Login } from '../page/login/login.tsx';
 import { ProtectedRoute } from '../component/ProtectedRoute.tsx';
+import AvailableExamsPage from '../page/university/exams/ExamRegistrationPage.tsx';
 import { DocumentCenter, ProfileSettings, StudentAnalytics, StudentLayout, StudentSupport } from '../features/student/index.ts';
 import EnrollmentPage from "../page/enrollment/enrollment.tsx";
 import { EnrollmentStudentPage } from '../page/enrollment/enrollmentPage.tsx';
@@ -43,7 +40,6 @@ export function Router(): React.ReactNode {
           <Home />
         </ProtectedRoute>
       } />
-
       <Route path="/2fa/setup" element={
         <ProtectedRoute>
           <TwoFASetupPage />
@@ -60,6 +56,7 @@ export function Router(): React.ReactNode {
         <Route path="document-center" element={<DocumentCenter />} />
         <Route path="analytics" element={<StudentAnalytics />} />
         <Route path="request-management" element={<RequestManagement />} />
+        <Route path="exams" element={<AvailableExamsPage />} />
         <Route path="enrollment" element={<EnrollmentPage />} />
         <Route path="profile-settings" element={<ProfileSettings />} />
         <Route path="support" element={<StudentSupportPage />} />
@@ -75,14 +72,12 @@ export function Router(): React.ReactNode {
       } />
 
       {/* feature/PBI_258 routes */}
-      <Route path="/page1" element={<AppLayout><Page1 /></AppLayout>} />
       <Route path="/users" element={<AppLayout><UserManagementPage /></AppLayout>} />
       <Route path="/dashboard" element={<AppLayout><DashboardPage /></AppLayout>} />
       <Route path="/course-management" element={<AppLayout><CourseManagementPage /></AppLayout>} />
       <Route path="/tenant-management" element={<AppLayout><TenantManagementPage /></AppLayout>} />
       <Route path="/student-support" element={<AppLayout><StudentSupportPage /></AppLayout>} />
       <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
-      <Route path="/help" element={<AppLayout><HelpPage /></AppLayout>} />
       <Route path="/attendance" element={<AppLayout><AttendancePage /></AppLayout>} />
 
       {/*University dashboard*/}
@@ -128,7 +123,6 @@ export function Router(): React.ReactNode {
           <CourseListPage />
         </ProtectedRoute>
       } />
-
     </Routes>
   );
 }
