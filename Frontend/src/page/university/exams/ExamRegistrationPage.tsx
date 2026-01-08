@@ -200,8 +200,7 @@ export default function ExamRegistrationPage() {
           </button>
 
         </div>
-
-        {/* INFO PILL – objašnjenje šta je već primijenjeno */}
+        
         <div className="d-flex justify-content-center mb-5">
           <div className="ui-info-banner">
             {tab === "available" ? (

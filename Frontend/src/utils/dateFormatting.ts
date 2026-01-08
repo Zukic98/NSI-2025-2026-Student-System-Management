@@ -6,7 +6,7 @@ export function formatDateTime(dateString: string) {
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }).replace(",", ""); // malo čišći output
+    }).replace(",", "");
   }
   
   export function formatDateOnly(dateString: string) {
