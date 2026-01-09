@@ -18,20 +18,10 @@ using Support.Infrastructure.Db;
 using University.API.Controllers;
 using University.Infrastructure;
 using University.Infrastructure.Db;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-
 using FacultyController = Faculty.API.Controllers.FacultyController;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 
 
-using System.Net;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,6 +98,8 @@ builder.Services.AddSwaggerGen(c =>
 
 
 var app = builder.Build();
+app.UseMiddleware<Application.GlobalExceptionHandlingMiddleware>();
+
 
 app.Use(async (context, next) =>
 {
@@ -211,39 +203,32 @@ app.UseSwaggerUI();
 app.MapControllers();
 
 
-
-app.Use(async (ctx, next) =>
+if (app.Environment.IsDevelopment())
 {
-    await next();
-
-    var ep = ctx.GetEndpoint();
-    Console.WriteLine($"REQ {ctx.Request.Method} {ctx.Request.Path} -> {ctx.Response.StatusCode} | endpoint={(ep?.DisplayName ?? "NULL")}");
-});
-
-
-
-app.MapGet("/__routes", (Microsoft.AspNetCore.Routing.EndpointDataSource ds) =>
-{
-    var routes = ds.Endpoints
-        .OfType<RouteEndpoint>()
-        .Select(e =>
-        {
-            var methods = e.Metadata
-                .OfType<Microsoft.AspNetCore.Routing.HttpMethodMetadata>()
-                .FirstOrDefault()?.HttpMethods;
-
-            return new
+    app.MapGet("/__routes", (Microsoft.AspNetCore.Routing.EndpointDataSource ds) =>
+    {
+        var routes = ds.Endpoints
+            .OfType<RouteEndpoint>()
+            .Select(e =>
             {
-                pattern = e.RoutePattern.RawText,
-                methods = methods == null ? Array.Empty<string>() : methods.ToArray(),
-                displayName = e.DisplayName
-            };
-        })
-        .OrderBy(r => r.pattern)
-        .ToList();
+                var methods = e.Metadata
+                    .OfType<Microsoft.AspNetCore.Routing.HttpMethodMetadata>()
+                    .FirstOrDefault()?.HttpMethods;
 
-    return Results.Ok(routes);
-});
+                return new
+                {
+                    pattern = e.RoutePattern.RawText,
+                    methods = methods?.ToArray() ?? Array.Empty<string>(),
+                    displayName = e.DisplayName
+                };
+            })
+            .OrderBy(r => r.pattern)
+            .ToList();
+
+        return Results.Ok(routes);
+    });
+}
+
 
 
 
