@@ -118,4 +118,13 @@ export class API {
     async deleteExam(id: number | string): Promise<void> {
         await this.delete<null>(`/api/exams/${id}`);
     }
+
+    // Profile methods
+    async getCurrentUser(): Promise<any> {
+        return this.get<any>('/api/users/me');
+    }
+
+    async changePassword(body: any): Promise<any> {
+        return this.post<any>('/api/users/me/change-password', body);
+    }
 }

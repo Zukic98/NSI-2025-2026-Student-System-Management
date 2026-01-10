@@ -16,6 +16,7 @@ import {
 import { useState, useEffect } from 'react'
 import { useAuthContext } from '../../init/auth'
 import './ProfileSettings.css'
+import { useAPI } from '../../context/services'
 
 interface UserProfile {
   firstName: string;
@@ -30,6 +31,7 @@ interface UserProfile {
 
 export function ProfileSettings() {
   const { authInfo } = useAuthContext();
+  const api = useAPI();
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [verificationMethod, setVerificationMethod] =
@@ -62,15 +64,7 @@ export function ProfileSettings() {
       }));
 
       //  details from API not hardocded
-      fetch('/api/users/me', {
-        headers: {
-          'Authorization': `Bearer ${authInfo.accessToken}`,
-        },
-      })
-        .then(res => {
-          if (res.ok) return res.json();
-          throw new Error('Failed to fetch user details');
-        })
+      api.getCurrentUser()
         .then(data => {
           //  console.log(data);
           setUserProfile(prev => ({
@@ -109,18 +103,7 @@ export function ProfileSettings() {
     setShowResetModal(false)
 
     try {
-      const response = await fetch('/api/users/me/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authInfo?.accessToken}`,
-        },
-        body: JSON.stringify({ newPassword: password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update password');
-      }
+      await api.changePassword({ newPassword: password });
 
       setShowSuccessModal(true)
       setPassword('')
