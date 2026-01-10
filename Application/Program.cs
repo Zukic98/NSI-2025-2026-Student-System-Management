@@ -27,6 +27,7 @@ using Identity.Infrastructure.Entities;
 // Npgsql/Postgres timestamp compatibility for local dev.
 // Prevents failures when DateTime.Kind is Unspecified but the DB column is timestamptz.
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+using Analytics.Infrastructure.Db;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +38,7 @@ builder.Services.AddUniversityModule(builder.Configuration);
 builder.Services.AddFacultyModule(builder.Configuration);
 builder.Services.AddSupportModule(builder.Configuration);
 builder.Services.AddNotificationsModule();
-builder.Services.AddAnalyticsModule();
+builder.Services.AddAnalyticsModule(builder.Configuration);
 builder.Services.AddEventBus();
 
 // Add controllers and module API assemblies
@@ -155,6 +156,18 @@ if (applyMigrations)
             {
                 Console.WriteLine($"Error migrating FacultyDbContext: {ex.Message}");
             }
+
+            // Analytics module
+            try
+            {
+                var analyticsDb = services.GetRequiredService<AnalyticsDbContext>();
+                analyticsDb.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error migrating AnalyticsDbContext: {ex.Message}");
+            }
+
         }
     }
 }
