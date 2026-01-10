@@ -1,46 +1,61 @@
 import React, { useState, useEffect, type PropsWithChildren } from "react";
 import logoImage from "../../assets/logo-unsa-sms.png";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../init/auth";
+import { logoutFromServer, resetAuthInfo } from "../../utils/authUtils";
 
 const Defaultayout: React.FC<PropsWithChildren<object>> = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile only
-  const location=useLocation();
+  const location = useLocation();
+  const { setAuthInfo } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logoutFromServer();
+    } catch (error) {
+      console.error("Logout failed on server:", error);
+    } finally {
+      resetAuthInfo(setAuthInfo);
+      navigate("/login");
+    }
+  };
 
   const handleLinkClick = () => {
-if (isMobile) {
-setSidebarOpen(false);
-}
-};
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
 
- const getLinkStyle = (path: string) => {
-  const isActive = location.pathname === path;
+  const getLinkStyle = (path: string) => {
+    const isActive = location.pathname === path;
 
-   // Kada je sidebar sklopljen (collapsed), ukloni aktivni stil
-  if (isCollapsed && !isMobile) {
+    // Kada je sidebar sklopljen (collapsed), ukloni aktivni stil
+    if (isCollapsed && !isMobile) {
+      return {
+        padding: "10px 20px",
+        color: "white",
+        textDecoration: "none",
+        backgroundColor: "transparent",
+        borderLeft: "4px solid transparent",
+        fontWeight: "normal",
+        transition: "0.2s",
+      };
+    }
+
+    // Normalno stanje (sidebar otvoren)
     return {
       padding: "10px 20px",
       color: "white",
       textDecoration: "none",
-      backgroundColor: "transparent",
-      borderLeft: "4px solid transparent",
-      fontWeight: "normal",
+      backgroundColor: isActive ? "#005bb5" : "transparent",
+      borderLeft: isActive ? "4px solid #ffffff" : "4px solid transparent",
+      fontWeight: isActive ? "bold" : "normal",
       transition: "0.2s",
     };
-  }
-
-  // Normalno stanje (sidebar otvoren)
-  return {
-    padding: "10px 20px",
-    color: "white",
-    textDecoration: "none",
-    backgroundColor: isActive ? "#005bb5" : "transparent",
-    borderLeft: isActive ? "4px solid #ffffff" : "4px solid transparent",
-    fontWeight: isActive ? "bold" : "normal",
-    transition: "0.2s",
   };
-};
 
   useEffect(() => {
     const handleResize = () => {
@@ -52,7 +67,7 @@ setSidebarOpen(false);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-const sidebarWidth = isCollapsed ? "70px" : "300px";
+  const sidebarWidth = isCollapsed ? "70px" : "300px";
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#d9e7f5", overflowX: "hidden" }}>
@@ -90,17 +105,17 @@ const sidebarWidth = isCollapsed ? "70px" : "300px";
             ☰
           </button>
 
-                  <span
-                      style={{
-                          color: "white",
-                          fontSize: "20px",
-                          fontWeight: 600,
-                          whiteSpace: "nowrap",
-                           marginLeft: "25px",
-                      }}
-                  >
-                      University Dashboard
-                  </span>
+          <span
+            style={{
+              color: "white",
+              fontSize: "20px",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              marginLeft: "25px",
+            }}
+          >
+            University Dashboard
+          </span>
 
         </div>
 
@@ -187,6 +202,29 @@ const sidebarWidth = isCollapsed ? "70px" : "300px";
           <Link to="/support" style={getLinkStyle("/support")} onClick={handleLinkClick}>
             Support
           </Link>
+
+          {/* LOGOUT */}
+          <div style={{ marginTop: "auto", paddingBottom: "20px", paddingLeft: "24px" }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                ...getLinkStyle("logout"),
+                padding: 0,
+                width: "100%",
+                textAlign: "left",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "12px",
+                display: "flex",
+                alignItems: "center",
+                color: "white",
+                opacity: 0.7
+              }}
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* ===== CONTENT ===== */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from 'react-router';
+import { Route, Routes, Outlet } from 'react-router';
 import { Home } from '../page/home/home.tsx';
 
 import UserManagementPage from '../page/user-management/UserManagementPage.tsx';
@@ -7,7 +7,6 @@ import DashboardPage from '../page/dashboard/DashboardPage.tsx';
 import CourseManagementPage from '../page/course-management/CourseManagementPage.tsx';
 import TenantManagementPage from '../page/tenant-management/TenantManagementPage.tsx';
 import StudentSupportPage from '../page/student-support/StudentSupportPage.tsx';
-import SettingsPage from '../page/settings/SettingsPage.tsx';
 import HelpPage from '../page/help/HelpPage.tsx';
 import AttendancePage from '../page/attendance/AttendancePage.tsx';
 import CourseListPage from '../page/university/courses/CourseListPage';
@@ -15,7 +14,7 @@ import TwoFASetupPage from "../page/identity/2FASetupPage";
 import { Login } from '../page/login/login.tsx';
 import { ProtectedRoute } from '../component/ProtectedRoute.tsx';
 import AvailableExamsPage from '../page/university/exams/ExamRegistrationPage.tsx';
-import { DocumentCenter, ProfileSettings, StudentAnalytics, StudentLayout, StudentSupport } from '../features/student/index.ts';
+import { DocumentCenter, ProfileSettings, StudentAnalytics, StudentSupport } from '../features/student/index.ts';
 import EnrollmentPage from "../page/enrollment/enrollment.tsx";
 import { EnrollmentStudentPage } from '../page/enrollment/enrollmentPage.tsx';
 import StudentDashboardPage from '../page/student dashboard/dashboard.tsx';
@@ -49,7 +48,7 @@ export function Router(): React.ReactNode {
       {/* Student area */}
       <Route path="/student" element={
         <ProtectedRoute>
-          <StudentLayout />
+          <AppLayout><Outlet /></AppLayout>
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<StudentDashboardPage />} />
@@ -74,10 +73,14 @@ export function Router(): React.ReactNode {
       {/* feature/PBI_258 routes */}
       <Route path="/users" element={<AppLayout><UserManagementPage /></AppLayout>} />
       <Route path="/dashboard" element={<AppLayout><DashboardPage /></AppLayout>} />
+      <Route path="/admin/dashboard" element={<AppLayout><DashboardPage /></AppLayout>} />
+      <Route path="/teacher/dashboard" element={<AppLayout><DashboardPage /></AppLayout>} />
+      <Route path="/assistant/dashboard" element={<AppLayout><DashboardPage /></AppLayout>} />
       <Route path="/course-management" element={<AppLayout><CourseManagementPage /></AppLayout>} />
       <Route path="/tenant-management" element={<AppLayout><TenantManagementPage /></AppLayout>} />
       <Route path="/student-support" element={<AppLayout><StudentSupportPage /></AppLayout>} />
-      <Route path="/settings" element={<AppLayout><SettingsPage /></AppLayout>} />
+      <Route path="/profile-settings" element={<AppLayout><ProfileSettings /></AppLayout>} />
+      <Route path="/settings" element={<AppLayout><ProfileSettings /></AppLayout>} />
       <Route path="/attendance" element={<AppLayout><AttendancePage /></AppLayout>} />
 
       {/*University dashboard*/}
@@ -86,9 +89,9 @@ export function Router(): React.ReactNode {
       <Route path="/documents" element={<DefaultLayout><DocumentCenter /></DefaultLayout>} />
       <Route path="/analytics" element={<DefaultLayout><StudentAnalytics /></DefaultLayout>} />
       <Route path="/requests" element={<DefaultLayout><RequestManagement /></DefaultLayout>} />
-      <Route path="/profile" element={<DefaultLayout><SettingsPage /></DefaultLayout>} />
+      <Route path="/profile" element={<DefaultLayout><ProfileSettings /></DefaultLayout>} />
       <Route path="/support" element={<DefaultLayout><StudentSupport /></DefaultLayout>} />
-      <Route path="/help" element={<DefaultLayout><HelpPage /></DefaultLayout>} />
+      <Route path="/help" element={<AppLayout><HelpPage /></AppLayout>} />
 
 
       <Route path="/student/request-management" element={
@@ -97,8 +100,8 @@ export function Router(): React.ReactNode {
         </ProtectedRoute>
       } />
 
-      <Route path="/faculty/request-management" element={ 
-          <RequestManagement />
+      <Route path="/faculty/request-management" element={
+        <AppLayout><RequestManagement /></AppLayout>
       } />
 
       {/* error pages */}
