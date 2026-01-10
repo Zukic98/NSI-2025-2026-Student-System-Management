@@ -21,7 +21,9 @@ import StudentDashboardPage from '../page/student dashboard/dashboard.tsx';
 import DocumentCenterDashboard from '../page/document-center/documentCenter.tsx';
 import AppLayout from '../component/AppLayout/AppLayout.tsx';
 import UniversityDashboard from "../page/university-dashboard/UniversityDashboard.tsx";
-import RequestManagement from '../page/requests/RequestManagement';
+import { ExamPage } from '../page/exams/ExamPage.tsx';
+import { CreateExamPage } from '../page/exams/CreateExamPage.tsx';
+import { EditExamPage } from '../page/exams/EditExamPage.tsx'; import RequestManagement from '../page/requests/RequestManagement';
 import AcademicRecordsPage from '../page/academic-records/AcademicRecordsPage.tsx';
 
 
@@ -92,6 +94,9 @@ export function Router(): React.ReactNode {
       <Route path="/support" element={<AppLayout><StudentSupport /></AppLayout>} />
       <Route path="/help" element={<AppLayout><HelpPage /></AppLayout>} />
 
+      <Route path="/faculty/exams" element={<AppLayout><ExamPage /></AppLayout>} />
+      <Route path="/faculty/exams/create" element={<AppLayout><CreateExamPage /></AppLayout>} />
+      <Route path="/faculty/exams/:id/edit" element={<AppLayout><EditExamPage /></AppLayout>} />
 
       <Route path="/student/request-management" element={
         <ProtectedRoute>
