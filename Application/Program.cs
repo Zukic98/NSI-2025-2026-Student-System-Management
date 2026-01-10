@@ -19,8 +19,13 @@ using Support.Infrastructure.Db;
 using University.API.Controllers;
 using University.Infrastructure;
 using University.Infrastructure.Db;
+using FluentValidation.AspNetCore;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 using Common.Core.Tenant;
+
+// Npgsql/Postgres timestamp compatibility for local dev.
+// Prevents failures when DateTime.Kind is Unspecified but the DB column is timestamptz.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +56,10 @@ foreach (var asm in moduleControllers)
 {
     mvcBuilder.PartManager.ApplicationParts.Add(new AssemblyPart(asm));
 }
+
+// Add FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
