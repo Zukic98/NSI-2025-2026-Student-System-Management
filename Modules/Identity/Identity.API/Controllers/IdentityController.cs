@@ -9,7 +9,6 @@ namespace Identity.API.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize]
     public class IdentityController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -161,11 +160,6 @@ namespace Identity.API.Controllers
 
             try
             {
-                if (!IsAdmin())
-                {
-                    return Forbid();
-                }
-
                 var result = await _userService.UpdateUserAsync(userId, request);
 
                 if (!result)
@@ -193,11 +187,6 @@ namespace Identity.API.Controllers
         {
             try
             {
-                if (!IsAdmin())
-                {
-                    return Forbid();
-                }
-
                 var result = await _userService.DeactivateUserAsync(userId);
 
                 if (!result)
@@ -225,11 +214,6 @@ namespace Identity.API.Controllers
         {
             try
             {
-                if (!IsAdmin())
-                {
-                    return Forbid();
-                }
-
                 var deleted = await _userService.DeleteUserAsync(userId);
 
                 if (!deleted)
