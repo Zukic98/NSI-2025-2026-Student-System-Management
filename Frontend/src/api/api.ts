@@ -14,7 +14,7 @@ import type { StudentRequestDto } from '../page/requests/RequestTypes';
 
 
 import type { RestClient } from './rest';
-import type { Assignment } from '../page/assignments/AssignmentTypes';
+
 import type { CreateFacultyRequestDTO, FacultyResponseDTO, UpdateFacultyRequestDTO } from '../dto/FacultyDTO';
 
 export class API {
@@ -105,7 +105,7 @@ export class API {
     //student assignment overview
     async getMyAssignmentsForCourse(courseId: string): Promise<Assignment[]> {
         return this.get<Assignment[]>(`/api/faculty/my-assignments/courses/${courseId}`);
-}
+    }
 
 
     // Exam management methods
