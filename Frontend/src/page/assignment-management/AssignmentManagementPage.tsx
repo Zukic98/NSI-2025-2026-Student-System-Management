@@ -1,46 +1,45 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter } from "@coreui/react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CAlert } from "@coreui/react"
+import styles from "./AssignmentManagement.module.css"
+import type { Assignment, AssignmentDTO } from "../../models/assignments/Assignments.types"
 import mockAPI from "./mockApi"
 import AssignmentForm from "./AssignmentForm"
-import styles from "./AssignmentManagement.module.css"
 import { useAPI } from "../../context/services"
-
-interface Assignment {
-  id: string
-  course: string
-  name: string
-  faculty: string
-  maxPoints: number
-  major: string
-  description: string
-  dueDate: Date
-}
-
-interface CreateAssignmentDTO {
-  course: string
-  name: string
-  description: string
-  dueDate: Date
-  maxPoints: number
-}
+import CIcon from "@coreui/icons-react"
+import { cilCheckCircle } from "@coreui/icons"
 
 export default function AssignmentManagement() {
   // Form state for creating assignments
+
+  const api = useAPI();
+
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [course, setCourse] = useState("")
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [dueDate, setDueDate] = useState<Date | null>(null)
   const [maxPoints, setMaxPoints] = useState("")
 
-  // State for assignments list
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const pageSize = 10
 
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null)
+  const [editForm, setEditForm] = useState<AssignmentDTO>({
+    course: "",
+    name: "",
+    description: "",
+    dueDate: new Date(),
+    maxPoints: 0,
+  })
 
   // Delete confirmation modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -49,23 +48,80 @@ export default function AssignmentManagement() {
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // API hook (ready for real API integration)
-  const api = useAPI()
+  const observerTarget = useRef<HTMLDivElement>(null)
 
-  // Load assignments on mount
+  const loadAssignments = useCallback(
+    async (pageNum: number, query: string, reset = false) => {
+      if (loading) return
+
+      setLoading(true)
+      try {
+
+        setErrorMessage(null);
+        setSuccessMessage(null);
+        // Mock API call - replace with: await api.getAllAssignments(query, pageSize, pageNum)
+
+        const response = await mockAPI.getAssignments({ query, page: pageNum, pageSize })
+
+        setAssignments((prev) => (reset ? response.data : [...prev, ...response.data]))
+        setHasMore(response.hasMore)
+        setPage(pageNum)
+      } catch (error) {
+        console.error("Failed to load assignments:", error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [loading, pageSize],
+  )
+
   useEffect(() => {
-    loadAssignments()
+    loadAssignments(1, "", true)
   }, [])
 
-  const loadAssignments = async () => {
-    try {
-      // Mock API call - replace with: const data = await api.getAssignments()
-      const data = await mockAPI.getAssignments()
-      setAssignments(data)
-    } catch (error) {
-      console.error("Failed to load assignments:", error)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAssignments([])
+      setPage(1)
+      setHasMore(true)
+      loadAssignments(1, searchQuery, true)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  useEffect(() => {
+    if (!successMessage && !errorMessage) return;
+
+    const timer = setTimeout(() => {
+      setSuccessMessage(null);
+      setErrorMessage(null);
+    }, 3000); // 3 seconds
+
+    return () => clearTimeout(timer);
+  }, [successMessage, errorMessage]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadAssignments(page + 1, searchQuery, false)
+        }
+      },
+      { threshold: 0.1 },
+    )
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
     }
-  }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [hasMore, loading, page, searchQuery, loadAssignments])
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
@@ -94,7 +150,7 @@ export default function AssignmentManagement() {
       return
     }
 
-    const dto: CreateAssignmentDTO = {
+    const dto: AssignmentDTO = {
       course,
       name,
       description,
@@ -103,11 +159,16 @@ export default function AssignmentManagement() {
     }
 
     try {
+
+      setErrorMessage(null);
+      setSuccessMessage(null);
       // Mock API call - replace with: await api.createAssignment(dto)
       await mockAPI.createAssignment(dto)
 
-      // Refresh assignments table
-      await loadAssignments()
+      setAssignments([])
+      setPage(1)
+      setHasMore(true)
+      await loadAssignments(1, searchQuery, true)
 
       // Reset form
       setCourse("")
@@ -116,17 +177,22 @@ export default function AssignmentManagement() {
       setDueDate(null)
       setMaxPoints("")
       setErrors({})
-
-      // Show success feedback (you can add a toast notification here)
-      alert("Assignment created successfully!")
+      setSuccessMessage("Assignment created successfully!")
     } catch (error) {
       console.error("Failed to create assignment:", error)
-      alert("Failed to create assignment")
+      setErrorMessage("Failed to create assignment")
     }
   }
 
   const handleEdit = (assignment: Assignment) => {
     setEditingAssignment(assignment)
+    setEditForm({
+      course: assignment.course,
+      name: assignment.name,
+      description: assignment.description,
+      dueDate: new Date(assignment.dueDate),
+      maxPoints: assignment.maxPoints,
+    })
     setShowEditModal(true)
   }
 
@@ -134,20 +200,25 @@ export default function AssignmentManagement() {
     if (!editingAssignment) return
 
     try {
-      // Mock API call - replace with: await api.updateAssignment(editingAssignment.id, editingAssignment)
-      await mockAPI.updateAssignment(editingAssignment.id, editingAssignment)
 
-      // Refresh table
-      await loadAssignments()
+      setErrorMessage(null);
+      setSuccessMessage(null);
+      // Mock API call - replace with: await api.updateAssignment(editingAssignment.id, editForm)
+      await mockAPI.updateAssignment(editingAssignment.id, editForm)
+
+      setAssignments([])
+      setPage(1)
+      setHasMore(true)
+      await loadAssignments(1, searchQuery, true)
 
       // Close modal
       setShowEditModal(false)
       setEditingAssignment(null)
 
-      alert("Assignment updated successfully!")
+      setSuccessMessage("Assignment updated successfully!")
     } catch (error) {
       console.error("Failed to update assignment:", error)
-      alert("Failed to update assignment")
+      setErrorMessage("Failed to update assignment")
     }
   }
 
@@ -160,33 +231,46 @@ export default function AssignmentManagement() {
     if (!deletingAssignmentId) return
 
     try {
+      setErrorMessage(null);
+      setSuccessMessage(null);
       // Mock API call - replace with: await api.deleteAssignment(deletingAssignmentId)
       await mockAPI.deleteAssignment(deletingAssignmentId)
-
-      // Refresh table
-      await loadAssignments()
+      await loadAssignments(1, searchQuery, true)
 
       // Close modal
       setShowDeleteModal(false)
       setDeletingAssignmentId(null)
 
-      alert("Assignment deleted successfully!")
+      setSuccessMessage("Assignment deleted successfully!")
     } catch (error) {
       console.error("Failed to delete assignment:", error)
-      alert("Failed to delete assignment")
+      setErrorMessage("Failed to delete assignment")
     }
   }
 
-  // Filter assignments based on search query
-  const filteredAssignments = assignments.filter(
-    (assignment) =>
-      assignment.course.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      assignment.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
-
   return (
     <div className={styles.assignmentContainer}>
+      {successMessage && (
+        <CAlert
+          color="success"
+          className="ui-alert ui-alert-success"
+        >
+          <CIcon icon={cilCheckCircle} className="success-icon" />
+          <span className="success-text">{successMessage}</span>
+        </CAlert>
+      )}
+
+      {errorMessage && (
+        <CAlert
+          color="danger"
+          className="ui-alert ui-alert-error"
+        >
+          <span className="error-text">{errorMessage}</span>
+        </CAlert>
+      )}
+
       <div className={styles.contentWrapper}>
+
         <h1 className={styles.pageTitle}>Assignment management</h1>
 
         {/* Create Assignments Section */}
@@ -250,7 +334,7 @@ export default function AssignmentManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAssignments.map((assignment) => (
+                  {assignments.map((assignment) => (
                     <tr key={assignment.id} className={styles.tableRow}>
                       <td className={styles.tableCell}>{assignment.course}</td>
                       <td className={styles.tableCell}>{assignment.name}</td>
@@ -295,59 +379,31 @@ export default function AssignmentManagement() {
                   ))}
                 </tbody>
               </table>
+              <div ref={observerTarget} className={styles.scrollTrigger}>
+                {loading && <div className={styles.loadingIndicator}>Loading more...</div>}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Edit Modal */}
-      <CModal visible={showEditModal} onClose={() => setShowEditModal(false)} size="lg" backdrop={false}>
+      <CModal visible={showEditModal} onClose={() => setShowEditModal(false)} size="lg" alignment="center"
+        backdrop={false}
+        focus={false}>
         <CModalHeader>
           <CModalTitle>Edit Assignment</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          {editingAssignment && (
-            <AssignmentForm
-              formData={{
-                course: editingAssignment.course,
-                name: editingAssignment.name,
-                description: editingAssignment.description,
-                dueDate: editingAssignment.dueDate ? new Date(editingAssignment.dueDate) : null,
-                maxPoints: editingAssignment.maxPoints,
-              }}
-              errors={{}}
-              onCourseChange={(value) =>
-                setEditingAssignment({
-                  ...editingAssignment,
-                  course: value,
-                })
-              }
-              onNameChange={(value) =>
-                setEditingAssignment({
-                  ...editingAssignment,
-                  name: value,
-                })
-              }
-              onDescriptionChange={(value) =>
-                setEditingAssignment({
-                  ...editingAssignment,
-                  description: value,
-                })
-              }
-              onDueDateChange={(value) =>
-                setEditingAssignment({
-                  ...editingAssignment,
-                  dueDate: value || new Date(),
-                })
-              }
-              onMaxPointsChange={(value) =>
-                setEditingAssignment({
-                  ...editingAssignment,
-                  maxPoints: Number.parseFloat(value) || 0,
-                })
-              }
-            />
-          )}
+          <AssignmentForm
+            formData={editForm}
+            errors={{}}
+            onCourseChange={(value: any) => setEditForm({ ...editForm, course: value })}
+            onNameChange={(value: any) => setEditForm({ ...editForm, name: value })}
+            onDescriptionChange={(value: any) => setEditForm({ ...editForm, description: value })}
+            onDueDateChange={(value: any) => setEditForm({ ...editForm, dueDate: value || new Date() })}
+            onMaxPointsChange={(value: any) => setEditForm({ ...editForm, maxPoints: Number.parseFloat(value) || 0 })}
+          />
         </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setShowEditModal(false)}>
@@ -360,7 +416,9 @@ export default function AssignmentManagement() {
       </CModal>
 
       {/* Delete Confirmation Modal */}
-      <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)} backdrop={false}>
+      <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)} alignment="center"
+        backdrop={false}
+        focus={false}>
         <CModalHeader>
           <CModalTitle>Confirm Delete</CModalTitle>
         </CModalHeader>

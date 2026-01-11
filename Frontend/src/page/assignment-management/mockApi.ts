@@ -17,9 +17,93 @@ interface Assignment {
   dueDate: Date
 }
 
-// Mock data store
+interface PaginationParams {
+  query?: string
+  page: number
+  pageSize: number
+}
+
+interface PaginatedResponse<T> {
+  data: T[]
+  total: number
+  page: number
+  pageSize: number
+  hasMore: boolean
+}
+
+// Mock data store - expanded for pagination testing
 let mockAssignments: Assignment[] = [
   {
+    id: "35009",
+    course: "NSI",
+    name: "Computer Vision",
+    faculty: "ETF",
+    maxPoints: 3,
+    major: "Computer Science",
+    description: "Introduction to computer vision",
+    dueDate: new Date("2024-12-31"),
+  },
+    {
+    id: "35009",
+    course: "NSI",
+    name: "Computer Vision",
+    faculty: "ETF",
+    maxPoints: 3,
+    major: "Computer Science",
+    description: "Introduction to computer vision",
+    dueDate: new Date("2024-12-31"),
+  },
+    {
+    id: "35009",
+    course: "NSI",
+    name: "Computer Vision",
+    faculty: "ETF",
+    maxPoints: 3,
+    major: "Computer Science",
+    description: "Introduction to computer vision",
+    dueDate: new Date("2024-12-31"),
+  },
+    {
+    id: "35009",
+    course: "NSI",
+    name: "Computer Vision",
+    faculty: "ETF",
+    maxPoints: 3,
+    major: "Computer Science",
+    description: "Introduction to computer vision",
+    dueDate: new Date("2024-12-31"),
+  },
+    {
+    id: "35009",
+    course: "NSI",
+    name: "Computer Vision",
+    faculty: "ETF",
+    maxPoints: 3,
+    major: "Computer Science",
+    description: "Introduction to computer vision",
+    dueDate: new Date("2024-12-31"),
+  },
+    {
+    id: "35009",
+    course: "NSI",
+    name: "Computer Vision",
+    faculty: "ETF",
+    maxPoints: 3,
+    major: "Computer Science",
+    description: "Introduction to computer vision",
+    dueDate: new Date("2024-12-31"),
+  },
+    {
+    id: "35009",
+    course: "NSI",
+    name: "Computer Vision",
+    faculty: "ETF",
+    maxPoints: 3,
+    major: "Computer Science",
+    description: "Introduction to computer vision",
+    dueDate: new Date("2024-12-31"),
+  },
+    {
     id: "35009",
     course: "NSI",
     name: "Computer Vision",
@@ -32,91 +116,71 @@ let mockAssignments: Assignment[] = [
   {
     id: "35012",
     course: "NSI",
-    name: "Computer Vision",
+    name: "Machine Learning",
     faculty: "ETF",
     maxPoints: 3,
     major: "Computer Science",
-    description: "Advanced computer vision techniques",
+    description: "Advanced machine learning techniques",
     dueDate: new Date("2024-12-31"),
   },
   {
     id: "35011",
-    course: "NSI",
-    name: "Computer Vision",
+    course: "AI",
+    name: "Deep Learning",
     faculty: "ETF",
     maxPoints: 3,
     major: "Computer Science",
-    description: "Computer vision applications",
+    description: "Deep learning applications",
     dueDate: new Date("2024-12-31"),
   },
   {
     id: "35010",
-    course: "NSI",
-    name: "Computer Vision",
+    course: "CS",
+    name: "Data Structures",
     faculty: "ETF",
     maxPoints: 3,
     major: "Computer Science",
-    description: "Machine learning for vision",
-    dueDate: new Date("2024-12-31"),
-  },
-    {
-    id: "35011",
-    course: "NSI",
-    name: "Computer Vision",
-    faculty: "ETF",
-    maxPoints: 3,
-    major: "Computer Science",
-    description: "Computer vision applications",
+    description: "Advanced data structures",
     dueDate: new Date("2024-12-31"),
   },
   {
-    id: "35010",
+    id: "35008",
     course: "NSI",
-    name: "Computer Vision",
+    name: "Natural Language Processing",
     faculty: "ETF",
-    maxPoints: 3,
+    maxPoints: 4,
     major: "Computer Science",
-    description: "Machine learning for vision",
-    dueDate: new Date("2024-12-31"),
-  },
-    {
-    id: "35011",
-    course: "NSI",
-    name: "Computer Vision",
-    faculty: "ETF",
-    maxPoints: 3,
-    major: "Computer Science",
-    description: "Computer vision applications",
+    description: "NLP fundamentals",
     dueDate: new Date("2024-12-31"),
   },
   {
-    id: "35010",
-    course: "NSI",
-    name: "Computer Vision",
+    id: "35007",
+    course: "AI",
+    name: "Robotics",
     faculty: "ETF",
-    maxPoints: 3,
+    maxPoints: 5,
     major: "Computer Science",
-    description: "Machine learning for vision",
-    dueDate: new Date("2024-12-31"),
-  },
-    {
-    id: "35011",
-    course: "NSI",
-    name: "Computer someth",
-    faculty: "ETF",
-    maxPoints: 3,
-    major: "Computer Science",
-    description: "Computer vision applications",
+    description: "Introduction to robotics",
     dueDate: new Date("2024-12-31"),
   },
   {
-    id: "35010",
-    course: "NSI",
-    name: "Computer Vision",
+    id: "35006",
+    course: "CS",
+    name: "Algorithms",
     faculty: "ETF",
-    maxPoints: 3,
+    maxPoints: 4,
     major: "Computer Science",
-    description: "Machine learning for vision",
+    description: "Algorithm design and analysis",
+    dueDate: new Date("2024-12-31"),
+  },
+  {
+    id: "35005",
+    course: "NSI",
+    name: "Neural Networks",
+    faculty: "ETF",
+    maxPoints: 4,
+    major: "Computer Science",
+    description: "Neural network architectures",
     dueDate: new Date("2024-12-31"),
   },
 ]
@@ -125,9 +189,33 @@ let mockAssignments: Assignment[] = [
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const mockAPI = {
-  getAssignments: async (): Promise<Assignment[]> => {
+  getAssignments: async (params: PaginationParams): Promise<PaginatedResponse<Assignment>> => {
     await delay(300)
-    return [...mockAssignments]
+
+    // Filter by query if provided
+    let filtered = [...mockAssignments]
+    if (params.query) {
+      const query = params.query.toLowerCase()
+      filtered = filtered.filter(
+        (assignment) =>
+          assignment.course.toLowerCase().includes(query) || assignment.name.toLowerCase().includes(query),
+      )
+    }
+
+    // Calculate pagination
+    const total = filtered.length
+    const startIndex = (params.page - 1) * params.pageSize
+    const endIndex = startIndex + params.pageSize
+    const data = filtered.slice(startIndex, endIndex)
+    const hasMore = endIndex < total
+
+    return {
+      data,
+      total,
+      page: params.page,
+      pageSize: params.pageSize,
+      hasMore,
+    }
   },
 
   createAssignment: async (dto: CreateAssignmentDTO): Promise<Assignment> => {
@@ -146,13 +234,20 @@ const mockAPI = {
     return newAssignment
   },
 
-  updateAssignment: async (id: string, data: Partial<Assignment>): Promise<Assignment> => {
+  updateAssignment: async (id: string, dto: CreateAssignmentDTO): Promise<Assignment> => {
     await delay(500)
     const index = mockAssignments.findIndex((a) => a.id === id)
     if (index === -1) {
       throw new Error("Assignment not found")
     }
-    mockAssignments[index] = { ...mockAssignments[index], ...data }
+    mockAssignments[index] = {
+      ...mockAssignments[index],
+      course: dto.course,
+      name: dto.name,
+      description: dto.description,
+      dueDate: dto.dueDate,
+      maxPoints: dto.maxPoints,
+    }
     return mockAssignments[index]
   },
 
@@ -163,3 +258,4 @@ const mockAPI = {
 }
 
 export default mockAPI
+export type { Assignment, CreateAssignmentDTO, PaginationParams, PaginatedResponse }
