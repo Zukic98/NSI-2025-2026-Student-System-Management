@@ -4,7 +4,7 @@ import type React from "react"
 import { CCard, CCardBody } from "@coreui/react"
 import type { Assignment } from "./AssignmentTypes"
 import { formatDate } from "./AssignmentTypes"
-import styles from "./assignments.module.css"
+import styles from "./Assignments.module.css"
 
 interface AssignmentCardProps {
     assignment: Assignment
