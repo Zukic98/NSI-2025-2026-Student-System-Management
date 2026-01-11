@@ -25,7 +25,7 @@ import { ExamPage } from '../page/exams/ExamPage.tsx';
 import { CreateExamPage } from '../page/exams/CreateExamPage.tsx';
 import { EditExamPage } from '../page/exams/EditExamPage.tsx'; import RequestManagement from '../page/requests/RequestManagement';
 import AcademicRecordsPage from '../page/academic-records/AcademicRecordsPage.tsx';
-import AssignmentsPage from '../page/assignments/AssignmentPage.tsx';
+import AssignmentsPage from '../page/assignments/AssignmentsPage.tsx';
 
 
 
