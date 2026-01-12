@@ -2,7 +2,5 @@
 
 namespace Notifications.Infrastructure.Db
 {
-    public class NotificationsDbContext : DbContext
-    {
-    }
+    public class NotificationsDbContext : DbContext { }
 }

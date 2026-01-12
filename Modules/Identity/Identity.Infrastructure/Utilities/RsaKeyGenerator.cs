@@ -4,7 +4,6 @@ namespace Identity.Infrastructure.Utilities;
 
 public static class RsaKeyGenerator
 {
-
     public static (string privateKey, string publicKey) GenerateKeyPair()
     {
         using var rsa = RSA.Create(2048);
@@ -19,6 +18,4 @@ public static class RsaKeyGenerator
 
         return (privateKey, publicKey);
     }
-
-
 }

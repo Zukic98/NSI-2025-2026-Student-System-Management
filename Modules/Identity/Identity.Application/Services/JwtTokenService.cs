@@ -29,8 +29,9 @@ public class JwtTokenService : IJwtTokenService
         _signingKey = new SymmetricSecurityKey(keyBytes);
 
         Console.WriteLine($"JWT SIGN (generator) key len: {keyBytes.Length}");
-        Console.WriteLine($"JWT SIGN (generator) key prefix: {_jwtSettings.SigningKey.Substring(0, 8)}");
-
+        Console.WriteLine(
+            $"JWT SIGN (generator) key prefix: {_jwtSettings.SigningKey.Substring(0, 8)}"
+        );
     }
 
     public string GenerateAccessToken(TokenClaims claims)
@@ -45,7 +46,10 @@ public class JwtTokenService : IJwtTokenService
             new Claim("fullName", claims.FullName),
             new Claim("tenantId", claims.TenantId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
+            new Claim(
+                JwtRegisteredClaimNames.Iat,
+                DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()
+            ),
         };
 
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -54,7 +58,7 @@ public class JwtTokenService : IJwtTokenService
             Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
             Issuer = _jwtSettings.Issuer,
             Audience = _jwtSettings.Audience,
-            SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256)
+            SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256),
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -78,7 +82,7 @@ public class JwtTokenService : IJwtTokenService
             UserId = userId,
             ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
             CreatedAt = DateTime.UtcNow,
-            IsRevoked = false
+            IsRevoked = false,
         };
     }
 
@@ -97,7 +101,7 @@ public class JwtTokenService : IJwtTokenService
                 ValidateAudience = true,
                 ValidAudience = _jwtSettings.Audience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
             };
 
             var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
@@ -108,5 +112,4 @@ public class JwtTokenService : IJwtTokenService
             return null;
         }
     }
-
 }

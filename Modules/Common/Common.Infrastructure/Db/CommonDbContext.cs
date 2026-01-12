@@ -2,7 +2,5 @@
 
 namespace Common.Infrastructure.Db
 {
-    public class CommonDbContext : DbContext
-    {
-    }
+    public class CommonDbContext : DbContext { }
 }

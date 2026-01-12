@@ -11,7 +11,10 @@ namespace University.Infrastructure
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddUniversityModule(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddUniversityModule(
+            this IServiceCollection services,
+            IConfiguration configuration
+        )
         {
             // Entity Framework
             services.AddScoped<IAcademicYearRepository, AcademicYearRepository>();
@@ -19,7 +22,8 @@ namespace University.Infrastructure
             services.AddScoped<IFacultyRepository, FacultyRepository>();
             services.AddScoped<IProgramRepository, ProgramRepository>();
             services.AddDbContext<UniversityDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("Database")));
+                options.UseNpgsql(configuration.GetConnectionString("Database"))
+            );
 
             // Application services
             services.AddScoped<IFacultyService, FacultyService>();

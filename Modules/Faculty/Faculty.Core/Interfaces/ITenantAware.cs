@@ -10,4 +10,3 @@ public interface ITenantAware
     /// </summary>
     Guid FacultyId { get; set; }
 }
-

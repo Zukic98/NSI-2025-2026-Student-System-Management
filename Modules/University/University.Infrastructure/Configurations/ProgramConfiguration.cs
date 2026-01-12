@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using University.Infrastructure.Entities;
 
 namespace University.Infrastructure.Configurations
@@ -16,7 +16,8 @@ namespace University.Infrastructure.Configurations
 
             builder.HasIndex(x => new { x.DepartmentId, x.Code }).IsUnique();
 
-            builder.HasOne(p => p.Department)
+            builder
+                .HasOne(p => p.Department)
                 .WithMany(d => d.Programs)
                 .HasForeignKey(p => p.DepartmentId)
                 .OnDelete(DeleteBehavior.Restrict);

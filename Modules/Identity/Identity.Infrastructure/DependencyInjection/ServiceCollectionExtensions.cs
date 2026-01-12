@@ -21,7 +21,8 @@ namespace Identity.Infrastructure.DependencyInjection
     {
         public static IServiceCollection AddIdentityModule(
             this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration
+        )
         {
             // bind jwt settings (for IOptions<T>)
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
@@ -37,7 +38,9 @@ namespace Identity.Infrastructure.DependencyInjection
             if (string.IsNullOrWhiteSpace(jwtSettings.Audience))
                 throw new InvalidOperationException("JwtSettings:Audience is missing.");
 
-            Console.WriteLine($"JWT VALIDATION key prefix: {jwtSettings.SigningKey.Substring(0, 8)}");
+            Console.WriteLine(
+                $"JWT VALIDATION key prefix: {jwtSettings.SigningKey.Substring(0, 8)}"
+            );
 
             // Entity Framework
             services.AddDbContext<AuthDbContext>(options =>
@@ -45,17 +48,17 @@ namespace Identity.Infrastructure.DependencyInjection
             );
 
             // Identity Core
-            services.AddIdentityCore<ApplicationUser>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-            })
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<AuthDbContext>();
+            services
+                .AddIdentityCore<ApplicationUser>(options =>
+                {
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                })
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<AuthDbContext>();
 
-          
             services
                 .AddAuthentication(options =>
                 {
@@ -80,7 +83,7 @@ namespace Identity.Infrastructure.DependencyInjection
                         ValidAudience = jwtSettings.Audience,
 
                         ValidateLifetime = true,
-                        ClockSkew = TimeSpan.FromMinutes(1)
+                        ClockSkew = TimeSpan.FromMinutes(1),
                     };
 
                     options.Events = new JwtBearerEvents
@@ -96,13 +99,12 @@ namespace Identity.Infrastructure.DependencyInjection
                             Console.WriteLine("JWT BEARER OK for user:");
                             Console.WriteLine(ctx.Principal?.FindFirst("userId")?.Value);
                             return Task.CompletedTask;
-                        }
+                        },
                     };
                 });
 
             services.AddAuthorization();
 
-       
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IIdentityHasherService, IdentityHasherService>();

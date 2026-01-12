@@ -5,4 +5,6 @@ using Faculty.Infrastructure.Db;
 
 namespace Faculty.Infrastructure.Repositories;
 
-public class StudentRepository(FacultyDbContext context) : BaseRepository<Student>(context), IStudentRepository;
+public class StudentRepository(FacultyDbContext context)
+    : BaseRepository<Student>(context),
+        IStudentRepository;

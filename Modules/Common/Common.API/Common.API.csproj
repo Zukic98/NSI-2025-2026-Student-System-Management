@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <ItemGroup>
     <ProjectReference Include="..\Common.Core\Common.Core.csproj" />
     <ProjectReference Include="..\Common.Application\Common.Application.csproj" />
@@ -10,5 +9,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-	
 </Project>

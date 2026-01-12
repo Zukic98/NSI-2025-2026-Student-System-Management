@@ -9,11 +9,14 @@ public class AttendanceRecordDTO
 {
     [Required]
     public int StudentId { get; set; }
-    
+
     [Required]
-    [RegularExpression("^(Present|Absent|Late)$", ErrorMessage = "Status must be Present, Absent, or Late.")]
+    [RegularExpression(
+        "^(Present|Absent|Late)$",
+        ErrorMessage = "Status must be Present, Absent, or Late."
+    )]
     public string Status { get; set; } = string.Empty;
-    
+
     [MaxLength(500)]
     public string? Note { get; set; }
 }
@@ -25,12 +28,11 @@ public class SaveAttendanceRequestDTO
 {
     [Required]
     public Guid CourseId { get; set; }
-    
+
     [Required]
     public DateTime Date { get; set; }
-    
+
     [Required]
     [MinLength(1, ErrorMessage = "At least one attendance record is required.")]
     public List<AttendanceRecordDTO> Records { get; set; } = new();
 }
-

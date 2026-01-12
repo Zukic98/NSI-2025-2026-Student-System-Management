@@ -11,6 +11,5 @@ namespace Faculty.Application.Interfaces
         Task<CourseDTO?> UpdateAsync(Guid id, CourseDTO course);
         Task<bool> DeleteAsync(Guid id);
         Task<TeacherDto?> GetTeacherForCourseAsync(Guid courseId);
-
     }
 }

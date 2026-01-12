@@ -1,11 +1,11 @@
+using System.Net;
+using System.Net.Http.Json;
+using FluentAssertions;
 using Identity.API.DTO.Auth;
 using Identity.Core.DTO;
 using Identity.Core.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using System.Net.Http.Json;
 using Xunit;
-using FluentAssertions;
 
 namespace Identity.IntegrationTests
 {
@@ -36,12 +36,12 @@ namespace Identity.IntegrationTests
                 LastName = "Test",
                 Email = TestEmail,
                 FacultyId = Guid.NewGuid(),
-                Role = UserRole.Student
+                Role = UserRole.Student,
             };
 
             var response = await _client.PostAsJsonAsync(UserEndpointPath, createUserRequest);
             response.EnsureSuccessStatusCode();
-            
+
             var userResponse = await response.Content.ReadFromJsonAsync<UserResponse>();
             if (userResponse != null)
             {
@@ -63,11 +63,7 @@ namespace Identity.IntegrationTests
         public async Task Login_ShouldReturnOk_WhenCredentialsAreValid()
         {
             // Arrange
-            var loginRequest = new LoginRequestDto
-            {
-                Email = TestEmail,
-                Password = TestPassword
-            };
+            var loginRequest = new LoginRequestDto { Email = TestEmail, Password = TestPassword };
 
             // Act
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);
@@ -81,14 +77,13 @@ namespace Identity.IntegrationTests
         [Theory]
         [InlineData(TestEmail, "WrongPassword")]
         [InlineData("nonexistentemail@test.com", "AnyPassword")]
-        public async Task Login_ShouldReturnUnauthorized_WhenCredentialsAreInvalid(string email, string password)
+        public async Task Login_ShouldReturnUnauthorized_WhenCredentialsAreInvalid(
+            string email,
+            string password
+        )
         {
             // Arrange
-            var loginRequest = new LoginRequestDto
-            {
-                Email = email,
-                Password = password
-            };
+            var loginRequest = new LoginRequestDto { Email = email, Password = password };
 
             // Act
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);
@@ -106,7 +101,7 @@ namespace Identity.IntegrationTests
             var loginRequest = new LoginRequestDto
             {
                 Email = string.Empty,
-                Password = TestPassword
+                Password = TestPassword,
             };
 
             // Act
@@ -114,7 +109,8 @@ namespace Identity.IntegrationTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            var validationErrorDetails = await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
+            var validationErrorDetails =
+                await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
             validationErrorDetails.Should().NotBeNull();
             validationErrorDetails!.Errors["Email"].Should().Contain("Email is required");
         }
@@ -126,7 +122,7 @@ namespace Identity.IntegrationTests
             var loginRequest = new LoginRequestDto
             {
                 Email = "invalid-email-format",
-                Password = TestPassword
+                Password = TestPassword,
             };
 
             // Act
@@ -134,7 +130,8 @@ namespace Identity.IntegrationTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            var validationErrorDetails = await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
+            var validationErrorDetails =
+                await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
             validationErrorDetails.Should().NotBeNull();
             validationErrorDetails!.Errors["Email"].Should().Contain("Invalid email format");
         }
@@ -143,18 +140,15 @@ namespace Identity.IntegrationTests
         public async Task Login_ShouldReturnBadRequest_WhenPasswordIsEmpty()
         {
             // Arrange
-            var loginRequest = new LoginRequestDto
-            {
-                Email = TestEmail,
-                Password = string.Empty
-            };
+            var loginRequest = new LoginRequestDto { Email = TestEmail, Password = string.Empty };
 
             // Act
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            var validationErrorDetails = await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
+            var validationErrorDetails =
+                await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
             validationErrorDetails.Should().NotBeNull();
             validationErrorDetails!.Errors["Password"].Should().Contain("Password is required");
         }
@@ -167,7 +161,7 @@ namespace Identity.IntegrationTests
             var loginRequest = new LoginRequestDto
             {
                 Email = new string('a', maximumLength + 1) + "@test.com",
-                Password = TestPassword
+                Password = TestPassword,
             };
 
             // Act
@@ -175,12 +169,19 @@ namespace Identity.IntegrationTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            var validationErrorDetails = await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
+            var validationErrorDetails =
+                await response.Content.ReadFromJsonAsync<ValidationErrorDetails>();
             validationErrorDetails.Should().NotBeNull();
-            validationErrorDetails!.Errors["Email"].Should().Contain($"The field Email must be a string with a maximum length of {maximumLength}.");
+            validationErrorDetails!
+                .Errors["Email"]
+                .Should()
+                .Contain(
+                    $"The field Email must be a string with a maximum length of {maximumLength}."
+                );
         }
 
         private record ErrorResponse(string Message);
+
         private class ValidationErrorDetails
         {
             public Dictionary<string, string[]> Errors { get; set; } = [];

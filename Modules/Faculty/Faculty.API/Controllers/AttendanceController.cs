@@ -11,14 +11,14 @@ namespace Faculty.API.Controllers;
 [ApiController]
 [Route("api/faculty/attendance")]
 [Authorize]
-
 public class AttendanceController : ControllerBase
 {
     private readonly IAttendanceService _attendanceService;
 
     public AttendanceController(IAttendanceService attendanceService)
     {
-        _attendanceService = attendanceService ?? throw new ArgumentNullException(nameof(attendanceService));
+        _attendanceService =
+            attendanceService ?? throw new ArgumentNullException(nameof(attendanceService));
     }
 
     /// <summary>
@@ -48,7 +48,11 @@ public class AttendanceController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var result = await _attendanceService.GetStudentsWithAttendanceAsync(courseId, date, userId);
+            var result = await _attendanceService.GetStudentsWithAttendanceAsync(
+                courseId,
+                date,
+                userId
+            );
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
@@ -57,11 +61,14 @@ public class AttendanceController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new Dictionary<string, object>
-            {
-                { "error", "An error occurred while loading students." },
-                { "details", ex.Message }
-            });
+            return StatusCode(
+                500,
+                new Dictionary<string, object>
+                {
+                    { "error", "An error occurred while loading students." },
+                    { "details", ex.Message },
+                }
+            );
         }
     }
 
@@ -85,10 +92,9 @@ public class AttendanceController : ControllerBase
         {
             var userId = GetCurrentUserId();
             await _attendanceService.SaveAttendanceAsync(request, userId);
-            return Ok(new Dictionary<string, object>
-            {
-                { "message", "Attendance saved successfully." }
-            });
+            return Ok(
+                new Dictionary<string, object> { { "message", "Attendance saved successfully." } }
+            );
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -100,11 +106,14 @@ public class AttendanceController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new Dictionary<string, object>
-            {
-                { "error", "An error occurred while saving attendance." },
-                { "details", ex.Message }
-            });
+            return StatusCode(
+                500,
+                new Dictionary<string, object>
+                {
+                    { "error", "An error occurred while saving attendance." },
+                    { "details", ex.Message },
+                }
+            );
         }
     }
 
@@ -119,12 +128,18 @@ public class AttendanceController : ControllerBase
     public async Task<IActionResult> GetAttendanceStatistics(
         Guid courseId,
         [FromQuery] DateTime startDate,
-        [FromQuery] DateTime endDate)
+        [FromQuery] DateTime endDate
+    )
     {
         try
         {
             var userId = GetCurrentUserId();
-            var result = await _attendanceService.GetAttendanceStatisticsAsync(courseId, startDate, endDate, userId);
+            var result = await _attendanceService.GetAttendanceStatisticsAsync(
+                courseId,
+                startDate,
+                endDate,
+                userId
+            );
             return Ok(result);
         }
         catch (UnauthorizedAccessException ex)
@@ -133,11 +148,14 @@ public class AttendanceController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new Dictionary<string, object>
-            {
-                { "error", "An error occurred while loading statistics." },
-                { "details", ex.Message }
-            });
+            return StatusCode(
+                500,
+                new Dictionary<string, object>
+                {
+                    { "error", "An error occurred while loading statistics." },
+                    { "details", ex.Message },
+                }
+            );
         }
     }
 
@@ -154,7 +172,11 @@ public class AttendanceController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var reportBytes = await _attendanceService.ExportAttendanceReportAsync(courseId, date, userId);
+            var reportBytes = await _attendanceService.ExportAttendanceReportAsync(
+                courseId,
+                date,
+                userId
+            );
 
             var fileName = $"attendance_{courseId}_{date:yyyy-MM-dd}.csv";
             return File(reportBytes, "text/csv", fileName);
@@ -165,12 +187,14 @@ public class AttendanceController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new Dictionary<string, object>
-            {
-                { "error", "An error occurred while exporting report." },
-                { "details", ex.Message }
-            });
+            return StatusCode(
+                500,
+                new Dictionary<string, object>
+                {
+                    { "error", "An error occurred while exporting report." },
+                    { "details", ex.Message },
+                }
+            );
         }
     }
 }
-

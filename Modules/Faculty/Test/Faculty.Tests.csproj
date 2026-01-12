@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -28,6 +27,4 @@
     <ProjectReference Include="..\Faculty.Application\Faculty.Application.csproj" />
     <ProjectReference Include="..\Faculty.API\Faculty.API.csproj" />
   </ItemGroup>
-
 </Project>
-

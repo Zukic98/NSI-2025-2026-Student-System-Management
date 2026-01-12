@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Support.Application.DTOs
 {
-	public class DecideEnrollmentRequestDTO
-	{
-		public string? AdminUserId { get; set; }   
-		public string? Note { get; set; }
-	}
+    public class DecideEnrollmentRequestDTO
+    {
+        public string? AdminUserId { get; set; }
+        public string? Note { get; set; }
+    }
 }
-

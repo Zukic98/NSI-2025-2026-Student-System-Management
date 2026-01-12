@@ -21,4 +21,3 @@ public class Attendance : ITenantAware
     public Student Student { get; set; } = null!;
     public Course Course { get; set; } = null!;
 }
-

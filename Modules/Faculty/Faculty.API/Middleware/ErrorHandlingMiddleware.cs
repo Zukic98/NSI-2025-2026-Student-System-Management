@@ -11,7 +11,8 @@ namespace Faculty.API.Middleware
 
         public ErrorHandlingMiddleware(
             RequestDelegate next,
-            ILogger<ErrorHandlingMiddleware> logger)
+            ILogger<ErrorHandlingMiddleware> logger
+        )
         {
             _next = next;
             _logger = logger;
@@ -28,10 +29,7 @@ namespace Faculty.API.Middleware
                 context.Response.StatusCode = (int)ex.StatusCode;
                 context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    error = ex.Message
-                });
+                await context.Response.WriteAsJsonAsync(new { error = ex.Message });
             }
             catch (Exception ex)
             {
@@ -40,10 +38,7 @@ namespace Faculty.API.Middleware
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.ContentType = "application/json";
 
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    error = "Internal Server Error"
-                });
+                await context.Response.WriteAsJsonAsync(new { error = "Internal Server Error" });
             }
         }
     }

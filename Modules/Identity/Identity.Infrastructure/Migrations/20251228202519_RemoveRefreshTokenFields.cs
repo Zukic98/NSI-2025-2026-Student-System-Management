@@ -10,13 +10,9 @@ namespace Identity.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "IpAddress",
-                table: "RefreshTokens");
+            migrationBuilder.DropColumn(name: "IpAddress", table: "RefreshTokens");
 
-            migrationBuilder.DropColumn(
-                name: "UserAgent",
-                table: "RefreshTokens");
+            migrationBuilder.DropColumn(name: "UserAgent", table: "RefreshTokens");
         }
 
         /// <inheritdoc />
@@ -27,14 +23,16 @@ namespace Identity.Infrastructure.Migrations
                 table: "RefreshTokens",
                 type: "text",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "UserAgent",
                 table: "RefreshTokens",
                 type: "text",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
         }
     }
 }

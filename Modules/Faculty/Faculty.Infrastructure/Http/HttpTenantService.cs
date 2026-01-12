@@ -6,8 +6,10 @@ namespace Faculty.Infrastructure.Http;
 /// <summary>
 /// HTTP-based implementation of ITenantService that extracts TenantId from authenticated user claims.
 /// </summary>
-public class HttpTenantService(IHttpContextAccessor httpContextAccessor, IScopedTenantContext scopedTenantContext)
-    : ITenantService
+public class HttpTenantService(
+    IHttpContextAccessor httpContextAccessor,
+    IScopedTenantContext scopedTenantContext
+) : ITenantService
 {
     private const string TenantIdClaimType = "tenantId";
 
@@ -29,7 +31,9 @@ public class HttpTenantService(IHttpContextAccessor httpContextAccessor, IScoped
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext == null)
         {
-            throw new UnauthorizedAccessException("HttpContext is not available. Ensure the service is used within an HTTP request context.");
+            throw new UnauthorizedAccessException(
+                "HttpContext is not available. Ensure the service is used within an HTTP request context."
+            );
         }
 
         var user = httpContext.User;
@@ -46,7 +50,9 @@ public class HttpTenantService(IHttpContextAccessor httpContextAccessor, IScoped
 
         if (!Guid.TryParse(tenantIdClaim.Value, out var tenantId))
         {
-            throw new UnauthorizedAccessException($"Invalid TenantId format in claim: {tenantIdClaim.Value}. Expected a Guid.");
+            throw new UnauthorizedAccessException(
+                $"Invalid TenantId format in claim: {tenantIdClaim.Value}. Expected a Guid."
+            );
         }
 
         return tenantId;

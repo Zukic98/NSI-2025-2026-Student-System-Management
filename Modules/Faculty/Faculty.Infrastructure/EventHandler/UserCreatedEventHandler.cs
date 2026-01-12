@@ -10,7 +10,8 @@ public class UserCreatedEventHandler(StudentService studentService)
 {
     public async Task Handle(
         DomainEventNotification<UserCreatedEvent> notification,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         await studentService.HandleStudentCreated(notification.Event, cancellationToken);
     }

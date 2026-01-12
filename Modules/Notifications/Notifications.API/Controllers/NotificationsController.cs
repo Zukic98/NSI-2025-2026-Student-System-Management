@@ -8,6 +8,5 @@ namespace Notifications.API.Controllers
     {
         [HttpGet]
         public IActionResult Get() => Ok("Hello from Notifications API!");
-
     }
 }

@@ -2,7 +2,5 @@
 
 namespace Analytics.Infrastructure.Db
 {
-    public class AnalyticsDbContext : DbContext
-    {
-    }
+    public class AnalyticsDbContext : DbContext { }
 }

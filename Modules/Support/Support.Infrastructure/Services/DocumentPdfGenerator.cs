@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace Support.Infrastructure.Services
 {
     public interface IDocumentPdfGenerator
@@ -16,7 +15,8 @@ namespace Support.Infrastructure.Services
     {
         public byte[] Generate(string title, string message)
         {
-            string pdf = $@"%PDF-1.4
+            string pdf =
+                $@"%PDF-1.4
 1 0 obj
 << /Type /Catalog /Pages 2 0 R >>
 endobj

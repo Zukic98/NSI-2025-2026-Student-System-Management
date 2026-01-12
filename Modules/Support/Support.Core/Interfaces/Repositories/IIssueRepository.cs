@@ -1,9 +1,7 @@
-using Support.Core.Entities;
 using Common.Core.Interfaces.Repsitories;
+using Support.Core.Entities;
 
 namespace Support.Core.Interfaces.Repositories
 {
-    public interface IIssueRepository : IBaseRepository<Issue>
-    {
-    }
+    public interface IIssueRepository : IBaseRepository<Issue> { }
 }

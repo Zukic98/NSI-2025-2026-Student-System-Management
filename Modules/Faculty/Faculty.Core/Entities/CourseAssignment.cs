@@ -20,4 +20,3 @@ public class CourseAssignment : ITenantAware
     public Teacher Teacher { get; set; } = null!;
     public Course Course { get; set; } = null!;
 }
-

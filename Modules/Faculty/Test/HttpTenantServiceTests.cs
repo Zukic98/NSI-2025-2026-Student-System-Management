@@ -19,7 +19,10 @@ namespace Faculty.Tests
         public HttpTenantServiceTests()
         {
             _mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            _tenantService = new HttpTenantService(_mockHttpContextAccessor.Object, _scopedTenantContext);
+            _tenantService = new HttpTenantService(
+                _mockHttpContextAccessor.Object,
+                _scopedTenantContext
+            );
         }
 
         #region Successful Resolution Tests
@@ -32,15 +35,12 @@ namespace Faculty.Tests
             var claims = new List<Claim>
             {
                 new Claim("tenantId", expectedTenantId.ToString()),
-                new Claim(ClaimTypes.Name, "testuser")
+                new Claim(ClaimTypes.Name, "testuser"),
             };
 
             var identity = new ClaimsIdentity(claims, "Bearer");
             var principal = new ClaimsPrincipal(identity);
-            var httpContext = new DefaultHttpContext
-            {
-                User = principal
-            };
+            var httpContext = new DefaultHttpContext { User = principal };
 
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
@@ -72,7 +72,9 @@ namespace Faculty.Tests
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns((HttpContext)null!);
 
             // Act & Assert
-            var exception = Assert.Throws<UnauthorizedAccessException>(() => _tenantService.GetCurrentFacultyId());
+            var exception = Assert.Throws<UnauthorizedAccessException>(() =>
+                _tenantService.GetCurrentFacultyId()
+            );
             Assert.Contains("HttpContext is not available", exception.Message);
         }
 
@@ -84,15 +86,14 @@ namespace Faculty.Tests
         public void GetCurrentFacultyId_ShouldThrowUnauthorizedAccessException_WhenUserIsNull()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext
-            {
-                User = null!
-            };
+            var httpContext = new DefaultHttpContext { User = null! };
 
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
             // Act & Assert
-            var exception = Assert.Throws<UnauthorizedAccessException>(() => _tenantService.GetCurrentFacultyId());
+            var exception = Assert.Throws<UnauthorizedAccessException>(() =>
+                _tenantService.GetCurrentFacultyId()
+            );
             Assert.Contains("User is not authenticated", exception.Message);
         }
 
@@ -101,15 +102,14 @@ namespace Faculty.Tests
         {
             // Arrange
             var principal = new ClaimsPrincipal();
-            var httpContext = new DefaultHttpContext
-            {
-                User = principal
-            };
+            var httpContext = new DefaultHttpContext { User = principal };
 
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
             // Act & Assert
-            var exception = Assert.Throws<UnauthorizedAccessException>(() => _tenantService.GetCurrentFacultyId());
+            var exception = Assert.Throws<UnauthorizedAccessException>(() =>
+                _tenantService.GetCurrentFacultyId()
+            );
             Assert.Contains("User is not authenticated", exception.Message);
         }
 
@@ -119,15 +119,14 @@ namespace Faculty.Tests
             // Arrange
             var identity = new ClaimsIdentity(); // Not authenticated
             var principal = new ClaimsPrincipal(identity);
-            var httpContext = new DefaultHttpContext
-            {
-                User = principal
-            };
+            var httpContext = new DefaultHttpContext { User = principal };
 
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
             // Act & Assert
-            var exception = Assert.Throws<UnauthorizedAccessException>(() => _tenantService.GetCurrentFacultyId());
+            var exception = Assert.Throws<UnauthorizedAccessException>(() =>
+                _tenantService.GetCurrentFacultyId()
+            );
             Assert.Contains("User is not authenticated", exception.Message);
         }
 
@@ -139,22 +138,18 @@ namespace Faculty.Tests
         public void GetCurrentFacultyId_ShouldThrowUnauthorizedAccessException_WhenTenantIdClaimIsMissing()
         {
             // Arrange
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, "testuser")
-            };
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, "testuser") };
 
             var identity = new ClaimsIdentity(claims, "Bearer");
             var principal = new ClaimsPrincipal(identity);
-            var httpContext = new DefaultHttpContext
-            {
-                User = principal
-            };
+            var httpContext = new DefaultHttpContext { User = principal };
 
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
             // Act & Assert
-            var exception = Assert.Throws<UnauthorizedAccessException>(() => _tenantService.GetCurrentFacultyId());
+            var exception = Assert.Throws<UnauthorizedAccessException>(() =>
+                _tenantService.GetCurrentFacultyId()
+            );
             Assert.Contains("TenantId claim not found in user claims.", exception.Message);
         }
 
@@ -162,22 +157,18 @@ namespace Faculty.Tests
         public void GetCurrentFacultyId_ShouldThrowUnauthorizedAccessException_WhenTenantIdClaimIsEmpty()
         {
             // Arrange
-            var claims = new List<Claim>
-            {
-                new Claim("tenantId", "")
-            };
+            var claims = new List<Claim> { new Claim("tenantId", "") };
 
             var identity = new ClaimsIdentity(claims, "Bearer");
             var principal = new ClaimsPrincipal(identity);
-            var httpContext = new DefaultHttpContext
-            {
-                User = principal
-            };
+            var httpContext = new DefaultHttpContext { User = principal };
 
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
             // Act & Assert
-            var exception = Assert.Throws<UnauthorizedAccessException>(() => _tenantService.GetCurrentFacultyId());
+            var exception = Assert.Throws<UnauthorizedAccessException>(() =>
+                _tenantService.GetCurrentFacultyId()
+            );
             Assert.Contains("Invalid TenantId format", exception.Message);
         }
 
@@ -185,22 +176,18 @@ namespace Faculty.Tests
         public void GetCurrentFacultyId_ShouldThrowUnauthorizedAccessException_WhenTenantIdClaimIsInvalidGuid()
         {
             // Arrange
-            var claims = new List<Claim>
-            {
-                new Claim("tenantId", "not-a-guid")
-            };
+            var claims = new List<Claim> { new Claim("tenantId", "not-a-guid") };
 
             var identity = new ClaimsIdentity(claims, "Bearer");
             var principal = new ClaimsPrincipal(identity);
-            var httpContext = new DefaultHttpContext
-            {
-                User = principal
-            };
+            var httpContext = new DefaultHttpContext { User = principal };
 
             _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(httpContext);
 
             // Act & Assert
-            var exception = Assert.Throws<UnauthorizedAccessException>(() => _tenantService.GetCurrentFacultyId());
+            var exception = Assert.Throws<UnauthorizedAccessException>(() =>
+                _tenantService.GetCurrentFacultyId()
+            );
             Assert.Contains("Invalid TenantId format", exception.Message);
             Assert.Contains("not-a-guid", exception.Message);
         }
@@ -210,12 +197,12 @@ namespace Faculty.Tests
         private class MockScopedTenantContext : IScopedTenantContext
         {
             private static Guid? _tenantId;
-            
+
             public Guid? CurrentTenantId() => _tenantId;
 
             public IDisposable Use(Guid tenantId)
             {
-                _tenantId =  tenantId;
+                _tenantId = tenantId;
                 return new DummyDisposable();
             }
 

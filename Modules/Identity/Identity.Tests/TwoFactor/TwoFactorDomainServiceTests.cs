@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
+using Identity.Core.DomainServices;
 using Moq;
 using Xunit;
-using Identity.Core.DomainServices;
 
 namespace Identity.Tests.TwoFactor
 {
@@ -22,9 +22,7 @@ namespace Identity.Tests.TwoFactor
             // Arrange
             var username = "testuser";
 
-            _totpProviderMock
-                .Setup(p => p.GenerateSecret())
-                .Returns("SECRET-123");
+            _totpProviderMock.Setup(p => p.GenerateSecret()).Returns("SECRET-123");
 
             _totpProviderMock
                 .Setup(p => p.GenerateQrCode(username, "SECRET-123"))
@@ -44,9 +42,7 @@ namespace Identity.Tests.TwoFactor
         [Fact]
         public void VerifyCode_ReturnsTrue_WhenProviderValidates()
         {
-            _totpProviderMock
-                .Setup(p => p.ValidateCode("SECRET", "123456"))
-                .Returns(true);
+            _totpProviderMock.Setup(p => p.ValidateCode("SECRET", "123456")).Returns(true);
 
             var result = _service.VerifyCode("SECRET", "123456");
 
@@ -56,9 +52,7 @@ namespace Identity.Tests.TwoFactor
         [Fact]
         public void VerifyCode_ReturnsFalse_WhenProviderFails()
         {
-            _totpProviderMock
-                .Setup(p => p.ValidateCode("SECRET", "999999"))
-                .Returns(false);
+            _totpProviderMock.Setup(p => p.ValidateCode("SECRET", "999999")).Returns(false);
 
             var result = _service.VerifyCode("SECRET", "999999");
 

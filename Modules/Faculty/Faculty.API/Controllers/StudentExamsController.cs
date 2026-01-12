@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Faculty.API.Controllers;
+
 [ApiController]
 [Authorize(Roles = "Student")]
 [Route("api/faculty/student-exams")]
@@ -20,7 +21,8 @@ public class StudentExamsController : ControllerBase
     [HttpPost("registrations")]
     public async Task<IActionResult> Register(
         [FromBody] ExamRegistrationRequestDto request,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (!ModelState.IsValid)
         {
@@ -34,7 +36,11 @@ public class StudentExamsController : ControllerBase
 
         try
         {
-            var registration = await _service.RegisterAsync(request.ExamId, userId!, cancellationToken);
+            var registration = await _service.RegisterAsync(
+                request.ExamId,
+                userId!,
+                cancellationToken
+            );
             return CreatedAtAction(nameof(GetRegistrations), null, registration);
         }
         catch (FacultyApplicationException ex)
@@ -42,7 +48,7 @@ public class StudentExamsController : ControllerBase
             return StatusCode((int)ex.StatusCode, new { error = ex.Message });
         }
     }
-    
+
     [HttpGet("available")]
     public async Task<IActionResult> GetAvailableExams(CancellationToken cancellationToken)
     {
@@ -61,7 +67,7 @@ public class StudentExamsController : ControllerBase
             return StatusCode((int)ex.StatusCode, new { error = ex.Message });
         }
     }
-    
+
     [HttpGet("registrations")]
     public async Task<IActionResult> GetRegistrations(CancellationToken cancellationToken)
     {

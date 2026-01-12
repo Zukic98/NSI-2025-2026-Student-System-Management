@@ -1,6 +1,6 @@
-﻿using Identity.Core.Entities;
+﻿using System.Security.Claims;
+using Identity.Core.Entities;
 using Identity.Core.Models;
-using System.Security.Claims;
 
 namespace Identity.Core.Interfaces.Services;
 

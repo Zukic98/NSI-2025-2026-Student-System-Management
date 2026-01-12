@@ -1,10 +1,10 @@
+using System.Security.Claims;
 using Faculty.API.Controllers;
 using Faculty.Application.DTOs;
 using Faculty.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Security.Claims;
 using Xunit;
 
 namespace Faculty.Tests;
@@ -24,7 +24,7 @@ public class AttendanceControllerTests
     {
         _mockAttendanceService = new Mock<IAttendanceService>();
         _controller = new AttendanceController(_mockAttendanceService.Object);
-        
+
         // Set up authenticated user context
         SetupAuthenticatedUser();
     }
@@ -34,18 +34,15 @@ public class AttendanceControllerTests
         var claims = new List<Claim>
         {
             new Claim("userId", _testUserId),
-            new Claim(ClaimTypes.Name, "testuser")
+            new Claim(ClaimTypes.Name, "testuser"),
         };
-        
+
         var identity = new ClaimsIdentity(claims, "TestAuth");
         var principal = new ClaimsPrincipal(identity);
-        
+
         _controller.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext
-            {
-                User = principal
-            }
+            HttpContext = new DefaultHttpContext { User = principal },
         };
     }
 
@@ -64,7 +61,7 @@ public class AttendanceControllerTests
                 FirstName = "John",
                 LastName = "Doe",
                 Status = "Present",
-                Note = "On time"
+                Note = "On time",
             },
             new StudentAttendanceDTO
             {
@@ -73,8 +70,8 @@ public class AttendanceControllerTests
                 FirstName = "Jane",
                 LastName = "Smith",
                 Status = "Absent",
-                Note = null
-            }
+                Note = null,
+            },
         };
 
         _mockAttendanceService
@@ -90,7 +87,10 @@ public class AttendanceControllerTests
         Assert.Equal(2, returnedStudents.Count);
         Assert.Equal("A-001", returnedStudents[0].IndexNumber);
         Assert.Equal("Present", returnedStudents[0].Status);
-        _mockAttendanceService.Verify(s => s.GetStudentsWithAttendanceAsync(_testCourseId, _testDate, _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.GetStudentsWithAttendanceAsync(_testCourseId, _testDate, _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -125,8 +125,8 @@ public class AttendanceControllerTests
                 FirstName = "John",
                 LastName = "Doe",
                 Status = null, // No attendance recorded yet
-                Note = null
-            }
+                Note = null,
+            },
         };
 
         _mockAttendanceService
@@ -159,7 +159,10 @@ public class AttendanceControllerTests
         Assert.Equal(403, statusResult.StatusCode);
         var errorResponse = Assert.IsType<Dictionary<string, object>>(statusResult.Value);
         Assert.Contains("error", errorResponse.Keys);
-        _mockAttendanceService.Verify(s => s.GetStudentsWithAttendanceAsync(_testCourseId, _testDate, _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.GetStudentsWithAttendanceAsync(_testCourseId, _testDate, _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -196,15 +199,15 @@ public class AttendanceControllerTests
                 {
                     StudentId = 1,
                     Status = "Present",
-                    Note = "On time"
+                    Note = "On time",
                 },
                 new AttendanceRecordDTO
                 {
                     StudentId = 2,
                     Status = "Absent",
-                    Note = "Excused"
-                }
-            }
+                    Note = "Excused",
+                },
+            },
         };
 
         _mockAttendanceService
@@ -218,9 +221,16 @@ public class AttendanceControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var response = Assert.IsType<Dictionary<string, object>>(okResult.Value);
         Assert.Contains("message", response.Keys);
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(
-            It.Is<SaveAttendanceRequestDTO>(r => r.CourseId == _testCourseId && r.Records.Count == 2),
-            _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s =>
+                s.SaveAttendanceAsync(
+                    It.Is<SaveAttendanceRequestDTO>(r =>
+                        r.CourseId == _testCourseId && r.Records.Count == 2
+                    ),
+                    _testUserId
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -233,10 +243,25 @@ public class AttendanceControllerTests
             Date = _testDate,
             Records = new List<AttendanceRecordDTO>
             {
-                new AttendanceRecordDTO { StudentId = 1, Status = "Present", Note = "On time" },
-                new AttendanceRecordDTO { StudentId = 2, Status = "Absent", Note = "Excused" },
-                new AttendanceRecordDTO { StudentId = 3, Status = "Late", Note = "15 minutes late" }
-            }
+                new AttendanceRecordDTO
+                {
+                    StudentId = 1,
+                    Status = "Present",
+                    Note = "On time",
+                },
+                new AttendanceRecordDTO
+                {
+                    StudentId = 2,
+                    Status = "Absent",
+                    Note = "Excused",
+                },
+                new AttendanceRecordDTO
+                {
+                    StudentId = 3,
+                    Status = "Late",
+                    Note = "15 minutes late",
+                },
+            },
         };
 
         _mockAttendanceService
@@ -248,12 +273,18 @@ public class AttendanceControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(
-            It.Is<SaveAttendanceRequestDTO>(r => 
-                r.Records.Any(rec => rec.Status == "Present") &&
-                r.Records.Any(rec => rec.Status == "Absent") &&
-                r.Records.Any(rec => rec.Status == "Late")),
-            _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s =>
+                s.SaveAttendanceAsync(
+                    It.Is<SaveAttendanceRequestDTO>(r =>
+                        r.Records.Any(rec => rec.Status == "Present")
+                        && r.Records.Any(rec => rec.Status == "Absent")
+                        && r.Records.Any(rec => rec.Status == "Late")
+                    ),
+                    _testUserId
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -270,9 +301,9 @@ public class AttendanceControllerTests
                 {
                     StudentId = 1,
                     Status = "Present",
-                    Note = null
-                }
-            }
+                    Note = null,
+                },
+            },
         };
 
         _mockAttendanceService
@@ -284,7 +315,10 @@ public class AttendanceControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -295,17 +329,23 @@ public class AttendanceControllerTests
         {
             CourseId = _testCourseId,
             Date = _testDate,
-            Records = new List<AttendanceRecordDTO>() // Empty records
+            Records = new List<AttendanceRecordDTO>(), // Empty records
         };
 
-        _controller.ModelState.AddModelError("Records", "At least one attendance record is required.");
+        _controller.ModelState.AddModelError(
+            "Records",
+            "At least one attendance record is required."
+        );
 
         // Act
         var result = await _controller.SaveAttendance(request);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), It.IsAny<string>()), Times.Never);
+        _mockAttendanceService.Verify(
+            s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), It.IsAny<string>()),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -322,19 +362,25 @@ public class AttendanceControllerTests
                 {
                     StudentId = 1,
                     Status = "InvalidStatus", // Invalid status
-                    Note = null
-                }
-            }
+                    Note = null,
+                },
+            },
         };
 
-        _controller.ModelState.AddModelError("Records[0].Status", "Status must be Present, Absent, or Late.");
+        _controller.ModelState.AddModelError(
+            "Records[0].Status",
+            "Status must be Present, Absent, or Late."
+        );
 
         // Act
         var result = await _controller.SaveAttendance(request);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), It.IsAny<string>()), Times.Never);
+        _mockAttendanceService.Verify(
+            s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), It.IsAny<string>()),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -351,14 +397,18 @@ public class AttendanceControllerTests
                 {
                     StudentId = 999, // Invalid student ID
                     Status = "Present",
-                    Note = null
-                }
-            }
+                    Note = null,
+                },
+            },
         };
 
         _mockAttendanceService
             .Setup(s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), _testUserId))
-            .ThrowsAsync(new ArgumentException("Invalid student IDs: 999. These students are not enrolled in the course."));
+            .ThrowsAsync(
+                new ArgumentException(
+                    "Invalid student IDs: 999. These students are not enrolled in the course."
+                )
+            );
 
         // Act
         var result = await _controller.SaveAttendance(request);
@@ -368,7 +418,10 @@ public class AttendanceControllerTests
         var errorResponse = Assert.IsType<Dictionary<string, object>>(badRequestResult.Value);
         Assert.Contains("error", errorResponse.Keys);
         Assert.Contains("999", errorResponse["error"]?.ToString() ?? "");
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -381,8 +434,8 @@ public class AttendanceControllerTests
             Date = _testDate,
             Records = new List<AttendanceRecordDTO>
             {
-                new AttendanceRecordDTO { StudentId = 1, Status = "Present" }
-            }
+                new AttendanceRecordDTO { StudentId = 1, Status = "Present" },
+            },
         };
 
         _controller.ModelState.AddModelError("CourseId", "CourseId is required.");
@@ -392,7 +445,10 @@ public class AttendanceControllerTests
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), It.IsAny<string>()), Times.Never);
+        _mockAttendanceService.Verify(
+            s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), It.IsAny<string>()),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -409,9 +465,9 @@ public class AttendanceControllerTests
                 {
                     StudentId = 1,
                     Status = "Present",
-                    Note = null
-                }
-            }
+                    Note = null,
+                },
+            },
         };
 
         _mockAttendanceService
@@ -427,7 +483,10 @@ public class AttendanceControllerTests
         var errorResponse = Assert.IsType<Dictionary<string, object>>(statusResult.Value);
         Assert.Contains("error", errorResponse.Keys);
         Assert.Equal("You are not assigned to this course.", errorResponse["error"]);
-        _mockAttendanceService.Verify(s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.SaveAttendanceAsync(It.IsAny<SaveAttendanceRequestDTO>(), _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -444,9 +503,9 @@ public class AttendanceControllerTests
                 {
                     StudentId = 1,
                     Status = "Present",
-                    Note = null
-                }
-            }
+                    Note = null,
+                },
+            },
         };
 
         _mockAttendanceService
@@ -479,11 +538,13 @@ public class AttendanceControllerTests
             LateCount = 10,
             PresentPercentage = 70.0,
             AbsentPercentage = 20.0,
-            LatePercentage = 10.0
+            LatePercentage = 10.0,
         };
 
         _mockAttendanceService
-            .Setup(s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId))
+            .Setup(s =>
+                s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId)
+            )
             .ReturnsAsync(expectedStats);
 
         // Act
@@ -497,7 +558,10 @@ public class AttendanceControllerTests
         Assert.Equal(20, returnedStats.AbsentCount);
         Assert.Equal(10, returnedStats.LateCount);
         Assert.Equal(70.0, returnedStats.PresentPercentage);
-        _mockAttendanceService.Verify(s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -514,11 +578,13 @@ public class AttendanceControllerTests
             LateCount = 0,
             PresentPercentage = 0.0,
             AbsentPercentage = 0.0,
-            LatePercentage = 0.0
+            LatePercentage = 0.0,
         };
 
         _mockAttendanceService
-            .Setup(s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId))
+            .Setup(s =>
+                s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId)
+            )
             .ReturnsAsync(expectedStats);
 
         // Act
@@ -538,7 +604,9 @@ public class AttendanceControllerTests
         var endDate = new DateTime(2024, 1, 31);
 
         _mockAttendanceService
-            .Setup(s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId))
+            .Setup(s =>
+                s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId)
+            )
             .ThrowsAsync(new UnauthorizedAccessException("You are not assigned to this course."));
 
         // Act
@@ -549,7 +617,10 @@ public class AttendanceControllerTests
         Assert.Equal(403, statusResult.StatusCode);
         var errorResponse = Assert.IsType<Dictionary<string, object>>(statusResult.Value);
         Assert.Contains("error", errorResponse.Keys);
-        _mockAttendanceService.Verify(s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -566,11 +637,13 @@ public class AttendanceControllerTests
             LateCount = 3,
             PresentPercentage = 66.67,
             AbsentPercentage = 23.33,
-            LatePercentage = 10.0
+            LatePercentage = 10.0,
         };
 
         _mockAttendanceService
-            .Setup(s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId))
+            .Setup(s =>
+                s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId)
+            )
             .ReturnsAsync(expectedStats);
 
         // Act
@@ -593,7 +666,9 @@ public class AttendanceControllerTests
         var endDate = new DateTime(2024, 1, 31);
 
         _mockAttendanceService
-            .Setup(s => s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId))
+            .Setup(s =>
+                s.GetAttendanceStatisticsAsync(_testCourseId, startDate, endDate, _testUserId)
+            )
             .ThrowsAsync(new Exception("Database error"));
 
         // Act
@@ -612,8 +687,10 @@ public class AttendanceControllerTests
     public async Task ExportAttendanceReport_ShouldReturnFile_WhenAuthorized()
     {
         // Arrange
-        var reportBytes = System.Text.Encoding.UTF8.GetBytes("Index Number,First Name,Last Name,Status,Note\nA-001,John,Doe,Present,On time");
-        
+        var reportBytes = System.Text.Encoding.UTF8.GetBytes(
+            "Index Number,First Name,Last Name,Status,Note\nA-001,John,Doe,Present,On time"
+        );
+
         _mockAttendanceService
             .Setup(s => s.ExportAttendanceReportAsync(_testCourseId, _testDate, _testUserId))
             .ReturnsAsync(reportBytes);
@@ -624,9 +701,15 @@ public class AttendanceControllerTests
         // Assert
         var fileResult = Assert.IsType<FileContentResult>(result);
         Assert.Equal("text/csv", fileResult.ContentType);
-        Assert.Equal($"attendance_{_testCourseId}_{_testDate:yyyy-MM-dd}.csv", fileResult.FileDownloadName);
+        Assert.Equal(
+            $"attendance_{_testCourseId}_{_testDate:yyyy-MM-dd}.csv",
+            fileResult.FileDownloadName
+        );
         Assert.Equal(reportBytes, fileResult.FileContents);
-        _mockAttendanceService.Verify(s => s.ExportAttendanceReportAsync(_testCourseId, _testDate, _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.ExportAttendanceReportAsync(_testCourseId, _testDate, _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -645,16 +728,20 @@ public class AttendanceControllerTests
         Assert.Equal(403, statusResult.StatusCode);
         var errorResponse = Assert.IsType<Dictionary<string, object>>(statusResult.Value);
         Assert.Contains("error", errorResponse.Keys);
-        _mockAttendanceService.Verify(s => s.ExportAttendanceReportAsync(_testCourseId, _testDate, _testUserId), Times.Once);
+        _mockAttendanceService.Verify(
+            s => s.ExportAttendanceReportAsync(_testCourseId, _testDate, _testUserId),
+            Times.Once
+        );
     }
 
     [Fact]
     public async Task ExportAttendanceReport_ShouldReturnFile_WithCorrectContent()
     {
         // Arrange
-        var csvContent = "Index Number,First Name,Last Name,Status,Note\nA-001,John,Doe,Present,On time\nA-002,Jane,Smith,Absent,";
+        var csvContent =
+            "Index Number,First Name,Last Name,Status,Note\nA-001,John,Doe,Present,On time\nA-002,Jane,Smith,Absent,";
         var reportBytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
-        
+
         _mockAttendanceService
             .Setup(s => s.ExportAttendanceReportAsync(_testCourseId, _testDate, _testUserId))
             .ReturnsAsync(reportBytes);
@@ -700,12 +787,15 @@ public class AttendanceControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity()) // No claims
-            }
+                User = new ClaimsPrincipal(new ClaimsIdentity()), // No claims
+            },
         };
 
         // Act
-        var result = await controllerWithoutAuth.GetStudentsWithAttendance(_testCourseId, _testDate);
+        var result = await controllerWithoutAuth.GetStudentsWithAttendance(
+            _testCourseId,
+            _testDate
+        );
 
         // Assert
         var statusResult = Assert.IsType<ObjectResult>(result);
@@ -721,8 +811,8 @@ public class AttendanceControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity()) // No claims
-            }
+                User = new ClaimsPrincipal(new ClaimsIdentity()), // No claims
+            },
         };
 
         var request = new SaveAttendanceRequestDTO
@@ -731,8 +821,8 @@ public class AttendanceControllerTests
             Date = _testDate,
             Records = new List<AttendanceRecordDTO>
             {
-                new AttendanceRecordDTO { StudentId = 1, Status = "Present" }
-            }
+                new AttendanceRecordDTO { StudentId = 1, Status = "Present" },
+            },
         };
 
         // Act
@@ -752,12 +842,16 @@ public class AttendanceControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity()) // No claims
-            }
+                User = new ClaimsPrincipal(new ClaimsIdentity()), // No claims
+            },
         };
 
         // Act
-        var result = await controllerWithoutAuth.GetAttendanceStatistics(_testCourseId, DateTime.Now, DateTime.Now);
+        var result = await controllerWithoutAuth.GetAttendanceStatistics(
+            _testCourseId,
+            DateTime.Now,
+            DateTime.Now
+        );
 
         // Assert
         var statusResult = Assert.IsType<ObjectResult>(result);
@@ -773,8 +867,8 @@ public class AttendanceControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity()) // No claims
-            }
+                User = new ClaimsPrincipal(new ClaimsIdentity()), // No claims
+            },
         };
 
         // Act
@@ -787,4 +881,3 @@ public class AttendanceControllerTests
 
     #endregion
 }
-

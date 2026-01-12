@@ -21,7 +21,16 @@ public class User
         this.Id = id;
         return this;
     }
-    public void FullUpdate(string firstName, string lastName,string email, Guid facultyId, UserRole role, UserStatus status, string? indexNumber = null)
+
+    public void FullUpdate(
+        string firstName,
+        string lastName,
+        string email,
+        Guid facultyId,
+        UserRole role,
+        UserStatus status,
+        string? indexNumber = null
+    )
     {
         this.FirstName = firstName;
         this.LastName = lastName;
@@ -51,9 +60,17 @@ public class User
         Email = string.Empty;
     }
 
-    public static User Create(string username, string passwordHash, string firstName, string lastName,string email, Guid facultyId, UserRole role, string? indexNumber = null)
+    public static User Create(
+        string username,
+        string passwordHash,
+        string firstName,
+        string lastName,
+        string email,
+        Guid facultyId,
+        UserRole role,
+        string? indexNumber = null
+    )
     {
-
         return new User
         {
             Id = Guid.NewGuid(),
@@ -64,13 +81,17 @@ public class User
             FacultyId = facultyId,
             Role = role,
             Email = email,
-            IndexNumber = (role == UserRole.Student) ? indexNumber : null
+            IndexNumber = (role == UserRole.Student) ? indexNumber : null,
         };
     }
 
-
-
-    public void UpdateDetails(string firstName, string lastName,string email, Guid facultyId, string? indexNumber)
+    public void UpdateDetails(
+        string firstName,
+        string lastName,
+        string email,
+        Guid facultyId,
+        string? indexNumber
+    )
     {
         FirstName = firstName;
         LastName = lastName;
@@ -92,6 +113,4 @@ public class User
     {
         Role = newRole;
     }
-
-
 }

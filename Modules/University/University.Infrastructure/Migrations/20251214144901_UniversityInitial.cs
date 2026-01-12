@@ -16,7 +16,8 @@ namespace University.Infrastructure.Migrations
                 type: "text",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "text");
+                oldType: "text"
+            );
         }
 
         /// <inheritdoc />
@@ -30,7 +31,8 @@ namespace University.Infrastructure.Migrations
                 defaultValue: "",
                 oldClrType: typeof(string),
                 oldType: "text",
-                oldNullable: true);
+                oldNullable: true
+            );
         }
     }
 }

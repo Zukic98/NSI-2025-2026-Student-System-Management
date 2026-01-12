@@ -13,4 +13,3 @@ public class AttendanceStatisticsDTO
     public double AbsentPercentage { get; set; }
     public double LatePercentage { get; set; }
 }
-

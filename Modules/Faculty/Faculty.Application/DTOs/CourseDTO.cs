@@ -10,6 +10,7 @@ namespace Faculty.Application.DTOs
     public class CourseDTO
     {
         public Guid Id { get; set; }
+
         [Required]
         [MinLength(2)]
         public string Name { get; set; }
@@ -18,8 +19,10 @@ namespace Faculty.Application.DTOs
         public string Code { get; set; }
 
         [Required]
-        [RegularExpression("^(mandatory|elective)$",
-            ErrorMessage = "Type must be either 'Mandatory' or 'Elective'.")]
+        [RegularExpression(
+            "^(mandatory|elective)$",
+            ErrorMessage = "Type must be either 'Mandatory' or 'Elective'."
+        )]
         public string Type { get; set; }
 
         [Required]

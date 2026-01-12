@@ -20,4 +20,3 @@ public class ExamRegistration : ITenantAware
     public Student Student { get; set; } = null!;
     public Exam Exam { get; set; } = null!;
 }
-

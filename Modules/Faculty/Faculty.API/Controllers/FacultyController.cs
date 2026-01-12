@@ -1,9 +1,8 @@
 ﻿using Faculty.Application.DTOs;
-using Microsoft.AspNetCore.Mvc;
 using Faculty.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Mvc;
 
 namespace Faculty.API.Controllers
 {
@@ -31,8 +30,7 @@ namespace Faculty.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-            => Ok(await _service.GetAllAsync());
+        public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
 
         [HttpGet("assigned")]
         public async Task<IActionResult> GetAssignedToTeacher()
@@ -89,9 +87,5 @@ namespace Faculty.API.Controllers
             var teacher = await _service.GetTeacherForCourseAsync(courseId);
             return teacher == null ? NotFound() : Ok(teacher);
         }
-
-
     }
 }
-
-

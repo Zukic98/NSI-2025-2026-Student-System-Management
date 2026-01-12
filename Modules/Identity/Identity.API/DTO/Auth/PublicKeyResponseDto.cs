@@ -6,4 +6,3 @@ public class PublicKeyResponseDto
     public string Algorithm { get; set; } = "RS256";
     public string KeyId { get; set; } = string.Empty;
 }
-

@@ -11,9 +11,7 @@ namespace University.Infrastructure.Configurations
             builder.ToTable("AcademicYears");
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.Year)
-                .IsRequired()
-                .HasMaxLength(100);
+            builder.Property(x => x.Year).IsRequired().HasMaxLength(100);
 
             builder.HasIndex(x => x.Year).IsUnique();
         }

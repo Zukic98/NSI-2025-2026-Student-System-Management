@@ -5,7 +5,15 @@ using Xunit;
 
 public class ArchitectureTests
 {
-    private readonly string[] _modules = { "Identity", "Faculty", "Analytics", "Notifications", "Support", "University" };
+    private readonly string[] _modules =
+    {
+        "Identity",
+        "Faculty",
+        "Analytics",
+        "Notifications",
+        "Support",
+        "University",
+    };
 
     private static System.Reflection.Assembly GetAssembly(string module, string layer)
     {
@@ -19,12 +27,24 @@ public class ArchitectureTests
         foreach (var module in _modules)
         {
             var assembly = GetAssembly(module, "Core");
-            var forbidden = new[] { $"{module}.Application", $"{module}.Infrastructure", $"{module}.API" };
+            var forbidden = new[]
+            {
+                $"{module}.Application",
+                $"{module}.Infrastructure",
+                $"{module}.API",
+            };
 
             foreach (var dependency in forbidden)
             {
-                var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn(dependency).GetResult();
-                Assert.True(result.IsSuccessful, $"{module}.Core should not depend on {dependency}");
+                var result = Types
+                    .InAssembly(assembly)
+                    .Should()
+                    .NotHaveDependencyOn(dependency)
+                    .GetResult();
+                Assert.True(
+                    result.IsSuccessful,
+                    $"{module}.Core should not depend on {dependency}"
+                );
             }
         }
     }
@@ -39,8 +59,15 @@ public class ArchitectureTests
 
             foreach (var dependency in forbidden)
             {
-                var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn(dependency).GetResult();
-                Assert.True(result.IsSuccessful, $"{module}.Application should not depend on {dependency}");
+                var result = Types
+                    .InAssembly(assembly)
+                    .Should()
+                    .NotHaveDependencyOn(dependency)
+                    .GetResult();
+                Assert.True(
+                    result.IsSuccessful,
+                    $"{module}.Application should not depend on {dependency}"
+                );
             }
         }
     }
@@ -51,8 +78,15 @@ public class ArchitectureTests
         foreach (var module in _modules)
         {
             var assembly = GetAssembly(module, "Infrastructure");
-            var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn($"{module}.API").GetResult();
-            Assert.True(result.IsSuccessful, $"{module}.Infrastructure should not depend on {module}.API");
+            var result = Types
+                .InAssembly(assembly)
+                .Should()
+                .NotHaveDependencyOn($"{module}.API")
+                .GetResult();
+            Assert.True(
+                result.IsSuccessful,
+                $"{module}.Infrastructure should not depend on {module}.API"
+            );
         }
     }
 
@@ -62,12 +96,18 @@ public class ArchitectureTests
         foreach (var module in _modules)
         {
             var assembly = GetAssembly(module, "Application");
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.DTOs")
-                .Should().HaveNameEndingWith("DTO")
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Application.DTOs")
+                .Should()
+                .HaveNameEndingWith("DTO")
                 .GetResult();
 
-            Assert.True(result.IsSuccessful, $"All DTO classes in {module}.Application.DTOs should end with 'DTO'");
+            Assert.True(
+                result.IsSuccessful,
+                $"All DTO classes in {module}.Application.DTOs should end with 'DTO'"
+            );
         }
     }
 
@@ -77,12 +117,18 @@ public class ArchitectureTests
         foreach (var module in _modules)
         {
             var assembly = GetAssembly(module, "Application");
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.Services")
-                .Should().HaveNameEndingWith("Service")
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Application.Services")
+                .Should()
+                .HaveNameEndingWith("Service")
                 .GetResult();
 
-            Assert.True(result.IsSuccessful, $"All services in {module}.Application.Services should end with 'Service'");
+            Assert.True(
+                result.IsSuccessful,
+                $"All services in {module}.Application.Services should end with 'Service'"
+            );
         }
     }
 
@@ -92,12 +138,20 @@ public class ArchitectureTests
         foreach (var module in _modules)
         {
             var assembly = GetAssembly(module, "Core");
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Core.Interfaces").And().AreInterfaces()
-                .Should().HaveNameStartingWith("I")
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Core.Interfaces")
+                .And()
+                .AreInterfaces()
+                .Should()
+                .HaveNameStartingWith("I")
                 .GetResult();
 
-            Assert.True(result.IsSuccessful, $"All interfaces in {module}.Core.Interfaces should start with 'I'");
+            Assert.True(
+                result.IsSuccessful,
+                $"All interfaces in {module}.Core.Interfaces should start with 'I'"
+            );
         }
     }
 
@@ -108,13 +162,18 @@ public class ArchitectureTests
         {
             var assembly = GetAssembly(module, "Application");
 
-            var types = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.Services")
+            var types = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Application.Services")
                 .GetTypes();
 
             bool allAreClassOrInterface = types.All(t => t.IsClass || t.IsInterface);
 
-            Assert.True(allAreClassOrInterface, $"All types in {module}.Application.Services should be classes or interfaces");
+            Assert.True(
+                allAreClassOrInterface,
+                $"All types in {module}.Application.Services should be classes or interfaces"
+            );
         }
     }
 
@@ -131,12 +190,19 @@ public class ArchitectureTests
 
                 foreach (var other in otherModules)
                 {
-                    var forbidden = new[] { $"{other}.Infrastructure", $"{other}.API"};
+                    var forbidden = new[] { $"{other}.Infrastructure", $"{other}.API" };
 
                     foreach (var dependency in forbidden)
                     {
-                        var result = Types.InAssembly(assembly).Should().NotHaveDependencyOn(dependency).GetResult();
-                        Assert.True(result.IsSuccessful, $"{module}.{layer} should not depend on {dependency}");
+                        var result = Types
+                            .InAssembly(assembly)
+                            .Should()
+                            .NotHaveDependencyOn(dependency)
+                            .GetResult();
+                        Assert.True(
+                            result.IsSuccessful,
+                            $"{module}.{layer} should not depend on {dependency}"
+                        );
                     }
                 }
             }
@@ -150,13 +216,18 @@ public class ArchitectureTests
         {
             var assembly = GetAssembly(module, "API");
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.API.Controllers")
-                .Should().HaveNameEndingWith("Controller")
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.API.Controllers")
+                .Should()
+                .HaveNameEndingWith("Controller")
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All controllers in {module}.API.Controllers should end with 'Controller'");
+            Assert.True(
+                result.IsSuccessful,
+                $"All controllers in {module}.API.Controllers should end with 'Controller'"
+            );
         }
     }
 
@@ -167,13 +238,18 @@ public class ArchitectureTests
         {
             var assembly = GetAssembly(module, "Infrastructure");
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Infrastructure.Repositories")
-                .Should().HaveNameEndingWith("Repository")
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Infrastructure.Repositories")
+                .Should()
+                .HaveNameEndingWith("Repository")
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All repositories in {module}.Infrastructure.Repositories should end with 'Repository'");
+            Assert.True(
+                result.IsSuccessful,
+                $"All repositories in {module}.Infrastructure.Repositories should end with 'Repository'"
+            );
         }
     }
 
@@ -184,13 +260,18 @@ public class ArchitectureTests
         {
             var assembly = GetAssembly(module, "Core");
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Core.Entities")
-                .Should().BeClasses()
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Core.Entities")
+                .Should()
+                .BeClasses()
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All entities in {module}.Core.Entities should be classes");
+            Assert.True(
+                result.IsSuccessful,
+                $"All entities in {module}.Core.Entities should be classes"
+            );
         }
     }
 
@@ -201,13 +282,18 @@ public class ArchitectureTests
         {
             var assembly = GetAssembly(module, "Application");
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Application.Handlers")
-                .Should().HaveNameEndingWith("Handler")
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Application.Handlers")
+                .Should()
+                .HaveNameEndingWith("Handler")
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All CQRS handlers in {module}.Application.Handlers should end with 'Handler'");
+            Assert.True(
+                result.IsSuccessful,
+                $"All CQRS handlers in {module}.Application.Handlers should end with 'Handler'"
+            );
         }
     }
 
@@ -218,15 +304,18 @@ public class ArchitectureTests
         {
             var assembly = GetAssembly(module, "Core");
 
-            var result = Types.InAssembly(assembly)
-                .That().ResideInNamespace($"{module}.Core.Services")
-                .Should().HaveNameEndingWith("Service")
+            var result = Types
+                .InAssembly(assembly)
+                .That()
+                .ResideInNamespace($"{module}.Core.Services")
+                .Should()
+                .HaveNameEndingWith("Service")
                 .GetResult();
 
-            Assert.True(result.IsSuccessful,
-                $"All domain services in {module}.Core.Services should end with 'Service'");
+            Assert.True(
+                result.IsSuccessful,
+                $"All domain services in {module}.Core.Services should end with 'Service'"
+            );
         }
     }
-
-
 }
