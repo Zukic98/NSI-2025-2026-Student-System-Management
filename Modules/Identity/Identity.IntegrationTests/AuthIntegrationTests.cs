@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
-using Xunit;
 using FluentAssertions;
+
 
 namespace Identity.IntegrationTests
 {
@@ -39,7 +39,10 @@ namespace Identity.IntegrationTests
                     Email = TestEmail,
                     FirstName = "Integration",
                     LastName = "Test",
-                    EmailConfirmed = true 
+                    EmailConfirmed = true,
+                    Role = UserRole.Student,
+                    FacultyId = Guid.NewGuid(),
+                    Status = UserStatus.Active
                 };
 
                 var result = await userManager.CreateAsync(user, TestPassword);
@@ -56,17 +59,14 @@ namespace Identity.IntegrationTests
         [Fact]
         public async Task Login_ShouldReturnOk_WhenCredentialsAreValid()
         {
-            // Arrange
-            var loginRequest = new LoginRequestDto
-            {
-                Email = TestEmail,
-                Password = TestPassword
+            var loginRequest = new LoginRequestDto 
+            { 
+                Email = TestEmail, 
+                Password = TestPassword 
             };
 
-            // Act
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);
 
-            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             
             var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
@@ -79,51 +79,42 @@ namespace Identity.IntegrationTests
         [InlineData("nonexistentemail@test.com", "AnyPassword")]
         public async Task Login_ShouldReturnUnauthorized_WhenCredentialsAreInvalid(string email, string password)
         {
-            // Arrange
             var loginRequest = new LoginRequestDto
             {
                 Email = email,
                 Password = password
             };
 
-            // Act
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);
 
-            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
 
         [Fact]
         public async Task Login_ShouldReturnBadRequest_WhenEmailIsEmpty()
         {
-            // Arrange
             var loginRequest = new LoginRequestDto
             {
                 Email = string.Empty,
                 Password = TestPassword
             };
 
-            // Act
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);
 
-            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
         public async Task Login_ShouldReturnBadRequest_WhenEmailIsInvalid()
         {
-            // Arrange
             var loginRequest = new LoginRequestDto
             {
                 Email = "invalid-email-format",
                 Password = TestPassword
             };
 
-            // Act
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);
 
-            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
