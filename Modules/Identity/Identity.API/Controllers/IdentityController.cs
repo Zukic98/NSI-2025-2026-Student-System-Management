@@ -100,8 +100,9 @@ namespace Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ChangeCurrentPassword([FromBody] ChangePasswordRequest request)
         {
-            var userIdStr = User.FindFirstValue("userId");
-            if (!Guid.TryParse(userIdStr, out var userId))
+            var userId = User.FindFirstValue("userId"); 
+            
+            if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
             }
@@ -109,10 +110,7 @@ namespace Identity.API.Controllers
             try
             {
                 var result = await _userService.ChangePasswordAsync(userId, request.NewPassword);
-                if (!result)
-                {
-                    return NotFound();
-                }
+                if (!result) return NotFound();
                 return NoContent();
             }
             catch (Exception ex)
@@ -234,11 +232,11 @@ namespace Identity.API.Controllers
             }
         }
 
-        [HttpPost("{userId:guid}/change-password")]
+        [HttpPost("{userId}/change-password")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> ChangePassword(Guid userId, [FromBody] ChangePasswordRequest request)
+        public async Task<IActionResult> ChangePassword(string userId, [FromBody] ChangePasswordRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -273,13 +271,13 @@ namespace Identity.API.Controllers
             return userRole == UserRole.Admin.ToString() || userRole == UserRole.Superadmin.ToString();
         }
 
-        private bool IsSelf(Guid userId)
+        private bool IsSelf(string userId)
         {
             var currentUserId = User.FindFirstValue("userId");
             return currentUserId == userId.ToString();
         }
 
-        private bool CanModifyUser(Guid userId)
+        private bool CanModifyUser(string userId)
         {
             return IsAdmin() || IsSelf(userId);
         }

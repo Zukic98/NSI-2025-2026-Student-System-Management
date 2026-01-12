@@ -148,27 +148,32 @@ internal class UserService(
             Email = user.Email,
             FacultyId = user.FacultyId,
             Role = user.Role,
+            IndexNumber = user.IndexNumber,
             Status = UserStatus.Inactive 
         };
 
         return await identityService.UpdateUserAsync(updateRequest);
     }
 
-    public async Task<bool> ChangePasswordAsync(Guid userId, string newPassword)
+   public async Task<bool> ChangePasswordAsync(string userId, string newPassword)
+{
+    var user = await identityService.FindByIdAsync(userId);
+    if (user == null) return false;
+
+    var updateRequest = new UpdateUserRequest
     {
-        var user = await userRepository.GetByIdAsync(userId);
-        if (user == null)
-        {
-            return false;
-        }
+        Id = userId,
+        FirstName = user.FirstName,
+        LastName = user.LastName,
+        Username = user.Username,
+        Email = user.Email,
+        FacultyId = user.FacultyId,
+        Role = user.Role,
+        Status = user.Status,
+        IndexNumber = user.IndexNumber,
+        Password = newPassword
+    };
 
-        var passwordHash = identityHasherService.HashPassword(newPassword);
-        
-        user.UpdatePasswordHash(passwordHash);
-
-        await userRepository.UpdateAsync(user);
-        await userRepository.SaveAsync();
-        
-        return true;
-    }
+    return await identityService.UpdateUserAsync(updateRequest);
+}
 }
