@@ -127,4 +127,8 @@ export class API {
     async changePassword(body: any): Promise<any> {
         return this.post<any>('/api/users/me/change-password', body);
     }
+
+    async getUpcomingActivities(): Promise<any> {
+        return this.get<any>('/api/faculty/courses/upcoming-activities');
+    }
 }
