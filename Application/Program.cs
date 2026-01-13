@@ -23,12 +23,13 @@ using FluentValidation.AspNetCore;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 using Common.Core.Tenant;
 using Identity.Infrastructure.Entities;
+using Analytics.Infrastructure.Db;
+using Analytics.Infrastructure.Db.Seeding;
 
 // Npgsql/Postgres timestamp compatibility for local dev.
 // Prevents failures when DateTime.Kind is Unspecified but the DB column is timestamptz.
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-using Analytics.Infrastructure.Db;
-using Analytics.Infrastructure.Db.Seeding;
+
 
 var builder = WebApplication.CreateBuilder(args);
 

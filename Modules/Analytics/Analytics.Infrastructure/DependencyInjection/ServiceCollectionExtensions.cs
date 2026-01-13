@@ -1,4 +1,6 @@
-﻿using Analytics.Core.Interfaces;
+﻿using Analytics.Application.Interfaces;
+using Analytics.Application.Services;
+using Analytics.Core.Interfaces;
 using Analytics.Infrastructure.Db;
 using Analytics.Infrastructure.Db.Seeding;
 using Analytics.Infrastructure.Repositories;
@@ -18,6 +20,14 @@ namespace Analytics.Infrastructure
             services.AddScoped<IStatRepository, StatsRepository>();
             services.AddScoped<IMetricRepository, MetricRepository>();
             services.AddScoped<AnalyticsDbInitializer>();
+
+            services.AddScoped<IStatsService, StatsService>();
+
+            services.Scan(scan => scan
+                .FromCallingAssembly()
+                .AddClasses(classes => classes.AssignableTo<IStatsCalculator>())
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
             return services;
         }

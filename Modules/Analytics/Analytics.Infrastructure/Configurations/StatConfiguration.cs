@@ -32,7 +32,6 @@ namespace Analytics.Infrastructure.Configurations
                    .IsRequired();
 
             builder.Property(m => m.AcademicYear)
-                   .IsRequired()
                    .HasMaxLength(9);
 
             builder.HasIndex(m => new { m.Scope, m.ScopeIdentifier });

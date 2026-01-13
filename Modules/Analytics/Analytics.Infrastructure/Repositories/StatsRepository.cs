@@ -15,7 +15,7 @@ namespace Analytics.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Stat>> GetStatsByMetricAndScopeAsync(string metricCode, Scope scope, Guid scopeIdentifier)
+        public async Task<IEnumerable<Stat>> GetStatsByMetricAndScopeAsync(string metricCode, Scope scope, Guid scopeIdentifier )
         {
             return await _context.Set<Stat>()
             .AsNoTracking()
