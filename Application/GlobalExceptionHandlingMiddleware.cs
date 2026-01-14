@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Faculty.Application.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace Application
@@ -25,6 +26,11 @@ namespace Application
             {
                 await _next(context);
             }
+            catch (FacultyApplicationException ex)
+            {
+                _logger.LogWarning(ex, "Faculty application error.");
+                await WriteJsonAsync(context, (int)ex.StatusCode, ex.Message);
+            }
             catch (OperationCanceledException ex)
             {
                 _logger.LogWarning(ex, "Request cancelled/timeout.");
@@ -49,11 +55,20 @@ namespace Application
                 await WriteJsonAsync(context, StatusCodes.Status500InternalServerError,
                     "Database update error.");
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized.");
+                await WriteJsonAsync(context, StatusCodes.Status401Unauthorized, ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Bad request.");
+                await WriteJsonAsync(context, StatusCodes.Status400BadRequest, ex.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception.");
 
-                // u dev možeš vratiti više detalja, u prod generic poruku
                 var msg = _env.IsDevelopment() ? ex.Message : "Internal Server Error";
 
                 await WriteJsonAsync(context, StatusCodes.Status500InternalServerError, msg);

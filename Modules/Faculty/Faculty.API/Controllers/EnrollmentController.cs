@@ -8,7 +8,7 @@ namespace Faculty.API.Controllers
 {
     [ApiController]
     [Authorize(Roles = "Student")]
-    [Route("/api/faculty/enrollments")]
+    [Route("api/faculty/enrollments")]
     public class EnrollmentsController : ControllerBase
     {
         private readonly IEnrollmentService _service;
@@ -26,12 +26,11 @@ namespace Faculty.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!TryResolveUserId(out var userId, out var errorResult))
-                return errorResult!;
+            var userId = GetCurrentUserIdOrThrow();
 
             var result = await _service.CreateEnrollmentAsync(
                 request.CourseId,
-                userId!,
+                userId,
                 cancellationToken);
 
             return Ok(result);
@@ -41,33 +40,26 @@ namespace Faculty.API.Controllers
         public async Task<IActionResult> GetMyEnrollments(
             CancellationToken cancellationToken)
         {
-            if (!TryResolveUserId(out var userId, out var errorResult))
-                return errorResult!;
+            var userId = GetCurrentUserIdOrThrow();
 
             var result = await _service.GetMyEnrollmentsAsync(
-                userId!,
+                userId,
                 cancellationToken);
 
             return Ok(result);
         }
 
-        private bool TryResolveUserId(
-            out string? userId,
-            out IActionResult? errorResult)
+        private string GetCurrentUserIdOrThrow()
         {
-            userId =
-                User.FindFirst("userId")?.Value
-                ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst("sub")?.Value;
+            var userId =
+                User.FindFirstValue("userId")
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? User.FindFirstValue("sub");
 
             if (string.IsNullOrWhiteSpace(userId))
-            {
-                errorResult = Unauthorized(new { error = "Missing user identifier claim." });
-                return false;
-            }
+                throw new UnauthorizedAccessException("Missing user identifier claim.");
 
-            errorResult = null;
-            return true;
+            return userId;
         }
     }
 }

@@ -33,6 +33,19 @@ namespace Faculty.API.Middleware
                     error = ex.Message
                 });
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+            }
+
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception occurred.");
@@ -45,6 +58,7 @@ namespace Faculty.API.Middleware
                     error = "Internal Server Error"
                 });
             }
+
         }
     }
 }
