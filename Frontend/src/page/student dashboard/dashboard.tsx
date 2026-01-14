@@ -19,9 +19,6 @@ import {
   Search,
   ArrowRight,
   Calendar as CalendarIcon,
-  FileText,
-  Award,
-  MoreHorizontal,
 } from "lucide-react";
 import {
   format,

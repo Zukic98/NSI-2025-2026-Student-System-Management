@@ -20,7 +20,7 @@ using Support.Infrastructure.Db;
 using University.API.Controllers;
 using University.Infrastructure;
 using University.Infrastructure.Db;
-using FluentValidation.AspNetCore;
+//using FluentValidation.AspNetCore;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 using Common.Core.Tenant;
 using Identity.Infrastructure.Entities;
@@ -65,8 +65,8 @@ foreach (var asm in moduleControllers)
 }
 
 // Add FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
+//builder.Services.AddFluentValidationAutoValidation();
+//builder.Services.AddFluentValidationClientsideAdapters();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
