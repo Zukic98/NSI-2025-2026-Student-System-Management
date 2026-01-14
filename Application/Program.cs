@@ -24,7 +24,7 @@ using FacultyController = Faculty.API.Controllers.FacultyController;
 using Common.Core.Tenant;
 using Identity.Infrastructure.Entities;
 using Analytics.Infrastructure.Db;
-using Analytics.Infrastructure.Db.Seeding;
+using Analytics.Infrastructure.Db.Seed;
 
 // Npgsql/Postgres timestamp compatibility for local dev.
 // Prevents failures when DateTime.Kind is Unspecified but the DB column is timestamptz.

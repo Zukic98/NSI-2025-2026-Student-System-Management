@@ -2,7 +2,6 @@ using Analytics.Core.Entities;
 using Analytics.Core.Interfaces;
 using Analytics.Infrastructure.Db;
 using Common.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace Analytics.Infrastructure.Repositories
 {

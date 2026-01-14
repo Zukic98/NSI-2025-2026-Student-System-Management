@@ -1,12 +1,11 @@
-namespace Analytics.Core.Entities
+namespace Analytics.Core.Entities;
+
+public enum Scope
 {
-    public enum Scope
-    {
-        University,
-        Faculty,
-        Department,
-        Program,
-        Course,
-        Student
-    }
+    University,
+    Faculty,
+    Department,
+    Program,
+    Course,
+    Student
 }

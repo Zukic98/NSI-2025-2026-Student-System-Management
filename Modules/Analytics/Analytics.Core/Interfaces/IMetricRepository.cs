@@ -1,10 +1,9 @@
 using Analytics.Core.Entities;
 using Common.Core.Interfaces.Repsitories;
 
-namespace Analytics.Core.Interfaces
+namespace Analytics.Core.Interfaces;
+
+public interface IMetricRepository : IBaseRepository<Metric>
 {
-    public interface IMetricRepository : IBaseRepository<Metric>
-    {
-        
-    }
+
 }
