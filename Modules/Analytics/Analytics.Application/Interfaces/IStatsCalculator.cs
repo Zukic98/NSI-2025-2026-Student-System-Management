@@ -4,8 +4,8 @@ namespace Analytics.Application.Interfaces;
 
 public interface IStatsCalculator
 {
-    string MetricCode { get; }
-    Scope Scope { get; }
+    public string MetricCode { get; }
+    public Scope Scope { get; }
 
-    Task<string> CalculateAsync(string metricCode, Scope scope, Guid scopeIdentifier);
+    Task<string> CalculateAsync(Guid scopeIdentifier);
 }

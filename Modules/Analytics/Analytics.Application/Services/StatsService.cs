@@ -38,7 +38,7 @@ public class StatsService : IStatsService
             return stat.Value;
         }
 
-        var newValue = await calculator.CalculateAsync(metricCode, scope, scopeIdentifier);
+        var newValue = await calculator.CalculateAsync(scopeIdentifier);
 
         if (stat == null)
         {

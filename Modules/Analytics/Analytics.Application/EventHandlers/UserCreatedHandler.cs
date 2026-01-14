@@ -16,9 +16,9 @@ public class UserCreatedHandler(
         DomainEventNotification<UserCreatedEvent> notification,
         CancellationToken cancellationToken)
     {
-        if(notification.Event.Role == UserRole.Student)
+        if (notification.Event.Role == UserRole.Student)
         {
-            await statsService.GetOrUpdateStatAsync(MetricKey.CountStudents, Scope.University, Guid.Empty);
+            await statsService.GetOrUpdateStatAsync(MetricKey.CountStudents, Scope.University, Guid.Empty, true);
         }
         
     }

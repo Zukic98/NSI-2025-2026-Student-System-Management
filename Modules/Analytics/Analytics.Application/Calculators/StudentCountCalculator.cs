@@ -21,8 +21,11 @@ public class StudentCountCalculator : IStatsCalculator
         _userService = userService;
     }
 
-    public async Task<string> CalculateAsync(string metricCode, Scope scope, Guid scopeIdentifier)
+    public async Task<string> CalculateAsync(Guid scopeIdentifier)
     {
-        // TODO   
+        return (await _userService.CountUsers(new UserFilterRequest
+        {
+            Role = UserRole.Student
+        })).ToString();   
     }            
 }
