@@ -1,4 +1,5 @@
 using Identity.Core.Enums;
+using Identity.Infrastructure.Entities;
 using Identity.Infrastructure.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
