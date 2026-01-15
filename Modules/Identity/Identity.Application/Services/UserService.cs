@@ -11,11 +11,11 @@ namespace Identity.Application.Services;
 
 internal class UserService(
     IIdentityService identityService,
-    IEventBus eventBus) : IUserService
+    IEventBus eventBus,
+    IUserNotifierService userNotifierService) : IUserService
 {
     public async Task<string> CreateUserAsync(
        string username,
-       string password,
        string firstName,
        string lastName,
        string email,
@@ -33,6 +33,8 @@ internal class UserService(
         {
             throw new InvalidOperationException("Only Superadmins can assign the Admin role.");
         }
+        
+        var tempPassword = GenerateTemporaryPassword();
 
         var existingUser = await identityService.FindByEmailAsync(email);
         if (existingUser != null)
@@ -48,11 +50,12 @@ internal class UserService(
             LastName = lastName,
             FacultyId = facultyId,
             IndexNumber = indexNumber,
-            Role = role,
-            Password = password
+            Role = role
         };
+        
+        await userNotifierService.SendAccountCreatedNotification(email, tempPassword);
 
-        var (success, errors) = await identityService.CreateUserAsync(createRequest, password);
+        var (success, errors) = await identityService.CreateUserAsync(createRequest, tempPassword);
 
         if (!success)
         {
@@ -186,5 +189,11 @@ internal class UserService(
     public async Task<int> CountUsers(UserFilterRequest filter)
     {
         return await identityService.CountAsync(filter);
+    }
+
+    private static string GenerateTemporaryPassword()
+    {
+        var guid = Guid.NewGuid().ToString().Replace("-", "");
+        return $"z{guid[..8].ToUpper()}1!";
     }
 }

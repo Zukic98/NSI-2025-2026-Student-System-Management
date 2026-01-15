@@ -16,7 +16,7 @@ namespace Identity.IntegrationTests
         private readonly IdentityApiFactory _factory;
         private readonly HttpClient _client;
         private const string TestEmail = "integration@test.com";
-        private const string TestPassword = "Password123!";
+        private readonly string TestPassword = IdentityApiFactory.TestPassword;
         private const string LoginEndpointPath = "/api/auth/login";
 
         public AuthIntegrationTests(IdentityApiFactory factory)
@@ -62,7 +62,7 @@ namespace Identity.IntegrationTests
             var loginRequest = new LoginRequestDto 
             { 
                 Email = TestEmail, 
-                Password = TestPassword 
+                Password = IdentityApiFactory.TestPassword
             };
 
             var response = await _client.PostAsJsonAsync(LoginEndpointPath, loginRequest);

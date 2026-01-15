@@ -7,7 +7,6 @@ public interface IUserService
 {
     Task<string> CreateUserAsync(
            string username,
-           string password,
            string firstName,
            string lastName,
            string email,

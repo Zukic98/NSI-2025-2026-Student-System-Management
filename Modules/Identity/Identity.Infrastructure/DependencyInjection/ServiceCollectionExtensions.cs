@@ -57,6 +57,8 @@ namespace Identity.Infrastructure.DependencyInjection
             services.AddScoped<IdentityDbContextSeed>();
 
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            
+            services.AddScoped<IUserNotifierService, UserNotifierService>();
 
             services.AddHostedService<IdentityStartupService>();
 

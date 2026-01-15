@@ -11,7 +11,6 @@ using Identity.Infrastructure.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
-using Notifications.API.Controllers;
 using Notifications.Infrastructure;
 using Support.API.Controllers;
 using Support.Infrastructure;
@@ -22,6 +21,7 @@ using University.Infrastructure.Db;
 using FluentValidation.AspNetCore;
 using FacultyController = Faculty.API.Controllers.FacultyController;
 using Common.Core.Tenant;
+using Notifications.Infrastructure.DependencyInjection;
 using Identity.Infrastructure.Entities;
 using Analytics.Infrastructure.Db;
 using Analytics.Infrastructure.Db.Seed;
@@ -39,7 +39,7 @@ builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddUniversityModule(builder.Configuration);
 builder.Services.AddFacultyModule(builder.Configuration);
 builder.Services.AddSupportModule(builder.Configuration);
-builder.Services.AddNotificationsModule();
+builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddAnalyticsModule(builder.Configuration);
 builder.Services.AddEventBus();
 
@@ -52,7 +52,6 @@ var moduleControllers = new[]
     typeof(UniversityController).Assembly,
     typeof(FacultyController).Assembly,
     typeof(SupportController).Assembly,
-    typeof(NotificationsController).Assembly,
     typeof(AnalyticsController).Assembly
 };
 
