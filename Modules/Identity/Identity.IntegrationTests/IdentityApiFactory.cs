@@ -1,19 +1,13 @@
 using Identity.Infrastructure.Db;
-using Identity.API.Controllers;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using EventBus.Core;
-using Identity.Application.Services;
-using Identity.Core.Entities;
-using Identity.Core.Services;
 
 namespace Identity.IntegrationTests
 {
-    public class IdentityApiFactory : WebApplicationFactory<AuthController>
+    public class IdentityApiFactory : WebApplicationFactory<Program>
     {
         private readonly IServiceProvider _efServiceProvider;
 
@@ -26,40 +20,29 @@ namespace Identity.IntegrationTests
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.ConfigureAppConfiguration((context, config) =>
+            builder.UseEnvironment("Development");
+
+
+            builder.UseSetting("JwtSettings:SigningKey", "VGVzdFNpZ25pbmdLZXkxMjM0NTY3ODkwMTIzNDU2Nzg=");
+            builder.UseSetting("JwtSettings:Issuer", "IntegrationTest");
+            builder.UseSetting("JwtSettings:Audience", "IntegrationTest");
+
+            builder.ConfigureServices((context, services) =>
             {
-                config.AddInMemoryCollection(new Dictionary<string, string?>
+                services.Configure<JwtSettings>(options =>
                 {
-                    {"JwtSettings:Issuer", "IntegrationTest"},
-                    {"JwtSettings:Audience", "IntegrationTest"},
-                    {"JwtSettings:SigningKey", Convert.ToBase64String(new byte[32])}
+                    options.Issuer = "IntegrationTest";
+                    options.Audience = "IntegrationTest";
+                    options.SigningKey = "VGVzdFNpZ25pbmdLZXkxMjM0NTY3ODkwMTIzNDU2Nzg=";
                 });
-            });
 
-            builder.ConfigureServices(services =>
-            {
-                var descriptor = services.SingleOrDefault(
-                    d => d.ServiceType ==
-                        typeof(DbContextOptions<AuthDbContext>));
+                var tenantContextMock = new Mock<IScopedTenantContext>();
+                tenantContextMock.Setup(x => x.Use(It.IsAny<Guid>()))
+                    .Returns(new Mock<IDisposable>().Object);
+                services.AddScoped<IScopedTenantContext>(_ => tenantContextMock.Object);
 
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
-
-                var contextDescriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(AuthDbContext));
-                if (contextDescriptor != null)
-                {
-                    services.Remove(contextDescriptor);
-                }
-
-                var optionsDescriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(DbContextOptions));
-                if (optionsDescriptor != null)
-                {
-                    services.Remove(optionsDescriptor);
-                }
+                var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AuthDbContext>));
+                if (dbContextDescriptor != null) services.Remove(dbContextDescriptor);
 
                 services.AddDbContext<AuthDbContext>(options =>
                 {
@@ -68,36 +51,13 @@ namespace Identity.IntegrationTests
                 });
 
                 services.AddScoped<IEventBus, TestEventBus>();
-                services.AddScoped<IUserNotifierService, TestUserNotifierService>();
-                services.AddScoped<IIdentityHasherService, TestHasherService>();
-
-                var sp = services.BuildServiceProvider();
-
-                using (var scope = sp.CreateScope())
-                {
-                    var scopedServices = scope.ServiceProvider;
-                    var db = scopedServices.GetRequiredService<AuthDbContext>();
-                    db.Database.EnsureCreated();
-                }
-
-                services.AddIdentity<ApplicationUser, IdentityRole>()
-                    .AddEntityFrameworkStores<AuthDbContext>()
-                    .AddDefaultTokenProviders();
             });
         }
 
-        // A simple test event bus that does nothing, sufficient for integration tests
         public class TestEventBus : IEventBus
         {
-            public Task Dispatch(IEvent domainEvent, CancellationToken ct = default)
-            {
-                return Task.CompletedTask;
-            }
-
-            public Task Dispatch(IEvent domainEvent, Guid tenantId, CancellationToken ct = default)
-            {
-                return Task.CompletedTask;
-            }
+            public Task Dispatch(IEvent domainEvent, CancellationToken ct = default) => Task.CompletedTask;
+            public Task Dispatch(IEvent domainEvent, Guid tenantId, CancellationToken ct = default) => Task.CompletedTask;
         }
 
         public class TestUserNotifierService : IUserNotifierService
