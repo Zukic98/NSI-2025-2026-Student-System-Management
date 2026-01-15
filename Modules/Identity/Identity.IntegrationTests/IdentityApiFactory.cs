@@ -1,14 +1,20 @@
+using Common.Core.Tenant;
 using Identity.Infrastructure.Db;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using EventBus.Core;
+using Identity.Application.Services;
+using Identity.Core.Configuration;
+using Moq;
 
 namespace Identity.IntegrationTests
 {
     public class IdentityApiFactory : WebApplicationFactory<Program>
     {
+        public const string TestPassword = "TestPassword123!";
+        
         private readonly IServiceProvider _efServiceProvider;
 
         public IdentityApiFactory()
@@ -41,6 +47,10 @@ namespace Identity.IntegrationTests
                     .Returns(new Mock<IDisposable>().Object);
                 services.AddScoped<IScopedTenantContext>(_ => tenantContextMock.Object);
 
+                var userNotifierDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IUserNotifierService));
+                if (userNotifierDescriptor != null) services.Remove(userNotifierDescriptor);
+                services.AddScoped<IUserNotifierService, TestUserNotifierService>();
+
                 var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<AuthDbContext>));
                 if (dbContextDescriptor != null) services.Remove(dbContextDescriptor);
 
@@ -62,31 +72,9 @@ namespace Identity.IntegrationTests
 
         public class TestUserNotifierService : IUserNotifierService
         {
-            public Task SendAccountCreatedNotification(User user, string tempPassword)
+            public Task SendAccountCreatedNotification(string email, string tempPassword)
             {
                 return Task.CompletedTask;
-            }
-        }
-
-        public class TestHasherService : IIdentityHasherService
-        {
-            public static readonly KeyValuePair<string, string> PredefinedHash = new("PASS1", "HASH1");
-            
-            public string HashPassword(string password)
-            {
-                // Whatever password comes in, hash it to P1/H1. This is to avoid undeterministic hashing
-                // imposed by salting.
-                return PredefinedHash.Value;
-            }
-
-            public bool VerifyPassword(User user, string password, string hashedPassword)
-            {
-                if (!PredefinedHash.Value.Equals(hashedPassword) || !PredefinedHash.Key.Equals(password))
-                {
-                    return false;
-                }
-
-                return PredefinedHash.Value.Equals(user.PasswordHash);
             }
         }
     }

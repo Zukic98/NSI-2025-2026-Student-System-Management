@@ -34,7 +34,7 @@ internal class UserService(
             throw new InvalidOperationException("Only Superadmins can assign the Admin role.");
         }
         
-        var tempPassword = Guid.NewGuid().ToString().Replace("-", "")[..6];
+        var tempPassword = GenerateTemporaryPassword();
 
         var existingUser = await identityService.FindByEmailAsync(email);
         if (existingUser != null)
@@ -53,9 +53,9 @@ internal class UserService(
             Role = role
         };
         
-        await userNotifierService.SendAccountCreatedNotification(newUser, tempPassword);
+        await userNotifierService.SendAccountCreatedNotification(email, tempPassword);
 
-        var (success, errors) = await identityService.CreateUserAsync(createRequest, password);
+        var (success, errors) = await identityService.CreateUserAsync(createRequest, tempPassword);
 
         if (!success)
         {
@@ -189,5 +189,11 @@ internal class UserService(
     public async Task<int> CountUsers(UserFilterRequest filter)
     {
         return await identityService.CountAsync(filter);
+    }
+
+    private static string GenerateTemporaryPassword()
+    {
+        var guid = Guid.NewGuid().ToString().Replace("-", "");
+        return $"z{guid[..8].ToUpper()}1!";
     }
 }

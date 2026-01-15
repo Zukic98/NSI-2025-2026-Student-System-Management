@@ -10,7 +10,7 @@ public class UserNotifierService(INotificationService notificationService) : IUs
     private const string UserName = "UserName";
     private const string TemporaryPassword = "TemporaryPassword";
 
-    public async Task SendAccountCreatedNotification(User user, string tempPassword)
+    public async Task SendAccountCreatedNotification(string email, string tempPassword)
     {
         var bodyTemplate = await File.ReadAllTextAsync(Path.Combine(
             AppContext.BaseDirectory,
@@ -19,12 +19,12 @@ public class UserNotifierService(INotificationService notificationService) : IUs
         ));
 
         var body = NotificationContentBuilder.FromTemplate(bodyTemplate)
-            .WithPlaceholder(UserName, ExtractUsernameFromEmail(user.Email))
+            .WithPlaceholder(UserName, ExtractUsernameFromEmail(email))
             .WithPlaceholder(TemporaryPassword, tempPassword)
             .ToBody();
 
         await notificationService.SendNotification(new Notification(
-            user.Email,
+            email,
             "UNSA | Account Created",
             body
         ));
