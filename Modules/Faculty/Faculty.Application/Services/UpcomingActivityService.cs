@@ -25,8 +25,8 @@ public class UpcomingActivityService : IUpcomingActivityService
 
     public async Task<List<UpcomingActivityDTO>> GetUpcomingActivitiesAsync(string userId)
     {
-        var courses = await _courseRepository.GetByTeacherUserIdAsync(userId);
-        var courseIds = courses.Select(c => c.Id).ToList();
+        var courses = await _courseRepository.GetProfessorCoursesWithStudentCountAsync(userId);
+        var courseIds = courses.Select(c => c.Course.Id).ToList();
 
         var assignments = await _assignmentRepository.GetUpcomingByCourseIdsAsync(courseIds);
         var exams = await _examRepository.GetUpcomingByCourseIdsAsync(courseIds);

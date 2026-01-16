@@ -1,5 +1,6 @@
 import type { Course } from '../component/faculty/courses/types/Course';
 import type { CourseDTO } from '../dto/CourseDTO';
+import type { ProfessorCourseDTO } from '../dto/ProfessorCourseDTO';
 import type {
     AvailableStudentExamDto,
     ExamRegistrationRequestDto,
@@ -130,5 +131,9 @@ export class API {
 
     async getUpcomingActivities(): Promise<any> {
         return this.get<any>('/api/faculty/courses/upcoming-activities');
+    }
+
+    async getProfessorCourses(): Promise<ProfessorCourseDTO[]> {
+        return this.get<ProfessorCourseDTO[]>('/api/faculty/courses/assigned');
     }
 }

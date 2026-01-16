@@ -3,11 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Faculty.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
-using Microsoft.AspNetCore.Mvc;
-
-using System.Collections.Generic;   
-
-
 namespace Faculty.API.Controllers
 {
     [ApiController]
@@ -40,12 +35,13 @@ namespace Faculty.API.Controllers
             => Ok(await _service.GetAllAsync());
 
         [HttpGet("assigned")]
+        [Authorize(Roles = "Teacher")]
         public async Task<IActionResult> GetAssignedToTeacher()
         {
             try
             {
                 var userId = GetCurrentUserId();
-                var result = await _service.GetByTeacherAsync(userId);
+                var result = await _service.GetProfessorCoursesAsync(userId);
                 return Ok(result);
             }
             catch (UnauthorizedAccessException ex)
