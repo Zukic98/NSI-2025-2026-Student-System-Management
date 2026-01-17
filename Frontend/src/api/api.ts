@@ -49,8 +49,8 @@ export class API {
         return this.post<TwoFAConfirmResponse>("/api/auth/verify-2fa-setup", { code })
     }
 
-    async verifyTwoFactorLogin(code: string): Promise<TwoFAConfirmResponse> {
-        return this.post<TwoFAConfirmResponse>("/api/auth/verify-2fa", { code })
+    async verifyTwoFactorLogin(code: string, twoFactorToken: string): Promise<TwoFAConfirmResponse> {
+        return this.#restClient.post('/api/auth/verify-2fa', { code, twoFactorToken });
     }
 
     async getAllCourses(): Promise<Course[]> {

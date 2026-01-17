@@ -1,4 +1,5 @@
 using Identity.Application.Interfaces;
+using Identity.Application.Security;
 using Identity.Application.Services;
 using Identity.Core.Configuration;
 using Identity.Core.Interfaces.Repositories;
@@ -52,7 +53,9 @@ namespace Identity.Infrastructure.DependencyInjection
             services.AddScoped<IAuthService, AuthService>();
             services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
-            services.AddScoped<IdentityDbContextSeed>();
+            services.AddScoped<ITwoFactorAuthService, TwoFactorAuthService>();
+            services.AddSingleton<ITwoFactorLoginSessionStore, TwoFactorLoginSessionStore>();
+
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             
             services.AddScoped<IUserNotifierService, UserNotifierService>();
