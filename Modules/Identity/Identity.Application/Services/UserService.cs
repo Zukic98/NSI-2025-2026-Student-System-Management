@@ -11,22 +11,30 @@ namespace Identity.Application.Services;
 
 internal class UserService(
     IIdentityService identityService,
-    IEventBus eventBus) : IUserService
+    IEventBus eventBus,
+    IUserNotifierService userNotifierService) : IUserService
 {
     public async Task<string> CreateUserAsync(
        string username,
-       string password,
        string firstName,
        string lastName,
        string email,
        Guid facultyId,
        string? indexNumber,
-       UserRole role)
+       UserRole role,
+       UserRole? requesterRole = null)
     {
-        if (role == UserRole.Superadmin || role == UserRole.Admin)
+        if (role == UserRole.Superadmin)
         {
-            throw new InvalidOperationException("Admin users are restricted from assigning Superadmin or Admin roles.");
+            throw new InvalidOperationException("Assigning the Superadmin role is not allowed.");
         }
+
+        if (role == UserRole.Admin && requesterRole != UserRole.Superadmin)
+        {
+            throw new InvalidOperationException("Only Superadmins can assign the Admin role.");
+        }
+        
+        var tempPassword = GenerateTemporaryPassword();
 
         var existingUser = await identityService.FindByEmailAsync(email);
         if (existingUser != null)
@@ -42,12 +50,13 @@ internal class UserService(
             LastName = lastName,
             FacultyId = facultyId,
             IndexNumber = indexNumber,
-            Role = role,
-            Password = password
+            Role = role
         };
-
-        var (success, errors) = await identityService.CreateUserAsync(createRequest, password);
         
+        await userNotifierService.SendAccountCreatedNotification(email, tempPassword);
+
+        var (success, errors) = await identityService.CreateUserAsync(createRequest, tempPassword);
+
         if (!success)
         {
             throw new Exception($"User creation failed: {string.Join(", ", errors)}");
@@ -118,7 +127,7 @@ internal class UserService(
             throw new InvalidOperationException("Admin users are restricted from assigning Superadmin or Admin roles.");
         }
 
-        request.Id = userId; 
+        request.Id = userId;
         var result = await identityService.UpdateUserAsync(request);
 
         if (result && previousRole != request.Role)
@@ -149,31 +158,42 @@ internal class UserService(
             FacultyId = user.FacultyId,
             Role = user.Role,
             IndexNumber = user.IndexNumber,
-            Status = UserStatus.Inactive 
+            Status = UserStatus.Inactive
         };
 
         return await identityService.UpdateUserAsync(updateRequest);
     }
 
-   public async Task<bool> ChangePasswordAsync(string userId, string newPassword)
-{
-    var user = await identityService.FindByIdAsync(userId);
-    if (user == null) return false;
-
-    var updateRequest = new UpdateUserRequest
+    public async Task<bool> ChangePasswordAsync(string userId, string newPassword)
     {
-        Id = userId,
-        FirstName = user.FirstName,
-        LastName = user.LastName,
-        Username = user.Username,
-        Email = user.Email,
-        FacultyId = user.FacultyId,
-        Role = user.Role,
-        Status = user.Status,
-        IndexNumber = user.IndexNumber,
-        Password = newPassword
-    };
+        var user = await identityService.FindByIdAsync(userId);
+        if (user == null) return false;
 
-    return await identityService.UpdateUserAsync(updateRequest);
-}
+        var updateRequest = new UpdateUserRequest
+        {
+            Id = userId,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Username = user.Username,
+            Email = user.Email,
+            FacultyId = user.FacultyId,
+            Role = user.Role,
+            Status = user.Status,
+            IndexNumber = user.IndexNumber,
+            Password = newPassword
+        };
+
+        return await identityService.UpdateUserAsync(updateRequest);
+    }
+
+    public async Task<int> CountUsers(UserFilterRequest filter)
+    {
+        return await identityService.CountAsync(filter);
+    }
+
+    private static string GenerateTemporaryPassword()
+    {
+        var guid = Guid.NewGuid().ToString().Replace("-", "");
+        return $"z{guid[..8].ToUpper()}1!";
+    }
 }

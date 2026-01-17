@@ -7,13 +7,13 @@ public interface IUserService
 {
     Task<string> CreateUserAsync(
            string username,
-           string password,
            string firstName,
            string lastName,
            string email,
            Guid facultyId,
            string? indexNumber,
-           UserRole role
+           UserRole role,
+           UserRole? requesterRole = null
        );
 
     Task<UserListResponse> GetAllUsersAsync(UserFilterRequest filter);
@@ -29,4 +29,6 @@ public interface IUserService
     Task<bool> DeactivateUserAsync(string userId);
 
     Task<bool> ChangePasswordAsync(string userId, string newPassword);
+
+    Task<int> CountUsers(UserFilterRequest filter);
 }

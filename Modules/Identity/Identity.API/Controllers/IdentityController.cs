@@ -30,17 +30,19 @@ namespace Identity.API.Controllers
                 return BadRequest(ModelState);
             }
 
+            var requesterRole = GetCurrentUserRole();
+
             try
             {
                 var userId = await _userService.CreateUserAsync(
                     request.Username,
-                    request.Password,
                     request.FirstName,
                     request.LastName,
                     request.Email,
                     request.FacultyId,
                     request.IndexNumber,
-                    request.Role
+                    request.Role,
+                    requesterRole
                 );
 
                 return CreatedAtAction(
@@ -100,8 +102,8 @@ namespace Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ChangeCurrentPassword([FromBody] ChangePasswordRequest request)
         {
-            var userId = User.FindFirstValue("userId"); 
-            
+            var userId = User.FindFirstValue("userId");
+
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized();
@@ -269,6 +271,16 @@ namespace Identity.API.Controllers
         {
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             return userRole == UserRole.Admin.ToString() || userRole == UserRole.Superadmin.ToString();
+        }
+
+        private UserRole? GetCurrentUserRole()
+        {
+            var roleStr = User.FindFirstValue(ClaimTypes.Role);
+            if (!string.IsNullOrEmpty(roleStr) && Enum.TryParse<UserRole>(roleStr, out var role))
+            {
+                return role;
+            }
+            return null;
         }
 
         private bool IsSelf(string userId)

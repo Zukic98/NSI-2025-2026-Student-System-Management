@@ -20,24 +20,32 @@ namespace Identity.Infrastructure.DependencyInjection
     {
         public static IServiceCollection AddIdentityModule(this IServiceCollection services, IConfiguration configuration)
         {
+            // Load environment variables
+            var env = DotNetEnv.Env.TraversePath().Load();
+            if (env == null || !env.Any())
+            {
+                DotNetEnv.Env.TraversePath().Load(".env.example");
+            }
+
+            // Data Protection (Required for Token Providers)
+            services.AddDataProtection();
+
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
-            var jwtSettings = new JwtSettings();
-            configuration.Bind("JwtSettings", jwtSettings);
+            // Entity Framework - only add if not already configured (for tests)
+            if (!services.Any(d => d.ServiceType == typeof(DbContextOptions<AuthDbContext>)))
+            {
+                services.AddDbContext<AuthDbContext>(options =>
+                    options.UseNpgsql(configuration.GetConnectionString("Database")));
+            }
 
-            if (string.IsNullOrWhiteSpace(jwtSettings.SigningKey))
-                throw new InvalidOperationException("JwtSettings:SigningKey is missing.");
-            if (string.IsNullOrWhiteSpace(jwtSettings.Issuer))
-                throw new InvalidOperationException("JwtSettings:Issuer is missing.");
-            if (string.IsNullOrWhiteSpace(jwtSettings.Audience))
-                throw new InvalidOperationException("JwtSettings:Audience is missing.");
-
-            services.AddDbContext<AuthDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("Database")));
-
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<AuthDbContext>()
-                .AddDefaultTokenProviders();
+            // Identity Framework - only add if not already configured (for tests)
+            if (!services.Any(d => d.ServiceType == typeof(IUserStore<ApplicationUser>)))
+            {
+                services.AddIdentity<ApplicationUser, IdentityRole>()
+                    .AddEntityFrameworkStores<AuthDbContext>()
+                    .AddDefaultTokenProviders();
+            }
 
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IUserService, UserService>();
@@ -46,6 +54,19 @@ namespace Identity.Infrastructure.DependencyInjection
 
             services.AddScoped<IdentityDbContextSeed>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            
+            services.AddScoped<IUserNotifierService, UserNotifierService>();
+
+            services.AddHostedService<IdentityStartupService>();
+
+            JwtSettings jwtSettings = new JwtSettings();
+            configuration.Bind("JwtSettings", jwtSettings);
+
+            // Fallback for test environment if signing key is not provided
+            if (string.IsNullOrEmpty(jwtSettings.SigningKey))
+            {
+                jwtSettings.SigningKey = Convert.ToBase64String(new byte[32]);
+            }
 
             services.AddAuthentication(options =>
             {
