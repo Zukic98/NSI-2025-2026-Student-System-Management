@@ -15,8 +15,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Notifications.API.Controllers;
-using Notifications.Infrastructure;
 using Support.API.Controllers;
 using Support.Infrastructure;
 using Support.Infrastructure.Db;
@@ -24,9 +22,7 @@ using University.API.Controllers;
 using University.Infrastructure;
 using University.Infrastructure.Db;
 using FacultyController = Faculty.API.Controllers.FacultyController;
-using Common.Core.Tenant;
 using Notifications.Infrastructure.DependencyInjection;
-using Identity.Infrastructure.Entities;
 using Analytics.Infrastructure.Db;
 using Analytics.Infrastructure.Db.Seed;
 
