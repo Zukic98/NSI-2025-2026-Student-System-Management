@@ -24,13 +24,17 @@ import UserDetailsModal from "./UserDetailsModal";
 
 import { fetchUsers, getAvailableFaculties } from "../../service/identityApi";
 import type { User, Role } from "../../service/identityApi";
+import { useAPI } from "../../context/services";
+import { useAuthContext } from "../../init/auth";
 
 import "../../styles/coreui-custom.css";
 
-const ROLES: Role[] = ["Professor", "Assistant", "Student", "Staff"];
+const ROLES: Role[] = ["Professor", "Assistant", "Student", "Admin", "Superadmin"];
 const availableFaculties = getAvailableFaculties();
 
 const UserManagementPage: React.FC = () => {
+  const api = useAPI();
+  const { authInfo } = useAuthContext();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -44,6 +48,13 @@ const UserManagementPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [searchText, setSearchText] = useState("");
 
+  // Enforce faculty selection for Admin
+  useEffect(() => {
+    if (authInfo?.role === 'Admin' && authInfo.tenantId) {
+      setSelectedFaculty(authInfo.tenantId);
+    }
+  }, [authInfo]);
+
   // Debug: log when create modal open state changes
   useEffect(() => {
     // eslint-disable-next-line no-console
@@ -53,14 +64,14 @@ const UserManagementPage: React.FC = () => {
   const fetchUserList = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchUsers();
+      const data = await fetchUsers(api);
       setUsers(data);
     } catch {
       setUsers([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [api]);
 
   // When a new user is created, append it immediately for instant feedback,
   // then refresh the list from the mock API to keep authoritative state.
@@ -113,9 +124,23 @@ const UserManagementPage: React.FC = () => {
         u.lastName.toLowerCase().includes(q) ||
         u.email.toLowerCase().includes(q);
 
-      return fac && role && text;
+      // Visibility Logic
+      let isVisible = true;
+      if (authInfo?.role === 'Admin') {
+        // Admin only sees Professor/Student/Assistant AND only from their own faculty
+        // Note: authInfo.tenantId holds the faculty GUID for the logged-in admin
+        isVisible =
+          u.role !== 'Superadmin' &&
+          u.role !== 'Admin' &&
+          u.facultyId === authInfo.tenantId;
+      } else if (authInfo?.role === 'Superadmin') {
+        // Superadmin sees ONLY Admins (no students/teachers, and no other superadmins)
+        isVisible = u.role === 'Admin';
+      }
+
+      return fac && role && text && isVisible;
     });
-  }, [users, selectedFaculty, selectedRole, searchText]);
+  }, [users, selectedFaculty, selectedRole, searchText, authInfo]);
 
   return (
     <div>
@@ -150,8 +175,9 @@ const UserManagementPage: React.FC = () => {
                       <CFormSelect
                         id="filter-faculty"
                         name="filterFaculty"
-                        value={selectedFaculty}
+                        value={authInfo?.role === 'Admin' ? authInfo.tenantId : selectedFaculty}
                         onChange={(e) => setSelectedFaculty(e.target.value)}
+                        disabled={authInfo?.role === 'Admin'}
                         className="top-select"
                       >
                         <option value="">All</option>
@@ -171,7 +197,11 @@ const UserManagementPage: React.FC = () => {
                         className="top-select"
                       >
                         <option value="">All</option>
-                        {ROLES.map((r) => (
+                        {ROLES.filter(r => {
+                          if (authInfo?.role === 'Admin') return r !== 'Superadmin' && r !== 'Admin';
+                          if (authInfo?.role === 'Superadmin') return r === 'Admin';
+                          return false;
+                        }).map((r) => (
                           <option key={r}>{r}</option>
                         ))}
                       </CFormSelect>
