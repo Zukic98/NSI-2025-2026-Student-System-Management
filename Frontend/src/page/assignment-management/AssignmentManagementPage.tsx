@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CAlert } from "@coreui/react"
+import { CButton, CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CAlert, CInputGroup, CInputGroupText, CFormInput, CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell } from "@coreui/react"
 import styles from "./AssignmentManagement.module.css"
 import type { Assignment, AssignmentDTO } from "../../models/assignments/Assignments.types"
 import mockAPI from "./mockApi"
 import AssignmentForm from "./AssignmentForm"
 //import { useAPI } from "../../context/services" uncomment when BE is ready
 import CIcon from "@coreui/icons-react"
-import { cilCheckCircle } from "@coreui/icons"
+import { cilCheckCircle, cilPencil, cilSearch, cilTrash } from "@coreui/icons"
 
 export default function AssignmentManagement() {
   //const api = useAPI(); uncomment when BE is ready
@@ -45,6 +45,7 @@ export default function AssignmentManagement() {
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({})
 
   const observerTarget = useRef<HTMLDivElement>(null)
 
@@ -142,6 +143,27 @@ export default function AssignmentManagement() {
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
+  
+  const validateEditForm = (): boolean => {
+    const newErrors: Record<string, string> = {}
+
+    if (!editForm.course) {
+      newErrors.course = "Course is required"
+    }
+    if (!editForm.name.trim()) {
+      newErrors.name = "Name is required"
+    }
+    if (!editForm.dueDate) {
+      newErrors.dueDate = "Due date is required"
+    } 
+
+    if (!editForm.maxPoints || editForm.maxPoints <= 0) {
+      newErrors.maxPoints = "Max points must be a positive number"
+    }
+
+    setEditErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleCreate = async () => {
     if (!validateForm()) {
@@ -191,11 +213,16 @@ export default function AssignmentManagement() {
       dueDate: new Date(assignment.dueDate),
       maxPoints: assignment.maxPoints,
     })
+    setEditErrors({})
     setShowEditModal(true)
   }
 
   const handleSaveEdit = async () => {
     if (!editingAssignment) return
+
+     if (!validateEditForm()) {
+      return
+    }
 
     try {
 
@@ -286,99 +313,77 @@ export default function AssignmentManagement() {
             />
 
             <div className={styles.buttonContainer}>
-              <button onClick={handleCreate} className={styles.createButton}>
+              <CButton onClick={handleCreate} className={styles.createButton}>
                 Create
-              </button>
+              </CButton>
             </div>
           </div>
         </div>
 
-        {/* Edit Assignments Section */}
+       {/* Edit Assignments Section */}
         <div className={styles.sectionCard}>
           <div className={styles.sectionCardBody}>
             <h2 className={styles.sectionTitle}>Edit Assignments</h2>
 
             <div className={styles.searchContainer}>
-              <span className={styles.searchIcon}>
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={styles.searchInput}
-              />
+              <CInputGroup>
+                <CInputGroupText>
+                  <CIcon icon={cilSearch} />
+                </CInputGroupText>
+                <CFormInput
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </CInputGroup>
             </div>
 
             <div className={styles.tableContainer}>
-              <table className={styles.table}>
-                <thead className={styles.tableHeader}>
-                  <tr>
-                    <th className={styles.tableHeaderCell}>Course</th>
-                    <th className={styles.tableHeaderCell}>Name</th>
-                    <th className={styles.tableHeaderCell}>Faculty</th>
-                    <th className={styles.tableHeaderCell}>Max points</th>
-                    <th className={styles.tableHeaderCell}>Major</th>
-                    <th className={`${styles.tableHeaderCell} ${styles.actionsCell}`}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <CTable hover className={styles.table}>
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell>Course</CTableHeaderCell>
+                    <CTableHeaderCell>Name</CTableHeaderCell>
+                    <CTableHeaderCell>Max points</CTableHeaderCell>
+                    <CTableHeaderCell>Major</CTableHeaderCell>
+                    <CTableHeaderCell className={styles.actionsCell}>Actions</CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
                   {assignments.map((assignment) => (
-                    <tr key={assignment.id} className={styles.tableRow}>
-                      <td className={styles.tableCell}>{assignment.course}</td>
-                      <td className={styles.tableCell}>{assignment.name}</td>
-                      <td className={styles.tableCell}>{assignment.faculty}</td>
-                      <td className={styles.tableCell}>{assignment.maxPoints}</td>
-                      <td className={styles.tableCell}>{assignment.major}</td>
-                      <td className={`${styles.tableCell} ${styles.actionsCell}`}>
+                    <CTableRow key={assignment.id}>
+                      <CTableDataCell>{assignment.course}</CTableDataCell>
+                      <CTableDataCell>{assignment.name}</CTableDataCell>
+                      <CTableDataCell>{assignment.maxPoints}</CTableDataCell>
+                      <CTableDataCell>{assignment.major}</CTableDataCell>
+                      <CTableDataCell className={styles.actionsCell}>
                         <div className={styles.actionButtonsContainer}>
-                          <button
+                          <CButton
+                            color="light"
+                            size="sm"
                             onClick={() => handleEdit(assignment)}
-                            className={`${styles.actionButton} ${styles.editButton}`}
                             title="Edit"
-                            type="button"
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </button>
-                          <button
+                            <CIcon icon={cilPencil} />
+                          </CButton>
+                          <CButton
+                            color="light"
+                            size="sm"
                             onClick={() => handleDeleteClick(assignment.id)}
-                            className={`${styles.actionButton} ${styles.deleteButton}`}
                             title="Delete"
-                            type="button"
                           >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
+                            <CIcon icon={cilTrash} />
+                          </CButton>
                         </div>
-                      </td>
-                    </tr>
+                      </CTableDataCell>
+                    </CTableRow>
                   ))}
-                </tbody>
-              </table>
+                </CTableBody>
+              </CTable>
               <div ref={observerTarget} className={styles.scrollTrigger}>
                 {loading && <div className={styles.loadingIndicator}>Loading more...</div>}
+                {!hasMore && assignments.length > 0 && <div className={styles.endMessage}>No more assignments</div>}
               </div>
             </div>
           </div>
@@ -395,7 +400,7 @@ export default function AssignmentManagement() {
         <CModalBody>
           <AssignmentForm
             formData={editForm}
-            errors={{}}
+            errors={editErrors}
             onCourseChange={(value: any) => setEditForm({ ...editForm, course: value })}
             onNameChange={(value: any) => setEditForm({ ...editForm, name: value })}
             onDescriptionChange={(value: any) => setEditForm({ ...editForm, description: value })}

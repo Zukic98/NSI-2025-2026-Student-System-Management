@@ -10,7 +10,6 @@ export interface Assignment {
   id: string
   course: string
   name: string
-  faculty: string
   maxPoints: number
   major: string
   description: string
