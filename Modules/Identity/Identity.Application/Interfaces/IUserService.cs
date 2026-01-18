@@ -7,7 +7,6 @@ public interface IUserService
 {
     Task<string> CreateUserAsync(
            string username,
-           string password,
            string firstName,
            string lastName,
            string email,
@@ -21,12 +20,9 @@ public interface IUserService
 
 
 
-    Task<bool> DeleteUserAsync(string userId);
-
+    Task<bool> DeleteUserAsync(string userId, UserRole? requesterRole = null);
     Task<UserResponse?> GetUserByIdAsync(string userId);
-
-    Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request);
-
+    Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request, UserRole? requesterRole = null);
     Task<bool> DeactivateUserAsync(string userId);
 
     Task<bool> ChangePasswordAsync(string userId, string newPassword);

@@ -11,11 +11,11 @@ namespace Identity.Application.Services;
 
 internal class UserService(
     IIdentityService identityService,
-    IEventBus eventBus) : IUserService
+    IEventBus eventBus,
+    IUserNotifierService userNotifierService) : IUserService
 {
     public async Task<string> CreateUserAsync(
        string username,
-       string password,
        string firstName,
        string lastName,
        string email,
@@ -33,6 +33,8 @@ internal class UserService(
         {
             throw new InvalidOperationException("Only Superadmins can assign the Admin role.");
         }
+        
+        var tempPassword = GenerateTemporaryPassword();
 
         var existingUser = await identityService.FindByEmailAsync(email);
         if (existingUser != null)
@@ -48,11 +50,12 @@ internal class UserService(
             LastName = lastName,
             FacultyId = facultyId,
             IndexNumber = indexNumber,
-            Role = role,
-            Password = password
-        };
+            Role = role
+            };
 
-        var (success, errors) = await identityService.CreateUserAsync(createRequest, password);
+        await userNotifierService.SendAccountCreatedNotification(email, tempPassword);
+
+        var (success, errors) = await identityService.CreateUserAsync(createRequest, tempPassword);
 
         if (!success)
         {
@@ -94,10 +97,16 @@ internal class UserService(
         return await identityService.FindByIdAsync(userId);
     }
 
-    public async Task<bool> DeleteUserAsync(string userId)
+    public async Task<bool> DeleteUserAsync(string userId, UserRole? requesterRole = null)
     {
         var user = await identityService.FindByIdAsync(userId);
         if (user == null) return false;
+
+        // Security Check: Admins cannot delete other Admins or Superadmins
+        if (requesterRole == UserRole.Admin && (user.Role == UserRole.Admin || user.Role == UserRole.Superadmin))
+        {
+             throw new UnauthorizedAccessException("Admins cannot delete Admin or Superadmin accounts.");
+        }
 
         if (user.Role == UserRole.Superadmin)
         {
@@ -112,16 +121,25 @@ internal class UserService(
         return result;
     }
 
-    public async Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request)
+    public async Task<bool> UpdateUserAsync(string userId, UpdateUserRequest request, UserRole? requesterRole = null)
     {
         var user = await identityService.FindByIdAsync(userId);
         if (user == null) return false;
 
         var previousRole = user.Role;
 
-        if (request.Role == UserRole.Superadmin || request.Role == UserRole.Admin)
+        // Security Check: Admins cannot update other Admins or Superadmins
+        if (requesterRole == UserRole.Admin)
         {
-            throw new InvalidOperationException("Admin users are restricted from assigning Superadmin or Admin roles.");
+             if (user.Role == UserRole.Admin || user.Role == UserRole.Superadmin)
+             {
+                 throw new UnauthorizedAccessException("Admins cannot modify Admin or Superadmin accounts.");
+             }
+             // Admins cannot PROMOTE someone to Admin or Superadmin
+             if (request.Role == UserRole.Admin || request.Role == UserRole.Superadmin)
+             {
+                 throw new UnauthorizedAccessException("Admins cannot assign Admin or Superadmin roles.");
+             }
         }
 
         request.Id = userId;
@@ -177,7 +195,8 @@ internal class UserService(
             Role = user.Role,
             Status = user.Status,
             IndexNumber = user.IndexNumber,
-            Password = newPassword
+            Password = newPassword,
+            ForcePasswordChange = false
         };
 
         return await identityService.UpdateUserAsync(updateRequest);
@@ -186,5 +205,11 @@ internal class UserService(
     public async Task<int> CountUsers(UserFilterRequest filter)
     {
         return await identityService.CountAsync(filter);
+    }
+
+    private static string GenerateTemporaryPassword()
+    {
+        var guid = Guid.NewGuid().ToString().Replace("-", "");
+        return $"z{guid[..8].ToUpper()}1!";
     }
 }

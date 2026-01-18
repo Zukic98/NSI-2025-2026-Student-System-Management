@@ -1,28 +1,28 @@
 using Analytics.API.Controllers;
 using Analytics.Infrastructure;
+using Application.Seed;
+using Common.Core.Tenant;
 using Common.Infrastructure.DependencyInjection;
 using EventBus.Infrastructure;
-using Application.Seed;
 using Faculty.Infrastructure.Db;
 using Faculty.Infrastructure.DependencyInjection;
+using FluentValidation.AspNetCore;
 using Identity.API.Controllers;
 using Identity.Infrastructure.Db;
 using Identity.Infrastructure.DependencyInjection;
+using Identity.Infrastructure.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
-using Notifications.API.Controllers;
-using Notifications.Infrastructure;
+using Microsoft.OpenApi.Models;
 using Support.API.Controllers;
 using Support.Infrastructure;
 using Support.Infrastructure.Db;
 using University.API.Controllers;
 using University.Infrastructure;
 using University.Infrastructure.Db;
-using FluentValidation.AspNetCore;
 using FacultyController = Faculty.API.Controllers.FacultyController;
-using Common.Core.Tenant;
-using Identity.Infrastructure.Entities;
+using Notifications.Infrastructure.DependencyInjection;
 using Analytics.Infrastructure.Db;
 using Analytics.Infrastructure.Db.Seed;
 
@@ -36,10 +36,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services from modules
 builder.Services.AddCommonModule();
 builder.Services.AddIdentityModule(builder.Configuration);
+builder.Services.AddSupportModule(builder.Configuration);
 builder.Services.AddUniversityModule(builder.Configuration);
 builder.Services.AddFacultyModule(builder.Configuration);
-builder.Services.AddSupportModule(builder.Configuration);
-builder.Services.AddNotificationsModule();
+builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddAnalyticsModule(builder.Configuration);
 builder.Services.AddEventBus();
 
@@ -49,10 +49,9 @@ var mvcBuilder = builder.Services.AddControllers();
 var moduleControllers = new[]
 {
     typeof(IdentityController).Assembly,
+    typeof(SupportController).Assembly,
     typeof(UniversityController).Assembly,
     typeof(FacultyController).Assembly,
-    typeof(SupportController).Assembly,
-    typeof(NotificationsController).Assembly,
     typeof(AnalyticsController).Assembly
 };
 
@@ -67,50 +66,56 @@ builder.Services.AddFluentValidationClientsideAdapters();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(c =>
 {
-    // Load all XML documentation files (e.g. Application.xml, Identity.API.xml)
+    // xml docs
     var xmlFiles = Directory.GetFiles(AppContext.BaseDirectory, "*.xml");
-
     foreach (var xmlPath in xmlFiles)
     {
         c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
     }
 
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Unesite token u formatu: Bearer {vaš_token}"
-    });
-
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
+    // bearer jwt - adds the lock + authorize button
+    c.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter: Bearer {your JWT token}",
         }
-    });
+    );
+
+    c.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer",
+                    },
+                },
+                Array.Empty<string>()
+            },
+        }
+    );
 });
 
 var app = builder.Build();
+app.UseMiddleware<Application.GlobalExceptionHandlingMiddleware>();
 
 // Put false if you dont want to apply migrations on start
 var applyMigrations = true;
 
 if (applyMigrations)
 {
-
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
@@ -142,6 +147,17 @@ if (applyMigrations)
                 Console.WriteLine($"Error migrating IdentityDbContext: {ex.Message}");
             }
 
+            // Support module
+            try
+            {
+                var supportDb = services.GetRequiredService<SupportDbContext>();
+                supportDb.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error migrating SupportDbContext: {ex.Message}");
+            }
+
             // University module
             try
             {
@@ -154,17 +170,6 @@ if (applyMigrations)
             catch (Exception ex)
             {
                 Console.WriteLine($"Error migrating UniversityDbContext: {ex.Message}");
-            }
-
-            // Support module
-            try
-            {
-                var supportDb = services.GetRequiredService<SupportDbContext>();
-                supportDb.Database.Migrate();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error migrating SupportDbContext: {ex.Message}");
             }
 
             // Faculty module
@@ -219,5 +224,35 @@ app.UseSwaggerUI();
 
 // Map controllers
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet(
+        "/__routes",
+        (Microsoft.AspNetCore.Routing.EndpointDataSource ds) =>
+        {
+            var routes = ds
+                .Endpoints.OfType<RouteEndpoint>()
+                .Select(e =>
+                {
+                    var methods = e
+                        .Metadata.OfType<Microsoft.AspNetCore.Routing.HttpMethodMetadata>()
+                        .FirstOrDefault()
+                        ?.HttpMethods;
+
+                    return new
+                    {
+                        pattern = e.RoutePattern.RawText,
+                        methods = methods?.ToArray() ?? Array.Empty<string>(),
+                        displayName = e.DisplayName,
+                    };
+                })
+                .OrderBy(r => r.pattern)
+                .ToList();
+
+            return Results.Ok(routes);
+        }
+    );
+}
 
 app.Run();

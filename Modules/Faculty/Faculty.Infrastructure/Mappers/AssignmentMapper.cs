@@ -3,30 +3,62 @@ using Faculty.Infrastructure.Schemas;
 
 namespace Faculty.Infrastructure.Mappers;
 
+/// <summary>
+/// Maps between Assignment domain entities and persistence entities.
+/// </summary>
 public static class AssignmentMapper
 {
-    public static Assignment ToDomain(AssignmentSchema schema, bool includeRelationships = false)
+    public static AssignmentSchema ToPersistence(Assignment domain)
     {
-        if (schema == null) return null!;
+        if (domain == null)
+            throw new ArgumentNullException(nameof(domain));
+
+        return new AssignmentSchema
+        {
+            Id = domain.Id,
+            FacultyId = domain.FacultyId,
+            CourseId = domain.CourseId,
+            Name = domain.Name,
+            Description = domain.Description,
+            DueDate = domain.DueDate,
+            MaxPoints = domain.MaxPoints,
+            CreatedAt = domain.CreatedAt,
+            UpdatedAt = domain.UpdatedAt
+        };
+    }
+
+    public static Assignment ToDomain(AssignmentSchema persistence, bool includeRelationships = false)
+    {
+        if (persistence == null)
+            throw new ArgumentNullException(nameof(persistence));
 
         var domain = new Assignment
         {
-            Id = schema.Id,
-            FacultyId = schema.FacultyId,
-            CourseId = schema.CourseId,
-            Name = schema.Name,
-            Description = schema.Description,
-            DueDate = schema.DueDate,
-            MaxPoints = schema.MaxPoints,
-            CreatedAt = schema.CreatedAt,
-            UpdatedAt = schema.UpdatedAt
+            Id = persistence.Id,
+            FacultyId = persistence.FacultyId,
+            CourseId = persistence.CourseId,
+            Name = persistence.Name,
+            Description = persistence.Description,
+            DueDate = persistence.DueDate,
+            MaxPoints = persistence.MaxPoints,
+            CreatedAt = persistence.CreatedAt,
+            UpdatedAt = persistence.UpdatedAt,
+            StudentAssignments = new List<StudentAssignment>()
         };
 
-        if (includeRelationships && schema.StudentAssignments != null)
+        if (includeRelationships)
         {
-            domain.StudentAssignments = schema.StudentAssignments
-                .Select(sa => ToDomainStudentAssignment(sa))
-                .ToList();
+            if (persistence.Course != null)
+            {
+                domain.Course = CourseMapper.ToDomain(persistence.Course, false);
+            }
+
+            if (persistence.StudentAssignments != null)
+            {
+                domain.StudentAssignments = persistence.StudentAssignments
+                    .Select(ToDomainStudentAssignment)
+                    .ToList();
+            }
         }
 
         return domain;
@@ -50,8 +82,24 @@ public static class AssignmentMapper
         };
     }
 
-    public static List<Assignment> ToDomainCollection(IEnumerable<AssignmentSchema> schemas, bool includeRelationships = false)
+    public static IEnumerable<AssignmentSchema> ToPersistenceCollection(IEnumerable<Assignment> domainCollection)
+        => domainCollection?.Select(ToPersistence) ?? Enumerable.Empty<AssignmentSchema>();
+
+    public static IEnumerable<Assignment> ToDomainCollection(IEnumerable<AssignmentSchema> persistenceCollection, bool includeRelationships = false)
+        => persistenceCollection?.Select(p => ToDomain(p, includeRelationships)) ?? Enumerable.Empty<Assignment>();
+
+    public static void UpdatePersistence(AssignmentSchema persistence, Assignment domain)
     {
-        return schemas.Select(s => ToDomain(s, includeRelationships)).ToList();
+        if (persistence == null)
+            throw new ArgumentNullException(nameof(persistence));
+        if (domain == null)
+            throw new ArgumentNullException(nameof(domain));
+
+        persistence.CourseId = domain.CourseId;
+        persistence.Name = domain.Name;
+        persistence.Description = domain.Description;
+        persistence.DueDate = domain.DueDate;
+        persistence.MaxPoints = domain.MaxPoints;
+        persistence.UpdatedAt = DateTime.UtcNow;
     }
 }

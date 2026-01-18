@@ -9,4 +9,6 @@ public interface IAssignmentRepository
     Task<bool> IsStudentEnrolledAsync(int studentId, Guid courseId);
 
     Task<Guid> GetCourseFacultyIdAsync(Guid courseId);
+
+    Task<List<Assignment>> GetUpcomingByCourseIdsAsync(List<Guid> courseIds);
 }

@@ -36,7 +36,6 @@ namespace Identity.API.Controllers
             {
                 var userId = await _userService.CreateUserAsync(
                     request.Username,
-                    request.Password,
                     request.FirstName,
                     request.LastName,
                     request.Email,
@@ -153,6 +152,7 @@ namespace Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> UpdateUser(string userId, [FromBody] UpdateUserRequest request)
         {
             if (!ModelState.IsValid)
@@ -162,7 +162,8 @@ namespace Identity.API.Controllers
 
             try
             {
-                var result = await _userService.UpdateUserAsync(userId, request);
+                var requesterRole = GetCurrentUserRole();
+                var result = await _userService.UpdateUserAsync(userId, request, requesterRole);
 
                 if (!result)
                 {
@@ -170,6 +171,10 @@ namespace Identity.API.Controllers
                 }
 
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                 return Forbid();
             }
             catch (InvalidOperationException ex)
             {
@@ -212,11 +217,13 @@ namespace Identity.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             try
             {
-                var deleted = await _userService.DeleteUserAsync(userId);
+                var requesterRole = GetCurrentUserRole();
+                var deleted = await _userService.DeleteUserAsync(userId, requesterRole);
 
                 if (!deleted)
                 {
@@ -224,6 +231,10 @@ namespace Identity.API.Controllers
                 }
 
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                 return Forbid();
             }
             catch (InvalidOperationException ex)
             {
