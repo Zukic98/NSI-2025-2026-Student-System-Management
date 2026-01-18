@@ -20,8 +20,6 @@ namespace Faculty.Infrastructure.DependencyInjection
             services.AddScoped<ICourseRepository, CourseRepository>();
             services.AddScoped<IAssignmentRepository, AssignmentRepository>();
             services.AddScoped<IAttendanceRepository, AttendanceRepository>();
-            // Services (NOTE: StudentService nema interfejs)
-            services.AddScoped<StudentService>();
             services.AddScoped<IEnrollmentService, EnrollmentService>();
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IAttendanceService, AttendanceService>();

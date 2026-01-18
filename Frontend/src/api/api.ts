@@ -145,7 +145,7 @@ export class API {
         return this.put<FacultyResponseDTO>(`/api/university/faculties/${id}`, dto);
     }
 
-   async deleteFaculty(id: number): Promise<void> {
+   async deleteFaculty(id: string): Promise<void> {
       return this.delete<void>(`/api/university/faculties/${id}`);
    }
 
