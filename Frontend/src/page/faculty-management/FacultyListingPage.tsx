@@ -14,13 +14,6 @@ import './FacultyListingPage.css';
 import { useAPI } from '../../context/services';
 import type { FacultyResponseDTO } from '../../dto/FacultyDTO';
 
-type Faculty = {
-  id: number;
-  name: string;
-  address: string;
-  code: string;
-};
-
 type FacultyInput = {
   name: string;
   address: string;
@@ -36,25 +29,16 @@ type ToastMessage = {
   message: string;
 };
 
-function mapFaculty(dto: FacultyResponseDTO): Faculty {
-  return {
-    id: dto.id,
-    name: dto.name,
-    address: dto.address,
-    code: dto.code,
-  };
-}
-
 // TODO: This entire page is a travesty and should be completely refactored.
 
 export function FacultyListingPage() {
   const api = useAPI();
-  const [faculties, setFaculties] = useState<Faculty[]>([]);
+  const [faculties, setFaculties] = useState<FacultyResponseDTO[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortAsc, setSortAsc] = useState(true);
 
   const [showModal, setShowModal] = useState(false);
-  const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
+  const [editingFaculty, setEditingFaculty] = useState<FacultyResponseDTO | null>(null);
   const [newFaculty, setNewFaculty] = useState<FacultyInput>({
     name: '',
     address: '',
@@ -83,35 +67,35 @@ export function FacultyListingPage() {
   const fetchFaculties = async () => {
     try {
       const data = await api.getFaculties();
-      setFaculties(data.map(mapFaculty));
+      setFaculties(data);
     } catch (e: any) {
       pushToast('error', 'Load failed', e.message ?? 'Failed to load faculties');
     }
   };
 
-  const createFaculty = async (input: FacultyInput): Promise<Faculty | null> => {
+  const createFaculty = async (input: FacultyInput): Promise<FacultyResponseDTO | null> => {
     try {
       const dto = await api.createFaculty(input);
       pushToast('success', 'Faculty created', 'Faculty has been created successfully.');
-      return mapFaculty(dto);
+      return dto;
     } catch (e: any) {
       pushToast('error', 'Create failed', e.message);
       return null;
     }
   };
 
-  const updateFaculty = async (id: number, input: FacultyInput): Promise<Faculty | null> => {
+  const updateFaculty = async (id: string, input: FacultyInput): Promise<FacultyResponseDTO | null> => {
     try {
       const updatedDto = await api.updateFaculty(id, input);
       pushToast('success', 'Faculty updated', 'Faculty has been updated successfully.');
-      return mapFaculty(updatedDto);
+      return updatedDto;
     } catch (e: any) {
       pushToast('error', 'Update failed', e.message);
       return null;
     }
   };
 
-  const deleteFaculty = async (id: number): Promise<boolean> => {
+  const deleteFaculty = async (id: string): Promise<boolean> => {
     try {
       await api.deleteFaculty(id);
       pushToast('success', 'Faculty deleted', 'Faculty has been deleted successfully.');
@@ -193,7 +177,7 @@ export function FacultyListingPage() {
     setShowModal(false);
   };
 
-  const handleEdit = (faculty: Faculty) => {
+  const handleEdit = (faculty: FacultyResponseDTO) => {
     setEditingFaculty(faculty);
     setNewFaculty({
       name: faculty.name,
@@ -204,7 +188,7 @@ export function FacultyListingPage() {
     setShowModal(true);
   };
 
-  const handleDelete = async (faculty: Faculty) => {
+  const handleDelete = async (faculty: FacultyResponseDTO) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this faculty?');
     if (!confirmDelete) return;
 

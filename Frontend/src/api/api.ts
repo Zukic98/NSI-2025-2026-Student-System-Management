@@ -140,11 +140,11 @@ export class API {
         return this.post<FacultyResponseDTO>('/api/university/faculties', dto);
     }
 
-    async updateFaculty(id: number, dto: UpdateFacultyRequestDTO): Promise<FacultyResponseDTO> {
+    async updateFaculty(id: string, dto: UpdateFacultyRequestDTO): Promise<FacultyResponseDTO> {
         return this.put<FacultyResponseDTO>(`/api/university/faculties/${id}`, dto);
     }
 
-    async deleteFaculty(id: number): Promise<void> {
+    async deleteFaculty(id: string): Promise<void> {
         return this.delete<void>(`/api/university/faculties/${id}`);
     }
 }
