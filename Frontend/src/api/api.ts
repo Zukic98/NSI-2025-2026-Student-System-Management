@@ -8,7 +8,7 @@ import type {
     RegisteredStudentExamDto,
 } from '../dto/StudentExamsDTO';
 import type { CreateExamRequestDTO, ExamResponseDTO, UpdateExamRequestDTO } from '../dto/ExamDTO';
-
+import type { CourseOverviewDTO } from '../dto/CourseOverviewDTO';
 import type { TwoFAConfirmResponse, TwoFASetupResponse } from '../models/2fa/TwoFA.types';
 import type { Assignment } from '../page/assignments/AssignmentTypes';
 import type { StudentRequestDto } from '../page/requests/RequestTypes';
@@ -157,6 +157,9 @@ export class API {
       return this.delete<void>(`/api/university/faculties/${id}`);
     }
 
+   async getCourseOverview(courseId: string): Promise<CourseOverviewDTO> {
+    return this.get<CourseOverviewDTO>(`/api/faculty/courses/${courseId}/overview`);
+}
     async getUpcomingActivities(): Promise<any> {
         return this.get<any>('/api/faculty/courses/upcoming-activities');
     }

@@ -25,6 +25,7 @@ import { ExamPage } from '../page/exams/ExamPage.tsx';
 import { CreateExamPage } from '../page/exams/CreateExamPage.tsx';
 import { EditExamPage } from '../page/exams/EditExamPage.tsx'; import RequestManagement from '../page/requests/RequestManagement';
 import AcademicRecordsPage from '../page/academic-records/AcademicRecordsPage.tsx';
+import CourseOverviewDashboard from '../page/course-overview-dashboard/CourseOverviewDashboard.tsx';
 import AssignmentsPage from '../page/assignments/AssignmentsPage.tsx';
 
 
@@ -126,6 +127,8 @@ export function Router(): React.ReactNode {
         <RequestManagement />
       } />
 
+      <Route path="/course-overview-dashboard" element={<AppLayout><CourseOverviewDashboard /></AppLayout>} />
+
       {/* error pages */}
       <Route path="/unauthorized" element={
         <div className="d-flex flex-column justify-content-center align-items-center" style={{ height: '100vh' }}>
@@ -141,6 +144,13 @@ export function Router(): React.ReactNode {
           <p>The page you are looking for does not exist.</p>
           <a href="/login" className="btn btn-primary">Return to Login</a>
         </div>
+      } />
+
+
+      <Route path="/faculty/courses" element={
+        <ProtectedRoute>
+          <CourseListPage />
+        </ProtectedRoute>
       } />
     </Routes>
   );
