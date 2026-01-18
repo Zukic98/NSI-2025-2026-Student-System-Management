@@ -10,10 +10,10 @@ namespace University.Infrastructure.Db
         {
         }
 
-        public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
-        public DbSet<Faculty> Faculties => Set<Faculty>();
-        public DbSet<Department> Departments => Set<Department>();
-        public DbSet<Program> Programs => Set<Program>();
+        public DbSet<AcademicYearSchema> AcademicYears => Set<AcademicYearSchema>();
+        public DbSet<FacultySchema> Faculties => Set<FacultySchema>();
+        public DbSet<DepartmentSchema> Departments => Set<DepartmentSchema>();
+        public DbSet<ProgramSchema> Programs => Set<ProgramSchema>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
