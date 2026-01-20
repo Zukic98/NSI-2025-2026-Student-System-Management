@@ -211,7 +211,7 @@ if (applyMigrations)
 }
 
 // Middleware
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseRouting();
 
