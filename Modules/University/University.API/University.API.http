@@ -1,4 +1,4 @@
-@API_HostAddress = http://localhost:5106/api/university/faculties
+@API_HostAddress = https://nsi-2025-2026-student-system-management-1.onrender.com/api/university/faculties
 
 ### Get all faculties
 GET {{API_HostAddress}}

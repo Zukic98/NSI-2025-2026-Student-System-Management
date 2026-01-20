@@ -1,5 +1,7 @@
 import type { AuthInfo } from '../init/auth.tsx';
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 export type ErrorResponse = {
@@ -17,12 +19,6 @@ export class RestClient {
     #authInfo: AuthInfo;
     #authFailCallback: () => Promise<AuthInfo | undefined>;
 
-    /**
-     * Instantiates a new {@link RestClient} service.
-     *
-     * @param authInfo auth info necessary to construct auth headers
-     * @param authFailCallback in case of 401 or 403, allows us to attempt silent refresh of token
-     */
     constructor(authInfo: AuthInfo, authFailCallback: () => Promise<AuthInfo | undefined>) {
         this.#authInfo = authInfo;
         this.#authFailCallback = authFailCallback;
@@ -48,7 +44,6 @@ export class RestClient {
         return this.#submitRequestWithFallback<T>(url, 'DELETE');
     }
 
-
     async #submitRequestWithFallback<T>(
         url: string,
         method: Method,
@@ -62,7 +57,6 @@ export class RestClient {
 
                 const errorResponse = await apiResponse.errorResponse!;
                 if (errorResponse.status === 401) {
-                    // Attempt to fetch one more time after token refresh
                     const newToken = await this.#authFailCallback();
                     if (!newToken) {
                         throw {
@@ -93,8 +87,10 @@ export class RestClient {
     }
 
     async #submitRequest<T>(url: string, method: Method, body?: unknown): Promise<APIResponse<T>> {
+        const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
+
         return fetch(
-            url,
+            fullUrl,
             {
                 method: method,
                 body: JSON.stringify(body),

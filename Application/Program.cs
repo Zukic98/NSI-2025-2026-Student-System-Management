@@ -43,6 +43,19 @@ builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddAnalyticsModule(builder.Configuration);
 builder.Services.AddEventBus();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        builder => builder
+            .WithOrigins(
+                "http://localhost:3000",           
+                "https://nsi-2025-2026-student-system-manage.vercel.app" 
+             )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); 
+});
+
 // Add controllers and module API assemblies
 var mvcBuilder = builder.Services.AddControllers();
 
@@ -214,6 +227,8 @@ if (applyMigrations)
 //app.UseHttpsRedirection();
 
 app.UseRouting();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
